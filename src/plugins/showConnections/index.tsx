@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2023 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -133,7 +133,7 @@ function CompactConnectionComponent({ connection, theme }: { connection: Connect
                         target="_blank"
                         rel="noreferrer"
                         onClick={e => {
-                            if (Vencord.Plugins.isPluginEnabled("OpenInApp")) {
+                            if (Velocity.Plugins.isPluginEnabled("OpenInApp")) {
                                 // handleLink will .preventDefault() if applicable
                                 OpenInAppPlugin.handleLink(e.currentTarget, e);
                             }

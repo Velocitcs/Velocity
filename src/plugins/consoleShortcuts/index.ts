@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2022 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -99,8 +99,8 @@ function makeShortcuts() {
         wp: Webpack,
         wpc: { getter: () => Webpack.cache },
         wreq: { getter: () => Webpack.wreq },
-        wpPatcher: { getter: () => Vencord.WebpackPatcher },
-        wpInstances: { getter: () => Vencord.WebpackPatcher.allWebpackInstances },
+        wpPatcher: { getter: () => Velocity.WebpackPatcher },
+        wpInstances: { getter: () => Velocity.WebpackPatcher.allWebpackInstances },
         wpsearch: search,
         wpex: extract,
         wpexs: (code: string) => extract(findModuleId(code)!),
@@ -115,11 +115,11 @@ function makeShortcuts() {
         findAllComponentsByCode: (...code: string[]) => findAll(filters.componentByCode(...code)),
         findExportedComponent: (...props: string[]) => findByProps(...props)[props[0]],
         findStore: findStoreWrapper(Webpack.findStore),
-        PluginsApi: { getter: () => Vencord.Plugins },
-        plugins: { getter: () => Vencord.Plugins.plugins },
-        Settings: { getter: () => Vencord.Settings },
-        Api: { getter: () => Vencord.Api },
-        Util: { getter: () => Vencord.Util },
+        PluginsApi: { getter: () => Velocity.Plugins },
+        plugins: { getter: () => Velocity.Plugins.plugins },
+        Settings: { getter: () => Velocity.Settings },
+        Api: { getter: () => Velocity.Api },
+        Util: { getter: () => Velocity.Util },
         reload: () => location.reload(),
         restart: IS_WEB ? DESKTOP_ONLY("restart") : relaunch,
         canonicalizeMatch,
@@ -145,7 +145,7 @@ function makeShortcuts() {
 
                     if (s.parentElement?.tagName === "HEAD")
                         doc.head.append(n);
-                    else if (n.id?.startsWith("vencord-") || n.id?.startsWith("vcd-"))
+                    else if (n.id?.startsWith("Velocity-") || n.id?.startsWith("vcd-"))
                         doc.documentElement.append(n);
                     else
                         doc.body.append(n);
@@ -158,7 +158,7 @@ function makeShortcuts() {
             doc.addEventListener("close", () => root.unmount(), { once: true });
         },
 
-        preEnable: (plugin: string) => (Vencord.Settings.plugins[plugin] ??= { enabled: true }).enabled = true,
+        preEnable: (plugin: string) => (Velocity.Settings.plugins[plugin] ??= { enabled: true }).enabled = true,
 
         channel: { getter: () => getCurrentChannel(), preload: false },
         channelId: { getter: () => Common.SelectedChannelStore.getChannelId(), preload: false },
@@ -190,8 +190,8 @@ function loadAndCacheShortcut(key: string, val: any, forceLoad: boolean) {
     function unwrapProxy(value: any) {
         if (value[SYM_LAZY_GET]) {
             forceLoad ? currentVal[SYM_LAZY_GET]() : currentVal[SYM_LAZY_CACHED];
-        } else if (value.$$vencordGetWrappedComponent) {
-            return forceLoad ? value.$$vencordGetWrappedComponent() : value;
+        } else if (value.$$VelocityGetWrappedComponent) {
+            return forceLoad ? value.$$VelocityGetWrappedComponent() : value;
         }
 
         return value;
@@ -265,7 +265,7 @@ export default definePlugin({
         this.eagerLoad(false);
 
         if (!IS_WEB) {
-            const Native = VencordNative.pluginHelpers.ConsoleShortcuts as PluginNative<typeof import("./native")>;
+            const Native = VelocityNative.pluginHelpers.ConsoleShortcuts as PluginNative<typeof import("./native")>;
             Native.initDevtoolsOpenEagerLoad();
         }
     },

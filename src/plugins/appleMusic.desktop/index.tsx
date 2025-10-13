@@ -1,5 +1,5 @@
 /*
- * Vencord, a Discord client mod
+ * Velocity, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -11,7 +11,7 @@ import { Activity, ActivityAssets, ActivityButton } from "@vencord/discord-types
 import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@vencord/discord-types/enums";
 import { ApplicationAssetUtils, FluxDispatcher, Forms } from "@webpack/common";
 
-const Native = VencordNative.pluginHelpers.AppleMusicRichPresence as PluginNative<typeof import("./native")>;
+const Native = VelocityNative.pluginHelpers.AppleMusicRichPresence as PluginNative<typeof import("./native")>;
 
 export interface TrackData {
     name: string;

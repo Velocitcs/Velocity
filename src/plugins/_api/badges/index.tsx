@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2022 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ import { ContextMenuApi, Forms, Menu, Toasts, UserStore } from "@webpack/common"
 const CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1092089799109775453.png?size=64";
 
 const ContributorBadge: ProfileBadge = {
-    description: "Vencord Contributor",
+    description: "Velocity Contributor",
     image: CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowContributorBadge(userId),
@@ -200,7 +200,7 @@ export default definePlugin({
                 const modalKey = openModal(props => (
                     <ErrorBoundary noop onError={() => {
                         closeModal(modalKey);
-                        VencordNative.native.openExternal("https://github.com/sponsors/Vendicated");
+                        VelocityNative.native.openExternal("https://github.com/sponsors/Vendicated");
                     }}>
                         <ModalRoot {...props}>
                             <ModalHeader>
@@ -214,7 +214,7 @@ export default definePlugin({
                                 >
                                     <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.5em" }}>
                                         <Heart />
-                                        Vencord Donor
+                                        Velocity Donor
                                     </Flex>
                                 </Forms.FormTitle>
                             </ModalHeader>
@@ -235,10 +235,10 @@ export default definePlugin({
                                 </Flex>
                                 <div style={{ padding: "1em" }}>
                                     <Forms.FormText>
-                                        This Badge is a special perk for Vencord Donors
+                                        This Badge is a special perk for Velocity Donors
                                     </Forms.FormText>
                                     <Forms.FormText className={Margins.top20}>
-                                        Please consider supporting the development of Vencord by becoming a donor. It would mean a lot!!
+                                        Please consider supporting the development of Velocity by becoming a donor. It would mean a lot!!
                                     </Forms.FormText>
                                 </div>
                             </ModalContent>

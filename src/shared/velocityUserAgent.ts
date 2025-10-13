@@ -9,4 +9,4 @@ import gitRemote from "~git-remote";
 
 export { gitHash, gitRemote };
 
-export const Velocity_USER_AGENT = `Velocity/${gitHash}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;
+export const VELOCITY_USER_AGENT = `Velocity/${gitHash}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;

@@ -22,7 +22,6 @@
 
 .vc-shiki-devicon {
     margin-right: 8px;
-    user-select: none;
 }
 
 .vc-shiki-plain .vc-shiki-code {
@@ -44,7 +43,6 @@
 .vc-shiki-btn {
     border-radius: 4px 4px 0 0;
     padding: 4px 8px;
-    user-select: none;
 }
 
 .vc-shiki-btn ~ .vc-shiki-btn {
@@ -91,7 +89,6 @@
     border-right: 1px solid transparent;
     padding-left: 5px;
     padding-right: 8px;
-    user-select: none;
 }
 
 .vc-shiki-root .vc-shiki-table-cell:last-child {

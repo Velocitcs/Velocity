@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2022 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -216,7 +216,7 @@ function computeWidthAndHeight(width: number, height: number) {
 function withEmbeddedBy(message: Message, embeddedBy: string[]) {
     return new Proxy(message, {
         get(_, prop) {
-            if (prop === "vencordEmbeddedBy") return embeddedBy;
+            if (prop === "VelocityEmbeddedBy") return embeddedBy;
             // @ts-expect-error ts so bad
             return Reflect.get(...arguments);
         }
@@ -226,7 +226,7 @@ function withEmbeddedBy(message: Message, embeddedBy: string[]) {
 
 function MessageEmbedAccessory({ message }: { message: Message; }) {
     // @ts-expect-error
-    const embeddedBy: string[] = message.vencordEmbeddedBy ?? [];
+    const embeddedBy: string[] = message.VelocityEmbeddedBy ?? [];
 
     const accessories = [] as (JSX.Element | null)[];
 

@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2025 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@ function buildMenuItem(sticker: PartialSticker, addBottomSeparator: boolean) {
                     id="vc-open-sticker-link"
                     key="vc-open-sticker-link"
                     label="Open Link"
-                    action={() => VencordNative.native.openExternal(getUrl(sticker))}
+                    action={() => VelocityNative.native.openExternal(getUrl(sticker))}
                 />
             </Menu.MenuGroup>
             {addBottomSeparator && <Menu.MenuSeparator />}
@@ -79,7 +79,7 @@ const expressionPickerPatch: NavContextMenuPatchCallback = (children, props: { t
 
     const sticker = StickersStore.getStickerById(id);
     if (sticker) {
-        children.push(buildMenuItem(sticker, Vencord.Plugins.isPluginEnabled(ExpressionClonerPlugin.name)));
+        children.push(buildMenuItem(sticker, Velocity.Plugins.isPluginEnabled(ExpressionClonerPlugin.name)));
     }
 };
 

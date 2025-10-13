@@ -1,5 +1,5 @@
 /*
- * Vencord, a Discord client mod
+ * Velocity, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -17,7 +17,7 @@ export default definePlugin({
             find: '"sticker")',
             replacement: {
                 match: /return\(\i\.\i\|\|(?=\(.+?(\i)\.push)/,
-                replace: "$&(Vencord.Api.ChatButtons._injectButtons($1,arguments[0]),false)||"
+                replace: "$&(Velocity.Api.ChatButtons._injectButtons($1,arguments[0]),false)||"
             }
         }
     ]
