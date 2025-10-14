@@ -180,7 +180,7 @@ export default definePlugin({
         toWrap.map = function (render: (item: SettingsEntry) => ReactElement<any>) {
             const allItems = this.filter(a => a.items.length > 0);
             const result: any[] = [];
-            let logoutItem = null;
+            let logoutItem: ReactElement<any> | null = null;
 
             allItems.forEach(({ label, items }) => {
                 const children = items.map((item: SettingsEntry) => {
@@ -210,7 +210,7 @@ export default definePlugin({
             if (logoutItem) {
                 result.push(
                     <Menu.MenuSeparator key="logout-sep" />,
-                    { ...logoutItem, props: { ...logoutItem.props, color: "danger", icon: LeaveIcon } }
+                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: LeaveIcon } }
                 );
             }
 
