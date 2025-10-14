@@ -5,7 +5,7 @@
  */
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Channel, Message } from "@vencord/discord-types";
+import { Channel, Message } from "@discord-types";
 import { JSX } from "react";
 
 export interface MessageDecorationProps {

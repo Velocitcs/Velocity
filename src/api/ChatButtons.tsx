@@ -7,9 +7,9 @@
 import "./ChatButton.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Channel } from "@discord-types";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
-import { Channel } from "@vencord/discord-types";
 import { waitFor } from "@webpack";
 import { ButtonWrapperClasses, Clickable, Tooltip } from "@webpack/common";
 import { HTMLProps, JSX, MouseEventHandler, ReactNode } from "react";

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { enableStyle } from "@api/Styles";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -27,6 +28,11 @@ export default definePlugin({
     authors: [Devs.TheSun],
 
     managedStyle,
+
+
+    start() {
+        enableStyle(managedStyle);
+    },
 
     patches: [
         {

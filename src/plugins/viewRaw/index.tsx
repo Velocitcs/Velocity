@@ -17,27 +17,20 @@
 */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings } from "@api/Settings";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
+import { LogIcon } from "@components/Icons";
+import { Message } from "@discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild, getIntlMessage } from "@utils/discord";
 import { Margins } from "@utils/margins";
 import { copyWithToast } from "@utils/misc";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@vencord/discord-types";
-import { Button, ChannelStore, Forms, GuildRoleStore, Menu, Text } from "@webpack/common";
+import definePlugin from "@utils/types";
+import { Button, Forms, GuildRoleStore, Menu, React, Text } from "@webpack/common";
 
-
-const CopyIcon = () => {
-    return <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" width="20" height="20">
-        <path d="M12.9297 3.25007C12.7343 3.05261 12.4154 3.05226 12.2196 3.24928L11.5746 3.89824C11.3811 4.09297 11.3808 4.40733 11.5739 4.60245L16.5685 9.64824C16.7614 9.84309 16.7614 10.1569 16.5685 10.3517L11.5739 15.3975C11.3808 15.5927 11.3811 15.907 11.5746 16.1017L12.2196 16.7507C12.4154 16.9477 12.7343 16.9474 12.9297 16.7499L19.2604 10.3517C19.4532 10.1568 19.4532 9.84314 19.2604 9.64832L12.9297 3.25007Z" />
-        <path d="M8.42616 4.60245C8.6193 4.40733 8.61898 4.09297 8.42545 3.89824L7.78047 3.24928C7.58466 3.05226 7.26578 3.05261 7.07041 3.25007L0.739669 9.64832C0.5469 9.84314 0.546901 10.1568 0.739669 10.3517L7.07041 16.7499C7.26578 16.9474 7.58465 16.9477 7.78047 16.7507L8.42545 16.1017C8.61898 15.907 8.6193 15.5927 8.42616 15.3975L3.43155 10.3517C3.23869 10.1569 3.23869 9.84309 3.43155 9.64824L8.42616 4.60245Z" />
-    </svg>;
-};
 
 function sortObject<T extends object>(obj: T): T {
     return Object.fromEntries(Object.entries(obj).sort(([k1], [k2]) => k1.localeCompare(k2))) as T;
@@ -52,7 +45,6 @@ function cleanMessage(msg: Message) {
         "personalConnectionId"
     ]) delete clone.author[key];
 
-    // message logger added properties
     const cloneAny = clone as any;
     delete cloneAny.editHistory;
     delete cloneAny.deleted;
@@ -62,7 +54,38 @@ function cleanMessage(msg: Message) {
     return clone;
 }
 
-function openViewRawModal(json: string, type: string, msgContent?: string) {
+function cleanUser(user: any) {
+    const clone = sortObject(JSON.parse(JSON.stringify(user)));
+    for (const key of [
+        "email",
+        "phone",
+        "mfaEnabled",
+        "personalConnectionId"
+    ]) delete clone[key];
+
+    return clone;
+}
+
+function makeNoteSpan(text: string, color: string) {
+    return (
+        <span style={{ color, fontSize: "12px", fontWeight: "600", marginLeft: "2px" }}>
+            ({text})
+        </span>
+    );
+}
+
+function detectLangAndContent(msgContent: string) {
+    let lang = "plaintext";
+    let content = msgContent;
+    const match = msgContent.match(/```(\w+)?\n?([\s\S]*?)```/);
+    if (match) {
+        if (match[1]) lang = match[1].toLowerCase();
+        content = match[2];
+    }
+    return { lang, content };
+}
+
+function openViewRawModal(json: string, type: string, content?: string) {
     const key = openModal(props => (
         <ErrorBoundary>
             <ModalRoot {...props} size={ModalSize.LARGE}>
@@ -71,11 +94,20 @@ function openViewRawModal(json: string, type: string, msgContent?: string) {
                     <ModalCloseButton onClick={() => closeModal(key)} />
                 </ModalHeader>
                 <ModalContent>
-                    <div style={{ padding: "16px 0" }}>
-                        {!!msgContent && (
+                    <div style={{ padding: "16px" }}>
+                        {!!content && (
                             <>
-                                <Forms.FormTitle tag="h5">Content</Forms.FormTitle>
-                                <CodeBlock content={msgContent} lang="" />
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                    <Forms.FormTitle tag="h5" style={{ margin: 0 }}>Content</Forms.FormTitle>
+                                    {/[^\u0000-\u007f]/.test(content) && makeNoteSpan("Unicode", "#ff5555")}
+                                    {(() => {
+                                        const { lang } = detectLangAndContent(content);
+                                        return lang !== "plaintext" && makeNoteSpan(lang.toUpperCase() + " Codeblock", "#00bfff");
+                                    })()}
+                                    {/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u.test(content) && makeNoteSpan("Emoji", "#6fff00")}
+                                    {/[\u0000]/.test(content) && makeNoteSpan("Invisible Unicode", "#888888")}
+                                </div>
+                                <CodeBlock content={detectLangAndContent(content).content} lang={detectLangAndContent(content).lang} />
                                 <Divider className={Margins.bottom20} />
                             </>
                         )}
@@ -89,8 +121,8 @@ function openViewRawModal(json: string, type: string, msgContent?: string) {
                         <Button onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
                             Copy {type} JSON
                         </Button>
-                        {!!msgContent && (
-                            <Button onClick={() => copyWithToast(msgContent, "Content copied to clipboard!")}>
+                        {!!content && (
+                            <Button onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
                                 Copy Raw Content
                             </Button>
                         )}
@@ -108,22 +140,31 @@ function openViewRawModalMessage(msg: Message) {
     return openViewRawModal(msgJson, "Message", msg.content);
 }
 
-const settings = definePluginSettings({
-    clickMethod: {
-        description: "Change the button to view the raw content/data of any message.",
-        type: OptionType.SELECT,
-        options: [
-            { label: "Left Click to view the raw content.", value: "Left", default: true },
-            { label: "Right click to view the raw content.", value: "Right" }
-        ]
-    }
-});
+function openViewRawModalUser(user: any) {
+    user = cleanUser(user);
+    const userJson = JSON.stringify(user, null, 4);
+
+    return openViewRawModal(userJson, "User");
+}
+
+const messageContextCallback: NavContextMenuPatchCallback = (children, props) => {
+    if (!props?.message) return;
+
+    children.push(
+        <Menu.MenuItem
+            id="vc-view-message-raw"
+            label="View Raw"
+            action={() => openViewRawModalMessage(props.message)}
+            icon={LogIcon}
+        />
+    );
+};
 
 function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavContextMenuPatchCallback {
     return (children, props) => {
         const value = props[name.toLowerCase()];
         if (!value) return;
-        if (props.label === getIntlMessage("CHANNEL_ACTIONS_MENU_LABEL")) return; // random shit like notification settings
+        if (props.label === getIntlMessage("CHANNEL_ACTIONS_MENU_LABEL")) return;
 
         const lastChild = children.at(-1);
         if (lastChild?.key === "developer-actions") {
@@ -138,8 +179,14 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
             <Menu.MenuItem
                 id={`vc-view-${name.toLowerCase()}-raw`}
                 label="View Raw"
-                action={() => openViewRawModal(JSON.stringify(value, null, 4), name)}
-                icon={CopyIcon}
+                action={() => {
+                    if (name === "User") {
+                        openViewRawModalUser(value);
+                    } else {
+                        openViewRawModal(JSON.stringify(value, null, 4), name);
+                    }
+                }}
+                icon={LogIcon}
             />
         );
     };
@@ -157,59 +204,24 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
             id={"vc-view-role-raw"}
             label="View Raw"
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
-            icon={CopyIcon}
+            icon={LogIcon}
         />
     );
 };
 
 export default definePlugin({
     name: "ViewRaw",
-    description: "Copy and view the raw content/data of any message, channel or guild",
+    description: "Copy and view the raw content/data of any message, user, channel or guild",
     authors: [Devs.KingFish, Devs.Ven, Devs.rad, Devs.ImLvna],
-    settings,
 
     contextMenus: {
         "guild-context": MakeContextCallback("Guild"),
         "guild-settings-role-context": MakeContextCallback("Role"),
         "channel-context": MakeContextCallback("Channel"),
         "thread-context": MakeContextCallback("Channel"),
+        "message": messageContextCallback,
         "gdm-context": MakeContextCallback("Channel"),
         "user-context": MakeContextCallback("User"),
         "dev-context": devContextCallback
-    },
-
-    renderMessagePopoverButton(msg) {
-        const handleClick = () => {
-            if (settings.store.clickMethod === "Right") {
-                copyWithToast(msg.content);
-            } else {
-                openViewRawModalMessage(msg);
-            }
-        };
-
-        const handleContextMenu = e => {
-            if (settings.store.clickMethod === "Left") {
-                e.preventDefault();
-                e.stopPropagation();
-                copyWithToast(msg.content);
-            } else {
-                e.preventDefault();
-                e.stopPropagation();
-                openViewRawModalMessage(msg);
-            }
-        };
-
-        const label = settings.store.clickMethod === "Right"
-            ? "Copy Raw (Left Click) / View Raw (Right Click)"
-            : "View Raw (Left Click) / Copy Raw (Right Click)";
-
-        return {
-            label,
-            icon: CopyIcon,
-            message: msg,
-            channel: ChannelStore.getChannel(msg.channel_id),
-            onClick: handleClick,
-            onContextMenu: handleContextMenu
-        };
     }
 });

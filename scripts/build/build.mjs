@@ -21,6 +21,8 @@
 
 import { readdir } from "fs/promises";
 import { join } from "path";
+import { homedir } from "os";
+
 
 import { BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_ANTI_CRASH_TEST, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, commonRendererPlugins, watch, buildOrWatchAll, stringifyValues } from "./common.mjs";
 
@@ -56,7 +58,7 @@ const nodeCommonOpts = {
     external: ["electron", "original-fs", "~pluginNatives", ...commonOpts.external]
 };
 
-const sourceMapFooter = s => watch ? "" : `//# sourceMappingURL=Velocity://${s}.js.map`;
+const sourceMapFooter = s => watch ? "" : `//# sourceMappingURL=velocity://${s}.js.map`;
 const sourcemap = watch ? "inline" : "external";
 
 /**
@@ -107,13 +109,16 @@ const globNativesPlugin = {
     }
 };
 
+
+const outputDir = join(homedir(), "AppData", "Roaming", "Velocity", "dist");
+
 /** @type {import("esbuild").BuildOptions[]} */
 const buildConfigs = ([
     // Discord Desktop main & renderer & preload
     {
         ...nodeCommonOpts,
         entryPoints: ["src/main/index.ts"],
-        outfile: "dist/patcher.js",
+        outfile: join(outputDir, "patcher.js"),
         footer: { js: "//# sourceURL=file:///VelocityPatcher\n" + sourceMapFooter("patcher") },
         sourcemap,
         plugins: [
@@ -130,7 +135,7 @@ const buildConfigs = ([
     {
         ...commonOpts,
         entryPoints: ["src/Velocity.ts"],
-        outfile: "dist/renderer.js",
+        outfile: join(outputDir, "renderer.js"),
         format: "iife",
         target: ["esnext"],
         footer: { js: "//# sourceURL=file:///VelocityRenderer\n" + sourceMapFooter("renderer") },
@@ -149,62 +154,13 @@ const buildConfigs = ([
     {
         ...nodeCommonOpts,
         entryPoints: ["src/preload.ts"],
-        outfile: "dist/preload.js",
+        outfile: join(outputDir, "preload.js"),
         footer: { js: "//# sourceURL=file:///VelocityPreload\n" + sourceMapFooter("preload") },
         sourcemap,
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
             IS_VESKTOP: "false"
-        }
-    },
-
-    // Velocity Desktop main & renderer & preload
-    {
-        ...nodeCommonOpts,
-        entryPoints: ["src/main/index.ts"],
-        outfile: "dist/VelocityDesktopMain.js",
-        footer: { js: "//# sourceURL=file:///VelocityDesktopMain\n" + sourceMapFooter("VelocityDesktopMain") },
-        sourcemap,
-        plugins: [
-            ...nodeCommonOpts.plugins,
-            globNativesPlugin
-        ],
-        define: {
-            ...defines,
-            IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
-        }
-    },
-    {
-        ...commonOpts,
-        entryPoints: ["src/Velocity.ts"],
-        outfile: "dist/VelocityDesktopRenderer.js",
-        format: "iife",
-        target: ["esnext"],
-        footer: { js: "//# sourceURL=file:///VelocityDesktopRenderer\n" + sourceMapFooter("VelocityDesktopRenderer") },
-        globalName: "Velocity",
-        sourcemap,
-        plugins: [
-            globPlugins("vesktop"),
-            ...commonRendererPlugins
-        ],
-        define: {
-            ...defines,
-            IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
-        }
-    },
-    {
-        ...nodeCommonOpts,
-        entryPoints: ["src/preload.ts"],
-        outfile: "dist/VelocityDesktopPreload.js",
-        footer: { js: "//# sourceURL=file:///VelocityPreload\n" + sourceMapFooter("VelocityDesktopPreload") },
-        sourcemap,
-        define: {
-            ...defines,
-            IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
         }
     }
 ]);

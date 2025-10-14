@@ -14,15 +14,18 @@ export function OnlineThemesTab() {
 
     const [themeText, setThemeText] = useState(settings.themeLinks.join("\n"));
 
-    // When the user leaves the online theme textbox, update the settings
     function onBlur() {
-        settings.themeLinks = [...new Set(
+        const newLinks = [...new Set(
             themeText
                 .trim()
                 .split(/\n+/)
                 .map(s => s.trim())
                 .filter(Boolean)
         )];
+
+        if (JSON.stringify(newLinks) !== JSON.stringify(settings.themeLinks)) {
+            settings.themeLinks = newLinks;
+        }
     }
 
     return (

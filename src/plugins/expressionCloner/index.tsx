@@ -19,13 +19,13 @@
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { migratePluginSettings } from "@api/Settings";
 import { CheckedTextInput } from "@components/CheckedTextInput";
+import { Guild, GuildSticker } from "@discord-types";
 import { Devs } from "@utils/constants";
 import { getGuildAcronym } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { ModalContent, ModalHeader, ModalRoot, openModalLazy } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { Guild, GuildSticker } from "@vencord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { Constants, EmojiStore, FluxDispatcher, Forms, GuildStore, IconUtils, Menu, PermissionsBits, PermissionStore, React, RestAPI, StickersStore, Toasts, Tooltip, UserStore } from "@webpack/common";
 import { Promisable } from "type-fest";
@@ -112,8 +112,7 @@ async function cloneEmoji(guildId: string, emoji: Emoji) {
 
 function getGuildCandidates(data: Data) {
     const meId = UserStore.getCurrentUser().id;
-
-    return Object.values(GuildStore.getGuilds()).filter(g => {
+    return Object.values(GuildStore.getGuilds()).filter((g: any) => {
         const canCreate = g.ownerId === meId ||
             (PermissionStore.getGuildPermissions({ id: g.id }) & PermissionsBits.CREATE_GUILD_EXPRESSIONS) === PermissionsBits.CREATE_GUILD_EXPRESSIONS;
         if (!canCreate) return false;
@@ -122,7 +121,7 @@ function getGuildCandidates(data: Data) {
 
         const { isAnimated } = data as Emoji;
 
-        const emojiSlots = getGuildMaxEmojiSlots(g);
+        const emojiSlots = getGuildMaxEmojiSlots(g as Guild);
         const { emojis } = EmojiStore.getGuilds()[g.id];
 
         let count = 0;
@@ -130,7 +129,7 @@ function getGuildCandidates(data: Data) {
             if (emoji.animated === isAnimated && !emoji.managed)
                 count++;
         return count < emojiSlots;
-    }).sort((a, b) => a.name.localeCompare(b.name));
+    }).sort((a: any, b: any) => a.name.localeCompare(b.name));
 }
 
 async function fetchBlob(url: string) {
@@ -207,7 +206,7 @@ function CloneModal({ data }: { data: Sticker | Emoji; }) {
                 justifyContent: "center",
                 alignItems: "center"
             }}>
-                {guilds.map(g => (
+                {guilds.map((g: any) => (
                     <Tooltip key={g.id} text={g.name}>
                         {({ onMouseLeave, onMouseEnter }) => (
                             <div
@@ -215,7 +214,6 @@ function CloneModal({ data }: { data: Sticker | Emoji; }) {
                                 onMouseEnter={onMouseEnter}
                                 role="button"
                                 aria-label={"Clone to " + g.name}
-                                aria-disabled={isCloning}
                                 style={{
                                     borderRadius: "50%",
                                     backgroundColor: "var(--background-base-lower)",

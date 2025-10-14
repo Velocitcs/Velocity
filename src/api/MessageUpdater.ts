@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Message } from "@vencord/discord-types";
+import { Message } from "@discord-types";
 import { MessageCache, MessageStore } from "@webpack/common";
 
 /**

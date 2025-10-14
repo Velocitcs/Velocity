@@ -18,9 +18,9 @@
 
 import { DataStore, Notices } from "@api/index";
 import { showNotification } from "@api/Notifications";
+import { FluxStore } from "@discord-types";
+import { ChannelType } from "@discord-types/enums";
 import { getUniqueUsername, openUserProfile } from "@utils/discord";
-import { FluxStore } from "@vencord/discord-types";
-import { ChannelType } from "@vencord/discord-types/enums";
 import { findStoreLazy } from "@webpack";
 import { ChannelStore, GuildMemberStore, GuildStore, RelationshipStore, UserStore, UserUtils } from "@webpack/common";
 
@@ -134,7 +134,8 @@ export async function syncGuilds() {
     guilds.clear();
 
     const me = UserStore.getCurrentUser().id;
-    for (const [id, { name, icon }] of Object.entries(GuildStore.getGuilds())) {
+    for (const [id, guild] of Object.entries(GuildStore.getGuilds())) {
+        const { name, icon } = guild as any;
         if (GuildMemberStore.isMember(id, me))
             guilds.set(id, {
                 id,

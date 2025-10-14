@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { LeaveIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
@@ -60,7 +61,7 @@ function Layer({ mode, baseLayer = false, ...props }: LayerProps) {
     const node = (
         <div
             ref={containerRef}
-            aria-hidden={hidden}
+            {...({ "aria-hidden": hidden } as any)}
             className={cl({
                 [Classes.layer]: true,
                 [Classes.baseLayer]: baseLayer,
@@ -156,12 +157,16 @@ export default definePlugin({
 
     transformSettingsEntries(list: SettingsEntry[]) {
         const items = [{ label: null as string | null, items: [] as SettingsEntry[] }];
+        let addedOtherOptions = false;
 
         for (const item of list) {
             if (item.section === "HEADER") {
                 items.push({ label: item.label, items: [] });
             } else if (item.section === "DIVIDER") {
-                items.push({ label: getIntlMessage("OTHER_OPTIONS"), items: [] });
+                if (!addedOtherOptions) {
+                    items.push({ label: getIntlMessage("OTHER_OPTIONS"), items: [] });
+                    addedOtherOptions = true;
+                }
             } else {
                 items.at(-1)!.items.push(item);
             }
@@ -173,24 +178,43 @@ export default definePlugin({
     wrapMap(toWrap: any[]) {
         // @ts-expect-error
         toWrap.map = function (render: (item: SettingsEntry) => ReactElement<any>) {
-            return this
-                .filter(a => a.items.length > 0)
-                .map(({ label, items }) => {
-                    const children = items.map(render);
-                    if (label) {
-                        return (
-                            <Menu.MenuItem
-                                key={label}
-                                id={label.replace(/\W/, "_")}
-                                label={label}
-                            >
-                                {children}
-                            </Menu.MenuItem>
-                        );
-                    } else {
-                        return children;
+            const allItems = this.filter(a => a.items.length > 0);
+            const result: any[] = [];
+            let logoutItem = null;
+
+            allItems.forEach(({ label, items }) => {
+                const children = items.map((item: SettingsEntry) => {
+                    const rendered = render(item);
+                    if (item.section === "LOGOUT" || item.label?.toLowerCase().includes("log out")) {
+                        logoutItem = rendered;
+                        return null;
                     }
-                });
+                    return rendered;
+                }).filter(Boolean);
+
+                if (label) {
+                    result.push(
+                        <Menu.MenuItem
+                            key={label}
+                            id={label.replace(/\W/, "_")}
+                            label={label}
+                        >
+                            {children}
+                        </Menu.MenuItem>
+                    );
+                } else {
+                    result.push(...children);
+                }
+            });
+
+            if (logoutItem) {
+                result.push(
+                    <Menu.MenuSeparator key="logout-sep" />,
+                    { ...logoutItem, props: { ...logoutItem.props, color: "danger", icon: LeaveIcon } }
+                );
+            }
+
+            return result;
         };
 
         return toWrap;

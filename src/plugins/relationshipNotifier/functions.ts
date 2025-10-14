@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ChannelType } from "@discord-types/enums";
 import { getUniqueUsername, openUserProfile } from "@utils/discord";
-import { ChannelType } from "@vencord/discord-types/enums";
 import { UserUtils } from "@webpack/common";
 
 import settings from "./settings";

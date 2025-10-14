@@ -7,8 +7,8 @@
 import "./Button.css";
 
 import { classNameFactory } from "@api/Styles";
+import type { Button as DiscordButton } from "@discord-types";
 import { classes } from "@utils/misc";
-import type { Button as DiscordButton } from "@vencord/discord-types";
 import type { ComponentPropsWithRef } from "react";
 
 import { OpenExternalIcon } from "./Icons";

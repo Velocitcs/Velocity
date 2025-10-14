@@ -17,7 +17,7 @@
 */
 
 import { Heart } from "@components/Heart";
-import { ButtonProps } from "@vencord/discord-types";
+import { ButtonProps } from "@discord-types";
 import { Button } from "@webpack/common";
 
 export default function DonateButton({

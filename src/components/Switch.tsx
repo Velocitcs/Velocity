@@ -68,6 +68,7 @@ export function Switch({ checked, onChange, disabled }: SwitchProps) {
                     tabIndex={0}
                     checked={checked}
                     onChange={e => onChange(e.currentTarget.checked)}
+                    aria-label="toggleSwich"
                 />
             </div>
         </div>

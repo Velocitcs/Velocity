@@ -50,6 +50,16 @@ const settings = definePluginSettings({
         type: OptionType.NUMBER,
         default: 20,
         restartNeeded: true
+    },
+    hideLocation: {
+        type: OptionType.BOOLEAN,
+        description: "Hide location in new session notifications",
+        default: false
+    },
+    useNativeNotification: {
+        type: OptionType.BOOLEAN,
+        description: "Use native Windows/system notifications instead of in-app notifications",
+        default: false
     }
 });
 
@@ -73,7 +83,6 @@ export default definePlugin({
                     match: /({variant:"text-sm\/medium",className:\i\.sessionInfoRow,children:.{70,110}{children:"\\xb7"}\),\(0,\i\.\i\)\("span",{children:)(\i\[\d+\])}/,
                     replace: "$1$self.renderTimestamp({ ...arguments[0], timeLabel: $2 })}"
                 },
-                // Replace the icon
                 {
                     match: /\.currentSession:null\),children:\[(?<=,icon:(\i)\}.+?)/,
                     replace: "$& $self.renderIcon({ ...arguments[0], DeviceIcon: $1 }), false &&"
@@ -171,10 +180,16 @@ export default definePlugin({
             if (savedSessionsCache.has(session.id_hash)) continue;
 
             savedSessionsCache.set(session.id_hash, { name: "", isNew: true });
+
+            const locationInfo = settings.store.hideLocation
+                ? ""
+                : ` · ${session.client_info.location}`;
+
             showNotification({
                 title: "BetterSessions",
-                body: `New session:\n${session.client_info.os} · ${session.client_info.platform} · ${session.client_info.location}`,
+                body: `New session:\n${session.client_info.os} · ${session.client_info.platform}${locationInfo}`,
                 permanent: true,
+                native: settings.store.useNativeNotification,
                 onClick: () => UserSettingsModal.open("Sessions")
             });
         }
