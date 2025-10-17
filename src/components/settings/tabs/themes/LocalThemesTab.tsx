@@ -6,7 +6,8 @@
 
 import { Settings, useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
-import { DeleteIcon, FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
+import { Divider } from "@components/Divider";
+import { DeleteIcon, FolderIcon, IconTypes, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { AddonCard } from "@components/settings/AddonCard";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
@@ -18,7 +19,6 @@ import { findLazy } from "@webpack";
 import { Card, Forms, showToast, Toasts, Tooltip, useEffect, useRef, useState } from "@webpack/common";
 import ClientThemePlugin from "plugins/clientTheme";
 import type { ComponentType, CSSProperties, Ref, SyntheticEvent } from "react";
-
 const cl = classNameFactory("vc-settings-theme-");
 
 type FileInput = ComponentType<{
@@ -109,48 +109,46 @@ export function LocalThemesTab() {
                 <Forms.FormTitle tag="h5">Local Themes</Forms.FormTitle>
                 <QuickActionCard>
                     <>
-                        {IS_WEB ?
-                            (
-                                <QuickAction
-                                    text={
-                                        <span style={uploadSpanStyle}>
-                                            Upload Theme
-                                            <FileInput
-                                                ref={fileInputRef}
-                                                onChange={async e => {
-                                                    await onFileUpload(e);
-                                                    refreshLocalThemes();
-                                                }}
-                                                multiple={true}
-                                                filters={[{ extensions: ["css"] }]}
-                                            />
-                                        </span>
-                                    }
-                                    Icon={PlusIcon}
-                                />
-                            ) : (
-                                <QuickAction
-                                    text="Open Themes Folder"
-                                    action={() => VelocityNative.themes.openFolder()}
-                                    Icon={FolderIcon}
-                                />
-                            )}
+                        {IS_WEB ? (
+                            <QuickAction
+                                text={
+                                    <span style={uploadSpanStyle}>
+                                        Upload Theme
+                                        <FileInput
+                                            ref={fileInputRef}
+                                            onChange={async e => {
+                                                await onFileUpload(e);
+                                                refreshLocalThemes();
+                                            }}
+                                            multiple={true}
+                                            filters={[{ extensions: ["css"] }]}
+                                        />
+                                    </span>
+                                }
+                                Icon={PlusIcon(IconTypes.DEFAULT)}
+                            />
+                        ) : (
+                            <QuickAction
+                                text="Open Themes Folder"
+                                action={() => VelocityNative.themes.openFolder()}
+                                Icon={FolderIcon(IconTypes.DEFAULT)}
+                            />
+                        )}
                         <QuickAction
                             text="Load missing Themes"
                             action={refreshLocalThemes}
-                            Icon={RestartIcon}
+                            Icon={RestartIcon(IconTypes.DEFAULT)}
                         />
                         <QuickAction
                             text="Edit QuickCSS"
                             action={() => VelocityNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon}
+                            Icon={PaintbrushIcon(IconTypes.DEFAULT)}
                         />
-
                         {Velocity.Plugins.isPluginEnabled(ClientThemePlugin.name) && (
                             <QuickAction
                                 text="Edit ClientTheme"
                                 action={() => openPluginModal(ClientThemePlugin)}
-                                Icon={PencilIcon}
+                                Icon={PencilIcon(IconTypes.DEFAULT)}
                             />
                         )}
                     </>
@@ -184,7 +182,7 @@ export function LocalThemesTab() {
                                         });
                                     }}
                                 >
-                                    <DeleteIcon width={20} height={20} />
+                                    {DeleteIcon(IconTypes.DEFAULT)()}
                                 </div>
                             }
                         />
@@ -193,7 +191,7 @@ export function LocalThemesTab() {
 
                 {requiredThemes.length > 0 && (
                     <>
-                        <Forms.FormDivider className={Margins.top20} />
+                        <Divider className={Margins.top20} />
                         <Forms.FormTitle tag="h5" className={classes(Margins.top20, Margins.bottom8)}>
                             Required Themes
                         </Forms.FormTitle>

@@ -7,7 +7,7 @@
 import "./AddonCard.css";
 
 import { classNameFactory } from "@api/Styles";
-import { AddonBadge } from "@components/settings/PluginBadge";
+import { AddonBadge } from "@components/settings/AddonBadge";
 import { Switch } from "@components/Switch";
 import { Text, useRef } from "@webpack/common";
 import type { MouseEventHandler, ReactNode } from "react";
@@ -57,8 +57,7 @@ export function AddonCard({ disabled, isNew, name, infoButton, footer, author, e
                                 {name}
                             </div>
                         </div>
-                        {isNew && <AddonBadge text="NEW" color="#ED4245" />}
-                    </Text>
+                        {isNew && <AddonBadge text="NEW" color="#ED4245" icon={<svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>} />}                    </Text>
 
                     {!!author && (
                         <Text variant="text-md/normal" className={cl("author")}>

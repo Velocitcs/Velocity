@@ -6,7 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
-import { LeaveIcon } from "@components/Icons";
+import { IconTypes, LeaveIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
@@ -156,6 +156,8 @@ export default definePlugin({
     },
 
     transformSettingsEntries(list: SettingsEntry[]) {
+        console.log("Settings entries:", list);
+
         const items = [{ label: null as string | null, items: [] as SettingsEntry[] }];
         let addedOtherOptions = false;
 
@@ -210,7 +212,7 @@ export default definePlugin({
             if (logoutItem) {
                 result.push(
                     <Menu.MenuSeparator key="logout-sep" />,
-                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: LeaveIcon } }
+                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: LeaveIcon(IconTypes.DEFAULT) } }
                 );
             }
 

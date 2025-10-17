@@ -5,6 +5,8 @@
  */
 
 import { Settings } from "@api/Settings";
+import { IconTypes, StarIcon } from "@components/Icons";
+import { AddonBadge, AddonBadgeTypes } from "@components/settings/AddonBadge";
 import { BackupAndRestoreTab, CloudTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VelocityTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
@@ -13,13 +15,18 @@ import { React } from "@webpack/common";
 
 import gitHash from "~git-hash";
 
+enum SectionVarient {
+    DESTRUCTIVE = "destructive",
+    PRIMARY = "primary"
+}
+
 type SectionType = "HEADER" | "DIVIDER" | "CUSTOM";
 type SectionTypes = Record<SectionType, SectionType>;
 
 export default definePlugin({
     name: "Settings",
     description: "Adds Settings UI and debug info",
-    authors: [Devs.Ven, Devs.Megu],
+    authors: [Devs.Velocity],
     required: true,
 
     patches: [
@@ -65,11 +72,10 @@ export default definePlugin({
     customSections: [] as ((SectionTypes: SectionTypes) => any)[],
 
     makeSettingsCategories(SectionTypes: SectionTypes) {
-        return [
+        const categories = [
             {
                 section: SectionTypes.HEADER,
-                label: "Velocity",
-                className: "vc-settings-header"
+                label: "Velocity"
             },
             {
                 section: "settings/tabs",
@@ -81,6 +87,7 @@ export default definePlugin({
                 section: "VelocityPlugins",
                 label: "Plugins",
                 element: PluginsTab,
+                icon: <AddonBadge text="BETA" icon={StarIcon(IconTypes.BADGE)()} type={AddonBadgeTypes.BRAND} />,
                 className: "vc-plugins"
             },
             {
@@ -93,7 +100,7 @@ export default definePlugin({
                 section: "VelocityUpdater",
                 label: "Updater",
                 element: UpdaterTab,
-                className: "vc-updater"
+                className: "vc-updater",
             },
             {
                 section: "VelocityCloud",
@@ -117,7 +124,9 @@ export default definePlugin({
             {
                 section: SectionTypes.DIVIDER
             }
-        ].filter(Boolean);
+        ];
+
+        return categories.filter(Boolean);
     },
 
     isRightSpot({ header, settings }: { header?: string; settings?: string[]; }) {
@@ -161,7 +170,6 @@ export default definePlugin({
 
         elements.push(...this.makeSettingsCategories(sectionTypes));
     },
-
     wrapSettingsHook(originalHook: (...args: any[]) => Record<string, unknown>[]) {
         return (...args: any[]) => {
             const elements = originalHook(...args);

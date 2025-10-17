@@ -12,12 +12,12 @@ import { MaskedLink, Tooltip } from "@webpack/common";
 
 export function GithubLinkIcon() {
     const theme = getTheme() === Theme.Light ? "#000000" : "#FFFFFF";
-    return <GithubIcon aria-hidden fill={theme} className={"vc-settings-modal-link-icon"} />;
+    return GithubIcon({ fill: theme, className: "vc-settings-modal-link-icon" })();
 }
 
 export function WebsiteLinkIcon() {
     const theme = getTheme() === Theme.Light ? "#000000" : "#FFFFFF";
-    return <WebsiteIcon aria-hidden fill={theme} className={"vc-settings-modal-link-icon"} />;
+    return WebsiteIcon({ fill: theme, className: "vc-settings-modal-link-icon" })();
 }
 
 interface Props {

@@ -23,10 +23,18 @@ export const IconTypes = {
     XLARGE: { height: 32, width: 32 },
     HUGE: { height: 48, width: 48 },
     DYNAMIC: { height: "1em", width: "1em" },
-    DEFAULT: { height: 24, width: 24, viewbox: "0 0 24 24" }
+    DEFAULT: { height: 24, width: 24, viewbox: "0 0 24 24" },
+    BADGE: { height: 14, width: 14, viewbox: "0 0 24 24" }
 } as const;
 
-function Icon({ height, width, viewBox, className, children, ...svgProps }: PropsWithChildren<BaseIconProps>) {
+function Icon({
+    height,
+    width,
+    viewBox,
+    className,
+    children,
+    ...svgProps
+}: PropsWithChildren<BaseIconProps>) {
     const type = Object.values(IconTypes).find(
         t => t.height === height && t.width === width
     );
@@ -34,31 +42,63 @@ function Icon({ height, width, viewBox, className, children, ...svgProps }: Prop
     const finalHeight = height ?? IconTypes.MEDIUM.height;
     const finalWidth = width ?? IconTypes.MEDIUM.width;
 
-    // if type has its own viewbox, use it — otherwise auto-generate
     const finalViewBox =
         viewBox ??
-        (type && "viewbox" in type ? type.viewbox : (() => {
-            const numHeight = typeof finalHeight === "number" ? finalHeight : 20;
-            const ratio = 24 / numHeight;
-            const viewBoxSize = 24 * ratio;
-            const offset = (viewBoxSize - 24) / 2;
-            return `${-offset} ${-offset} ${viewBoxSize} ${viewBoxSize}`;
-        })());
+        (type && "viewbox" in type
+            ? type.viewbox
+            : (() => {
+                const numHeight =
+                    typeof finalHeight === "number" ? finalHeight : 20;
+                const ratio = 24 / numHeight;
+                const viewBoxSize = 24 * ratio;
+                const offset = (viewBoxSize - 24) / 2;
+                return `${-offset} ${-offset} ${viewBoxSize} ${viewBoxSize}`;
+            })());
+
+    const ariaLabel = (svgProps as any)["aria-label"];
+
+    // if className already starts with vc-, skip adding vc-icon
+    const finalClass = className?.startsWith("vc-")
+        ? className
+        : classes(className, "vc-icon");
 
     return (
         <svg
-            className={classes(className, "vc-icon")}
+            className={finalClass}
             role="img"
             width={finalWidth}
             height={finalHeight}
             viewBox={finalViewBox}
             fill="currentColor"
+            aria-label={ariaLabel}
             {...svgProps}
         >
             {children}
         </svg>
     );
 }
+
+function createIcon(component: (props: IconProps) => JSX.Element) {
+    const wrapped = (props: IconProps = {}) => () => {
+        const name =
+            (wrapped as any).iconName ??
+            wrapped.name ??
+            "UnknownIcon";
+
+        const className = `vc-${name.replace(/Icon$/, "").toLowerCase()}-icon`;
+
+        return component({
+            ...props,
+            className,
+        });
+    };
+
+    return wrapped;
+}
+
+
+
+
 
 
 export const AppearanceIcon = (props: IconProps = {}) => () => (
@@ -286,7 +326,7 @@ export const CogWheel = (props: IconProps = {}) => () => (
     </Icon>
 );
 
-export const ReplyIcon = (props: IconProps) => () => (
+export const ReplyIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -295,10 +335,10 @@ export const ReplyIcon = (props: IconProps) => () => (
             d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z"
         />
     </Icon>
-);
+));
 
 
-export const DeleteIcon = (props: IconProps) => () => (
+export const DeleteIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -311,8 +351,7 @@ export const DeleteIcon = (props: IconProps) => () => (
             d="M5 6.99902V18.999C5 20.101 5.897 20.999 7 20.999H17C18.103 20.999 19 20.101 19 18.999V6.99902H5ZM11 17H9V11H11V17ZM15 17H13V11H15V17Z"
         />
     </Icon>
-);
-
+));
 
 export const PlusIcon = (props: IconProps) => () => (
     <Icon
@@ -449,7 +488,7 @@ export const CodeIcon = (props: IconProps) => () => (
 );
 
 
-export const StarIcon = (props: IconProps) => () => (
+export const StarIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -458,7 +497,7 @@ export const StarIcon = (props: IconProps) => () => (
             d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
         />
     </Icon>
-);
+));
 
 
 export const LightningIcon = (props: IconProps) => () => (
@@ -473,16 +512,18 @@ export const LightningIcon = (props: IconProps) => () => (
 );
 
 
-export const ClockIcon = (props: IconProps) => () => (
+export const ClockIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path
             fill="currentColor"
-            d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.7L16.2,16.2Z"
+            clipRule="evenodd"
+            fillRule="evenodd"
+            d="M12 23a11 11 0 1 0 0-22 11 11 0 0 0 0 22Zm1-18a1 1 0 1 0-2 0v7c0 .27.1.52.3.7l3 3a1 1 0 0 0 1.4-1.4L13 11.58V5Z"
         />
     </Icon>
-);
+));
 
 
 export const InviteIcon = (props: IconProps) => () => (
@@ -1132,7 +1173,7 @@ export const WarningIcon = (props: IconProps) => () => (
     </Icon>
 );
 
-export const SpeakerFull = (props: IconProps) => () => (
+export const SpeakerFull = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1141,9 +1182,9 @@ export const SpeakerFull = (props: IconProps) => () => (
             d="M12 3a1 1 0 0 0-1-1h-.06a1 1 0 0 0-.74.32L5.92 7H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.92l4.28 4.68a1 1 0 0 0 .74.32H11a1 1 0 0 0 1-1V3ZM15.1 20.75c-.58.14-1.1-.33-1.1-.92v-.03c0-.5.37-.92.85-1.05a7 7 0 0 0 0-13.5A1.11 1.11 0 0 1 14 4.2v-.03c0-.6.52-1.06 1.1-.92a9 9 0 0 1 0 17.5ZM15.16 16.51c-.57.28-1.16-.2-1.16-.83v-.14c0-.43.28-.8.63-1.02a3 3 0 0 0 0-5.04c-.35-.23-.63-.6-.63-1.02v-.14c0-.63.59-1.1 1.16-.83a5 5 0 0 1 0 9.02Z"
         />
     </Icon>
-);
+));
 
-export const SpeakerLow = (props: IconProps) => () => (
+export const SpeakerLow = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1152,9 +1193,9 @@ export const SpeakerLow = (props: IconProps) => () => (
             d="M12 3a1 1 0 0 0-1-1h-.06a1 1 0 0 0-.74.32L5.92 7H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.92l4.28 4.68a1 1 0 0 0 .74.32H11a1 1 0 0 0 1-1V3ZM15.18 15.36c-.55.35-1.18-.12-1.18-.78v-.27c0-.36.2-.67.45-.93a2 2 0 0 0 0-2.76c-.24-.26-.45-.57-.45-.93v-.27c0-.66.63-1.13 1.18-.78a4 4 0 0 1 0 6.72Z"
         />
     </Icon>
-);
+));
 
-export const SpeakerMute = (props: IconProps) => () => (
+export const SpeakerMute = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1163,4 +1204,12 @@ export const SpeakerMute = (props: IconProps) => () => (
             d="M12 3a1 1 0 0 0-1-1h-.06a1 1 0 0 0-.74.32L5.92 7H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.92l4.28 4.68a1 1 0 0 0 .74.32H11a1 1 0 0 0 1-1V3ZM22.7 8.3a1 1 0 0 0-1.4 0L19 10.58l-2.3-2.3a1 1 0 1 0-1.4 1.42L17.58 12l-2.3 2.3a1 1 0 0 0 1.42 1.4L19 13.42l2.3 2.3a1 1 0 0 0 1.4-1.42L20.42 12l2.3-2.3a1 1 0 0 0 0-1.4Z"
         />
     </Icon>
-);
+));
+
+(DeleteIcon as any).iconName = "DeleteIcon";
+(ClockIcon as any).iconName = "ClockIcon";
+(ReplyIcon as any).iconName = "ReplyIcon";
+(SpeakerMute as any).iconName = "SpeakerMute";
+(SpeakerLow as any).iconName = "SpeakerLow";
+(SpeakerFull as any).iconName = "SpeakerFull";
+(StarIcon as any).iconName = "StarIcon";

@@ -75,3 +75,11 @@
 .vc-updater-modal-close-button {
     float: right;
 }
+
+/* stylelint-disable selector-class-pattern */
+.side_aa8da2 .destructive_aa8da2.item_aa8da2:active:not(.disabled_aa8da2),
+.side_aa8da2 .destructive_aa8da2.selected_aa8da2.item_aa8da2:not(.disabled_aa8da2),
+.topPill_aa8da2 .destructive_aa8da2.item_aa8da2:active:not(.disabled_aa8da2),
+.topPill_aa8da2 .destructive_aa8da2.selected_aa8da2.item_aa8da2:not(.disabled_aa8da2) {
+    color: var(--text-danger) !important;
+}

@@ -2,6 +2,7 @@
     color: var(--status-warning);
 }
 
-.vc-delete-icon.vc-icon {
+
+.vc-icon[aria-label="Delete"] {
     color: var(--status-danger);
 }

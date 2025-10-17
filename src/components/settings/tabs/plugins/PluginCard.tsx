@@ -5,7 +5,7 @@
  */
 
 import { showNotice } from "@api/Notices";
-import { CogWheel, InfoIcon } from "@components/Icons";
+import { CogWheel, IconTypes, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
 import { proxyLazy } from "@utils/lazy";
 import { isObjectEmpty } from "@utils/misc";
@@ -99,9 +99,8 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
                     className={cl("info-button")}
                 >
                     {plugin.options && !isObjectEmpty(plugin.options)
-                        ? <CogWheel className={cl("info-icon")} />
-                        : <InfoIcon className={cl("info-icon")} />
-                    }
+                        ? CogWheel(IconTypes.DEFAULT)()
+                        : InfoIcon(IconTypes.DEFAULT)()}
                 </button>
             } />
     );
