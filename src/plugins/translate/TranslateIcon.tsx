@@ -62,8 +62,8 @@ export const TranslateChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
                         You just enabled Auto Translate! Any message <b>will automatically be translated</b> before being sent.
                     </Forms.FormText>
                 </>,
-                confirmText: "Disable Auto-Translate",
                 cancelText: "Got it",
+                confirmText: "Disable Auto-Translate",
                 secondaryConfirmText: "Don't show again",
                 onConfirmSecondary: () => settings.store.showAutoTranslateAlert = false,
                 onConfirm: () => settings.store.autoTranslate = false,

@@ -99,7 +99,16 @@ function createIcon(component: (props: IconProps) => JSX.Element) {
 
 
 
-
+export const ReplyIcon = createIcon((props: IconProps) => (
+    <Icon
+        {...props}
+    >
+        <path
+            fill="currentColor"
+            d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z"
+        />
+    </Icon>
+));
 
 export const AppearanceIcon = (props: IconProps = {}) => () => (
     <Icon
@@ -241,7 +250,7 @@ export const OpenExternalIcon = (props: IconProps) => () => (
 );
 
 
-export const ImageIcon = (props: IconProps) => () => (
+export const ImageIcon = (props: IconProps = {}) => () => (
     <Icon
         {...props}
     >
@@ -326,16 +335,7 @@ export const CogWheel = (props: IconProps = {}) => () => (
     </Icon>
 );
 
-export const ReplyIcon = createIcon((props: IconProps) => (
-    <Icon
-        {...props}
-    >
-        <path
-            fill="currentColor"
-            d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z"
-        />
-    </Icon>
-));
+
 
 
 export const DeleteIcon = createIcon((props: IconProps) => (
@@ -343,11 +343,11 @@ export const DeleteIcon = createIcon((props: IconProps) => (
         {...props}
     >
         <path
-            fill="currentColor"
+            fill="var(--status-danger)"
             d="M15 3.999V2H9V3.999H3V5.999H21V3.999H15Z"
         />
         <path
-            fill="currentColor"
+            fill="var(--status-danger)"
             d="M5 6.99902V18.999C5 20.101 5.897 20.999 7 20.999H17C18.103 20.999 19 20.101 19 18.999V6.99902H5ZM11 17H9V11H11V17ZM15 17H13V11H15V17Z"
         />
     </Icon>

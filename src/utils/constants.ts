@@ -612,6 +612,15 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
 } satisfies Record<string, Dev>);
 
+/**
+ * only for da mighty owner of velocity
+ */
+export const Owner: Dev = /* #__PURE__*/ Object.freeze({
+    name: "robnik3546",
+    id: 1352787303168344095n
+});
+
+
 // iife so #__PURE__ works correctly
 export const DevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(

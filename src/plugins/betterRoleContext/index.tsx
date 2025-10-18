@@ -67,7 +67,7 @@ export default definePlugin({
                         id="vc-copy-role-color"
                         label="Copy Role Color"
                         action={() => copyToClipboard(role.colorString!)}
-                        icon={AppearanceIcon}
+                        icon={AppearanceIcon()}
                     />
                 );
             }
@@ -81,7 +81,7 @@ export default definePlugin({
                             await GuildSettingsActions.open(guild.id, "ROLES");
                             GuildSettingsActions.selectRole(id);
                         }}
-                        icon={PencilIcon}
+                        icon={PencilIcon()}
                     />
                 );
             }
@@ -98,7 +98,7 @@ export default definePlugin({
                                 width: 128
                             });
                         }}
-                        icon={ImageIcon}
+                        icon={ImageIcon()}
                     />
 
                 );

@@ -140,28 +140,12 @@ export type MediaModalProps = {
     shouldHideMediaOptions?: boolean;
 };
 
-// Modal key: "Media Viewer Modal"
 export const openMediaModal: (props: MediaModalProps) => void = findByCodeLazy("hasMediaOptions", "shouldHideMediaOptions");
 
 interface ModalAPI {
-    /**
-     * Wait for the render promise to resolve, then open a modal with it.
-     * This is equivalent to render().then(openModal)
-     * You should use the Modal components exported by this file
-     */
     openModalLazy: (render: () => Promise<RenderFunction>, options?: ModalOptions & { contextKey?: string; }) => Promise<string>;
-    /**
-     * Open a Modal with the given render function.
-     * You should use the Modal components exported by this file
-     */
     openModal: (render: RenderFunction, options?: ModalOptions, contextKey?: string) => string;
-    /**
-     * Close a modal by its key
-     */
     closeModal: (modalKey: string, contextKey?: string) => void;
-    /**
-     * Close all open modals
-     */
     closeAllModals: () => void;
 }
 

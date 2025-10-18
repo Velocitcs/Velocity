@@ -25,6 +25,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { debounce } from "@shared/debounce";
 import { gitRemote } from "@shared/velocityUserAgent";
+import { openUserProfile } from "@utils/discord";
 import { proxyLazy } from "@utils/lazy";
 import { Margins } from "@utils/margins";
 import { classes, isObjectEmpty } from "@utils/misc";
@@ -32,7 +33,7 @@ import { ModalCloseButton, ModalContent, ModalHeader, ModalProps, ModalRoot, Mod
 import { OptionType, Plugin } from "@utils/types";
 import { User } from "@vencord/discord-types";
 import { findByPropsLazy } from "@webpack";
-import { Clickable, FluxDispatcher, Forms, React, Text, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import { Clickable, ContextMenuApi, FluxDispatcher, Forms, Menu, React, Text, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 import { Constructor } from "type-fest";
 
 import { PluginMeta } from "~plugins";
@@ -190,6 +191,17 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                             <Clickable
                                                 className={AvatarStyles.clickableAvatar}
                                                 onClick={() => openContributorModal(user)}
+                                                onContextMenu={e => {
+                                                    ContextMenuApi.openContextMenu(e, () => (
+                                                        <Menu.Menu navId="author-context" onClose={() => ContextMenuApi.closeContextMenu()}>
+                                                            <Menu.MenuItem
+                                                                id="open-profile"
+                                                                label="Open Profile"
+                                                                action={() => openUserProfile(user.id)}
+                                                            />
+                                                        </Menu.Menu>
+                                                    ));
+                                                }}
                                                 onMouseEnter={onMouseEnter}
                                                 onMouseLeave={onMouseLeave}
                                             >
