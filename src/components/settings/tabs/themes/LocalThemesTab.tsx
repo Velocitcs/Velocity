@@ -7,7 +7,7 @@
 import { Settings, useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
 import { Divider } from "@components/Divider";
-import { DeleteIcon, FolderIcon, IconTypes, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
+import { DeleteIcon, FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { AddonCard } from "@components/settings/AddonCard";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
@@ -125,30 +125,30 @@ export function LocalThemesTab() {
                                         />
                                     </span>
                                 }
-                                Icon={PlusIcon(IconTypes.DEFAULT)}
+                                Icon={PlusIcon()}
                             />
                         ) : (
                             <QuickAction
                                 text="Open Themes Folder"
                                 action={() => VelocityNative.themes.openFolder()}
-                                Icon={FolderIcon(IconTypes.DEFAULT)}
+                                Icon={FolderIcon()}
                             />
                         )}
                         <QuickAction
                             text="Load missing Themes"
                             action={refreshLocalThemes}
-                            Icon={RestartIcon(IconTypes.DEFAULT)}
+                            Icon={RestartIcon()}
                         />
                         <QuickAction
                             text="Edit QuickCSS"
                             action={() => VelocityNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon(IconTypes.DEFAULT)}
+                            Icon={PaintbrushIcon()}
                         />
                         {Velocity.Plugins.isPluginEnabled(ClientThemePlugin.name) && (
                             <QuickAction
                                 text="Edit ClientTheme"
                                 action={() => openPluginModal(ClientThemePlugin)}
-                                Icon={PencilIcon(IconTypes.DEFAULT)}
+                                Icon={PencilIcon()}
                             />
                         )}
                     </>
@@ -182,7 +182,7 @@ export function LocalThemesTab() {
                                         });
                                     }}
                                 >
-                                    {DeleteIcon(IconTypes.DEFAULT)()}
+                                    {DeleteIcon()()}
                                 </div>
                             }
                         />

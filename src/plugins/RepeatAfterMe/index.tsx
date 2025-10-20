@@ -7,7 +7,7 @@
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { IconTypes, ReplyIcon } from "@components/Icons";
+import { ReplyIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
@@ -53,7 +53,7 @@ const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
             onClick={toggle}
         >
             <div style={{ position: "relative" }}>
-                {ReplyIcon(IconTypes.DEFAULT)()}
+                {ReplyIcon()()}
                 {!isEnabled && (
                     <svg width={24} height={24} viewBox="0 0 24 24" style={{ position: "absolute", top: 0, left: 0 }}>
                         <path fill="var(--status-danger)" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />

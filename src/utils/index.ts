@@ -24,6 +24,7 @@ export * from "./constants";
 export * from "./cspViolations";
 export * from "./discord";
 export * from "./guards";
+export * from "./icon";
 export * from "./intlHash";
 export * from "./lazy";
 export * from "./lazyReact";

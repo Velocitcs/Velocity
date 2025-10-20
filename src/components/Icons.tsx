@@ -15,60 +15,23 @@ interface BaseIconProps extends IconProps {
 
 type IconProps = JSX.IntrinsicElements["svg"];
 
-export const IconTypes = {
-    TINY: { height: 12, width: 12 },
-    SMALL: { height: 16, width: 16 },
-    MEDIUM: { height: 20, width: 20 },
-    LARGE: { height: 24, width: 24 },
-    XLARGE: { height: 32, width: 32 },
-    HUGE: { height: 48, width: 48 },
-    DYNAMIC: { height: "1em", width: "1em" },
-    DEFAULT: { height: 24, width: 24, viewbox: "0 0 24 24" },
-    BADGE: { height: 14, width: 14, viewbox: "0 0 24 24" }
-} as const;
-
 function Icon({
-    height,
-    width,
-    viewBox,
-    className,
+    height = 24,
+    width = 24,
+    viewBox = "0 0 24 24",
+    className = "vc-icon",
     children,
     ...svgProps
 }: PropsWithChildren<BaseIconProps>) {
-    const type = Object.values(IconTypes).find(
-        t => t.height === height && t.width === width
-    );
-
-    const finalHeight = height ?? IconTypes.MEDIUM.height;
-    const finalWidth = width ?? IconTypes.MEDIUM.width;
-
-    const finalViewBox =
-        viewBox ??
-        (type && "viewbox" in type
-            ? type.viewbox
-            : (() => {
-                const numHeight =
-                    typeof finalHeight === "number" ? finalHeight : 20;
-                const ratio = 24 / numHeight;
-                const viewBoxSize = 24 * ratio;
-                const offset = (viewBoxSize - 24) / 2;
-                return `${-offset} ${-offset} ${viewBoxSize} ${viewBoxSize}`;
-            })());
-
     const ariaLabel = (svgProps as any)["aria-label"];
-
-    // if className already starts with vc-, skip adding vc-icon
-    const finalClass = className?.startsWith("vc-")
-        ? className
-        : classes(className, "vc-icon");
 
     return (
         <svg
-            className={finalClass}
+            className={className}
             role="img"
-            width={finalWidth}
-            height={finalHeight}
-            viewBox={finalViewBox}
+            width={width}
+            height={height}
+            viewBox={viewBox}
             fill="currentColor"
             aria-label={ariaLabel}
             {...svgProps}
@@ -79,24 +42,8 @@ function Icon({
 }
 
 function createIcon(component: (props: IconProps) => JSX.Element) {
-    const wrapped = (props: IconProps = {}) => () => {
-        const name =
-            (wrapped as any).iconName ??
-            wrapped.name ??
-            "UnknownIcon";
-
-        const className = `vc-${name.replace(/Icon$/, "").toLowerCase()}-icon`;
-
-        return component({
-            ...props,
-            className,
-        });
-    };
-
-    return wrapped;
+    return (props: IconProps = {}) => () => component(props);
 }
-
-
 
 
 export const ReplyIcon = createIcon((props: IconProps) => (
@@ -110,7 +57,7 @@ export const ReplyIcon = createIcon((props: IconProps) => (
     </Icon>
 ));
 
-export const AppearanceIcon = (props: IconProps = {}) => () => (
+export const AppearanceIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -118,9 +65,9 @@ export const AppearanceIcon = (props: IconProps = {}) => () => (
             <path fill="currentColor" d="M 12,0 C 5.3733333,0 0,5.3733333 0,12 c 0,6.626667 5.3733333,12 12,12 1.106667,0 2,-0.893333 2,-2 0,-0.52 -0.2,-0.986667 -0.52,-1.346667 -0.306667,-0.346666 -0.506667,-0.813333 -0.506667,-1.32 0,-1.106666 0.893334,-2 2,-2 h 2.36 C 21.013333,17.333333 24,14.346667 24,10.666667 24,4.7733333 18.626667,0 12,0 Z M 4.6666667,12 c -1.1066667,0 -2,-0.893333 -2,-2 0,-1.1066667 0.8933333,-2 2,-2 1.1066666,0 2,0.8933333 2,2 0,1.106667 -0.8933334,2 -2,2 z M 8.666667,6.6666667 c -1.106667,0 -2.0000003,-0.8933334 -2.0000003,-2 0,-1.1066667 0.8933333,-2 2.0000003,-2 1.106666,0 2,0.8933333 2,2 0,1.1066666 -0.893334,2 -2,2 z m 6.666666,0 c -1.106666,0 -2,-0.8933334 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.1066666 -0.893333,2 -2,2 z m 4,5.3333333 c -1.106666,0 -2,-0.893333 -2,-2 0,-1.1066667 0.893334,-2 2,-2 1.106667,0 2,0.8933333 2,2 0,1.106667 -0.893333,2 -2,2 z" />
         </g>
     </Icon>
-);
+));
 
-export const PencilIcon = (props: IconProps = {}) => () => (
+export const PencilIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -129,9 +76,9 @@ export const PencilIcon = (props: IconProps = {}) => () => (
             d="m13.96 5.46 4.58 4.58a1 1 0 0 0 1.42 0l1.38-1.38a2 2 0 0 0 0-2.82l-3.18-3.18a2 2 0 0 0-2.82 0l-1.38 1.38a1 1 0 0 0 0 1.42ZM2.11 20.16l.73-4.22a3 3 0 0 1 .83-1.61l7.87-7.87a1 1 0 0 1 1.42 0l4.58 4.58a1 1 0 0 1 0 1.42l-7.87 7.87a3 3 0 0 1-1.6.83l-4.23.73a1.5 1.5 0 0 1-1.73-1.73Z"
         />
     </Icon>
-);
+));
 
-export const LogIcon = (props: IconProps = {}) => () => (
+export const LogIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -142,9 +89,9 @@ export const LogIcon = (props: IconProps = {}) => () => (
             d="M3.11 8H6v10.82c0 .86.37 1.68 1 2.27.46.43 1.02.71 1.63.84A1 1 0 0 0 9 22h10a4 4 0 0 0 4-4v-1a2 2 0 0 0-2-2h-1V5a3 3 0 0 0-3-3H4.67c-.87 0-1.7.32-2.34.9-.63.6-1 1.42-1 2.28 0 .71.3 1.35.52 1.75a5.35 5.35 0 0 0 .48.7l.01.01h.01L3.11 7l-.76.65a1 1 0 0 0 .76.35Zm1.56-4c-.38 0-.72.14-.97.37-.24.23-.37.52-.37.81a1.69 1.69 0 0 0 .3.82H6v-.83c0-.29-.13-.58-.37-.8C5.4 4.14 5.04 4 4.67 4Zm5 13a3.58 3.58 0 0 1 0 3H19a2 2 0 0 0 2-2v-1H9.66ZM3.86 6.35ZM11 8a1 1 0 1 0 0 2h5a1 1 0 1 0 0-2h-5Zm-1 5a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2h-5a1 1 0 0 1-1-1Z"
         />
     </Icon>
-);
+));
 
-export const LinkIcon = (props: IconProps) => () => (
+export const LinkIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -152,10 +99,10 @@ export const LinkIcon = (props: IconProps) => () => (
             <path fill="currentColor" d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24 2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24zm2.82-4.24c.39-.39 1.03-.39 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0 5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24 2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24.973.973 0 0 1 0-1.42z" />
         </g>
     </Icon>
-);
+));
 
 
-export const ChromeIcon = (props: IconProps) => () => (
+export const ChromeIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -164,64 +111,62 @@ export const ChromeIcon = (props: IconProps) => () => (
         <path d="M256,345.5c-33.6,0-61.6-17.91-77.29-44.79L76,123.05l-.14-.24A224,224,0,0,0,207.4,474.55l0-.05,77.69-134.6A84.13,84.13,0,0,1,256,345.5Z" />
         <path d="M91.29,104.57l77.35,133.25A89.19,89.19,0,0,1,256,166H461.17a246.51,246.51,0,0,0-25.78-43.94l.12.08A245.26,245.26,0,0,1,461.17,166h.17a245.91,245.91,0,0,0-25.66-44,2.63,2.63,0,0,1-.35-.26A223.93,223.93,0,0,0,91.14,104.34l.14.24Z" />
     </Icon>
-);
+));
 
-export const EdgeIcon = (props: IconProps) => () => (
+export const EdgeIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path d="M21.86 17.86q.14 0 .25.12.1.13.1.25t-.11.33l-.32.46-.43.53-.44.5q-.21.25-.38.42l-.22.23q-.58.53-1.34 1.04-.76.51-1.6.91-.86.4-1.74.64t-1.67.24q-.90 0-1.69-.28-.8-.28-1.48-.78-.68-.5-1.22-1.17-.53-.66-.92-1.44-.38-.77-.58-1.6-.2-.83-.2-1.67 0-1 .32-1.96.33-.97.87-1.8.14.95.55 1.77.41.82 1.02 1.5.6.68 1.38 1.21.78.54 1.64.9.86.36 1.77.56.92.2 1.8.2 1.12 0 2.18-.24 1.06-.23 2.06-.72l.2-.1.2-.05zm-15.5-1.27q0 1.1.27 2.15.27 1.06.78 2.03.51.96 1.24 1.77.74.82 1.66 1.4-1.47-.2-2.80-.74-1.33-.55-2.48-1.37-1.15-.83-2.08-1.9-.92-1.07-1.58-2.33T.36 14.94Q0 13.54 0 12.06q0-.81.32-1.49.31-.68.83-1.23.53-.55 1.2-.96.66-.4 1.35-.66.74-.27 1.5-.39.78-.12 1.55-.12.70 0 1.42.1.72.12 1.4.35.68.23 1.32.57.63.35 1.16.83-.35 0-.70.07-.33.07-.65.23v-.02q-.63.28-1.20.74-.57.46-1.05 1.04-.48.58-.87 1.26-.38.67-.65 1.39-.27.71-.42 1.44-.15.72-.15 1.38zM11.96.06q1.7 0 3.33.39 1.63.38 3.07 1.15 1.43.77 2.62 1.93 1.18 1.16 1.98 2.70.49.94.76 1.96.28 1 .28 2.08 0 .89-.23 1.70-.24.8-.69 1.48-.45.68-1.10 1.22-.64.53-1.45.88-.54.24-1.11.36-.58.13-1.16.13-.42 0-.97-.03-.54-.03-1.10-.12-.55-.10-1.05-.28-.5-.19-.84-.5-.12-.09-.23-.24-.1-.16-.10-.33 0-.15.16-.35.16-.2.35-.5.2-.28.36-.68.16-.4.16-.95 0-1.06-.40-1.96-.4-.91-1.06-1.64-.66-.74-1.52-1.28-.86-.55-1.79-.89-.84-.30-1.72-.44-.87-.14-1.76-.14-1.55 0-3.06.45T.94 7.55q.71-1.74 1.81-3.13 1.10-1.38 2.52-2.35Q6.68 1.1 8.37.58q1.70-.52 3.58-.52Z" />
     </Icon>
-);
+));
 
-export const FirefoxIcon = (props: IconProps) => () => (
+export const FirefoxIcon = createIcon((props: IconProps) => (
 
     <Icon
         {...props}
     >
         <path d="M130.22 127.548C130.38 127.558 130.3 127.558 130.22 127.548V127.548ZM481.64 172.898C471.03 147.398 449.56 119.898 432.7 111.168C446.42 138.058 454.37 165.048 457.4 185.168C457.405 185.306 457.422 185.443 457.45 185.578C429.87 116.828 383.098 89.1089 344.9 28.7479C329.908 5.05792 333.976 3.51792 331.82 4.08792L331.7 4.15792C284.99 30.1109 256.365 82.5289 249.12 126.898C232.503 127.771 216.219 131.895 201.19 139.035C199.838 139.649 198.736 140.706 198.066 142.031C197.396 143.356 197.199 144.87 197.506 146.323C197.7 147.162 198.068 147.951 198.586 148.639C199.103 149.327 199.76 149.899 200.512 150.318C201.264 150.737 202.096 150.993 202.954 151.071C203.811 151.148 204.676 151.045 205.491 150.768L206.011 150.558C221.511 143.255 238.408 139.393 255.541 139.238C318.369 138.669 352.698 183.262 363.161 201.528C350.161 192.378 326.811 183.338 304.341 187.248C392.081 231.108 368.541 381.784 246.951 376.448C187.487 373.838 149.881 325.467 146.421 285.648C146.421 285.648 157.671 243.698 227.041 243.698C234.541 243.698 255.971 222.778 256.371 216.698C256.281 214.698 213.836 197.822 197.281 181.518C188.434 172.805 184.229 168.611 180.511 165.458C178.499 163.75 176.392 162.158 174.201 160.688C168.638 141.231 168.399 120.638 173.51 101.058C148.45 112.468 128.96 130.508 114.8 146.428H114.68C105.01 134.178 105.68 93.7779 106.25 85.3479C106.13 84.8179 99.022 89.0159 98.1 89.6579C89.5342 95.7103 81.5528 102.55 74.26 110.088C57.969 126.688 30.128 160.242 18.76 211.318C14.224 231.701 12 255.739 12 263.618C12 398.318 121.21 507.508 255.92 507.508C376.56 507.508 478.939 420.281 496.35 304.888C507.922 228.192 481.64 173.82 481.64 172.898Z" />
     </Icon>
-);
+));
 
-export function MobileIcon(props: IconProps) {
-    return (
-        <Icon
-            {...props}
-            className={classes(props.className, "vc-mobile-icon")}
-            viewBox="0 0 24 24"
-        >
-            <path fill="currentColor" d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z" />
-        </Icon>
-    );
-}
+export const MobileIcon = createIcon((props: IconProps) => (
+    <Icon
+        {...props}
+        className={classes(props.className, "vc-mobile-icon")}
+        viewBox="0 0 24 24"
+    >
+        <path fill="currentColor" d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z" />
+    </Icon>
+));
 
-export const IEIcon = (props: IconProps) => () => (
+export const IEIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path d="M483.049 159.706c10.855-24.575 21.424-60.438 21.424-87.871 0-72.722-79.641-98.371-209.673-38.577-107.632-7.181-211.221 73.67-237.098 186.457 30.852-34.862 78.271-82.298 121.977-101.158C125.404 166.85 79.128 228.002 43.992 291.725 23.246 329.651 0 390.94 0 436.747c0 98.575 92.854 86.5 180.251 42.006 31.423 15.43 66.559 15.573 101.695 15.573 97.124 0 184.249-54.294 216.814-146.022H377.927c-52.509 88.593-196.819 52.996-196.819-47.436H509.9c6.407-43.581-1.655-95.715-26.851-141.162zM64.559 346.877c17.711 51.15 53.703 95.871 100.266 123.304-88.741 48.94-173.267 29.096-100.266-123.304zm115.977-108.873c2-55.151 50.276-94.871 103.98-94.871 53.418 0 101.981 39.72 103.981 94.871H180.536zm184.536-187.6c21.425-10.287 48.563-22.003 72.558-22.003 31.422 0 54.274 21.717 54.274 53.722 0 20.003-7.427 49.007-14.569 67.867-26.28-42.292-65.986-81.584-112.263-99.586z" />
     </Icon>
-);
+));
 
-export const OperaIcon = (props: IconProps) => () => (
+export const OperaIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path d="M313.9 32.7c-170.2 0-252.6 223.8-147.5 355.1 36.5 45.4 88.6 75.6 147.5 75.6 36.3 0 70.3-11.1 99.4-30.4-43.8 39.2-101.9 63-165.3 63-3.9 0-8 0-11.9-.3C104.6 489.6 0 381.1 0 248 0 111 111 0 248 0h.8c63.1.3 120.7 24.1 164.4 63.1-29-19.4-63.1-30.4-99.3-30.4zm101.8 397.7c-40.9 24.7-90.7 23.6-132-5.8 56.2-20.5 97.7-91.6 97.7-176.6 0-84.7-41.2-155.8-97.4-176.6 41.8-29.2 91.2-30.3 132.9-5 105.9 98.7 105.5 265.7-1.2 364z" />
     </Icon>
-);
+));
 
 
-export const SafariIcon = (props: IconProps) => () => (
+export const SafariIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path d="M274.69,274.69l-37.38-37.38L166,346ZM256,8C119,8,8,119,8,256S119,504,256,504,504,393,504,256,393,8,256,8ZM411.85,182.79l14.78-6.13A8,8,0,0,1,437.08,181h0a8,8,0,0,1-4.33,10.46L418,197.57a8,8,0,0,1-10.45-4.33h0A8,8,0,0,1,411.85,182.79ZM314.43,94l6.12-14.78A8,8,0,0,1,331,74.92h0a8,8,0,0,1,4.33,10.45l-6.13,14.78a8,8,0,0,1-10.45,4.33h0A8,8,0,0,1,314.43,94ZM256,60h0a8,8,0,0,1,8,8V84a8,8,0,0,1-8,8h0a8,8,0,0,1-8-8V68A8,8,0,0,1,256,60ZM181,74.92a8,8,0,0,1,10.46,4.33L197.57,94a8,8,0,1,1-14.78,6.12l-6.13-14.78A8,8,0,0,1,181,74.92Zm-63.58,42.49h0a8,8,0,0,1,11.31,0L140,128.72A8,8,0,0,1,140,140h0a8,8,0,0,1-11.31,0l-11.31-11.31A8,8,0,0,1,117.41,117.41ZM60,256h0a8,8,0,0,1,8-8H84a8,8,0,0,1,8,8h0a8,8,0,0,1-8,8H68A8,8,0,0,1,60,256Zm40.15,73.21-14.78,6.13A8,8,0,0,1,74.92,331h0a8,8,0,0,1,4.33-10.46L94,314.43a8,8,0,0,1,10.45,4.33h0A8,8,0,0,1,100.15,329.21Zm4.33-136h0A8,8,0,0,1,94,197.57l-14.78-6.12A8,8,0,0,1,74.92,181h0a8,8,0,0,1,10.45-4.33l14.78,6.13A8,8,0,0,1,104.48,193.24ZM197.57,418l-6.12,14.78a8,8,0,0,1-14.79-6.12l6.13-14.78A8,8,0,1,1,197.57,418ZM264,444a8,8,0,0,1-8,8h0a8,8,0,0,1-8-8V428a8,8,0,0,1,8-8h0a8,8,0,0,1,8,8Zm67-6.92h0a8,8,0,0,1-10.46-4.33L314.43,418a8,8,0,0,1,4.33-10.45h0a8,8,0,0,1,10.45,4.33l6.13,14.78A8,8,0,0,1,331,437.08Zm63.58-42.49h0a8,8,0,0,1-11.31,0L372,383.28A8,8,0,0,1,372,372h0a8,8,0,0,1,11.31,0l11.31,11.31A8,8,0,0,1,394.59,394.59ZM286.25,286.25,110.34,401.66,225.75,225.75,401.66,110.34ZM437.08,331h0a8,8,0,0,1-10.45,4.33l-14.78-6.13a8,8,0,0,1-4.33-10.45h0A8,8,0,0,1,418,314.43l14.78,6.12A8,8,0,0,1,437.08,331ZM444,264H428a8,8,0,0,1-8-8h0a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8h0A8,8,0,0,1,444,264Z" />
     </Icon>
-);
+));
 
 
-export const UnknownIcon = (props: IconProps) => () => (
+export const UnknownIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
         className={classes(props.className, "vc-unknown-icon")}
@@ -229,37 +174,37 @@ export const UnknownIcon = (props: IconProps) => () => (
     >
         <path fillRule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14Z" />
     </Icon>
-);
+));
 
 
-export const CopyIcon = (props: IconProps) => () => (
+export const CopyIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fill="currentColor" d="M3 16a1 1 0 0 1-1-1v-5a8 8 0 0 1 8-8h5a1 1 0 0 1 1 1v.5a.5.5 0 0 1-.5.5H10a6 6 0 0 0-6 6v5.5a.5.5 0 0 1-.5.5H3ZM6 18a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-4h-3a5 5 0 0 1-5-5V6h-4a4 4 0 0 0-4 4v8ZM21.73 12a3 3 0 0 0-.6-.88l-4.25-4.24a3 3 0 0 0-.88-.61V9a3 3 0 0 0 3 3h2.73Z" />
     </Icon>
-);
+));
 
-export const OpenExternalIcon = (props: IconProps) => () => (
+export const OpenExternalIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fill="currentColor" d="M15 2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0V4.41l-4.3 4.3a1 1 0 1 1-1.4-1.42L19.58 3H16a1 1 0 0 1-1-1Z" />
         <path fill="currentColor" d="M5 2a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-6a1 1 0 1 0-2 0v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6a1 1 0 1 0 0-2H5Z" />
     </Icon>
-);
+));
 
 
-export const ImageIcon = (props: IconProps = {}) => () => (
+export const ImageIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fill="currentColor" d="M21,19V5c0,-1.1 -0.9,-2 -2,-2H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2zM8.5,13.5l2.5,3.01L14.5,12l4.5,6H5l3.5,-4.5z" />
     </Icon>
-);
+));
 
 
-export const InfoIcon = (props: IconProps) => () => (
+export const InfoIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -269,9 +214,9 @@ export const InfoIcon = (props: IconProps) => () => (
             d="M23 12a11 11 0 1 1-22 0 11 11 0 0 1 22 0Zm-9.5-4.75a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0Zm-.77 3.96a1 1 0 1 0-1.96-.42l-1.04 4.86a2.77 2.77 0 0 0 4.31 2.83l.24-.17a1 1 0 1 0-1.16-1.62l-.24.17a.77.77 0 0 1-1.2-.79l1.05-4.86Z" clipRule="evenodd"
         />
     </Icon>
-);
+));
 
-export const OwnerCrownIcon = (props: IconProps) => () => (
+export const OwnerCrownIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -282,9 +227,9 @@ export const OwnerCrownIcon = (props: IconProps) => () => (
             d="M13.6572 5.42868C13.8879 5.29002 14.1806 5.30402 14.3973 5.46468C14.6133 5.62602 14.7119 5.90068 14.6473 6.16202L13.3139 11.4954C13.2393 11.7927 12.9726 12.0007 12.6666 12.0007H3.33325C3.02725 12.0007 2.76058 11.792 2.68592 11.4954L1.35258 6.16202C1.28792 5.90068 1.38658 5.62602 1.60258 5.46468C1.81992 5.30468 2.11192 5.29068 2.34325 5.42868L5.13192 7.10202L7.44592 3.63068C7.46173 3.60697 7.48377 3.5913 7.50588 3.57559C7.5192 3.56612 7.53255 3.55663 7.54458 3.54535L6.90258 2.90268C6.77325 2.77335 6.77325 2.56068 6.90258 2.43135L7.76458 1.56935C7.89392 1.44002 8.10658 1.44002 8.23592 1.56935L9.09792 2.43135C9.22725 2.56068 9.22725 2.77335 9.09792 2.90268L8.45592 3.54535C8.46794 3.55686 8.48154 3.56651 8.49516 3.57618C8.51703 3.5917 8.53897 3.60727 8.55458 3.63068L10.8686 7.10202L13.6572 5.42868ZM2.66667 12.6673H13.3333V14.0007H2.66667V12.6673Z"
         />
     </Icon>
-);
+));
 
-export const ScreenshareIcon = (props: IconProps) => () => (
+export const ScreenshareIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -293,34 +238,34 @@ export const ScreenshareIcon = (props: IconProps) => () => (
             d="M2 4.5C2 3.397 2.897 2.5 4 2.5H20C21.103 2.5 22 3.397 22 4.5V15.5C22 16.604 21.103 17.5 20 17.5H13V19.5H17V21.5H7V19.5H11V17.5H4C2.897 17.5 2 16.604 2 15.5V4.5ZM13.2 14.3375V11.6C9.864 11.6 7.668 12.6625 6 15C6.672 11.6625 8.532 8.3375 13.2 7.6625V5L18 9.6625L13.2 14.3375Z"
         />
     </Icon>
-);
+));
 
-export const ImageVisible = (props: IconProps) => () => (
+export const ImageVisible = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fill="currentColor" d="M5 21q-.825 0-1.413-.587Q3 19.825 3 19V5q0-.825.587-1.413Q4.175 3 5 3h14q.825 0 1.413.587Q21 4.175 21 5v14q0 .825-.587 1.413Q19.825 21 19 21Zm0-2h14V5H5v14Zm1-2h12l-3.75-5-3 4L9 13Zm-1 2V5v14Z" />
     </Icon>
-);
+));
 
 
-export const ImageInvisible = (props: IconProps) => () => (
+export const ImageInvisible = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fill="currentColor" d="m21 18.15-2-2V5H7.85l-2-2H19q.825 0 1.413.587Q21 4.175 21 5Zm-1.2 4.45L18.2 21H5q-.825 0-1.413-.587Q3 19.825 3 19V5.8L1.4 4.2l1.4-1.4 18.4 18.4ZM6 17l3-4 2.25 3 .825-1.1L5 7.825V19h11.175l-2-2Zm7.425-6.425ZM10.6 13.4Z" />
     </Icon>
-);
+));
 
 
-export const Microphone = (props: IconProps) => () => (
+export const Microphone = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
         <path fillRule="evenodd" clipRule="evenodd" d="M14.99 11C14.99 12.66 13.66 14 12 14C10.34 14 9 12.66 9 11V5C9 3.34 10.34 2 12 2C13.66 2 15 3.34 15 5L14.99 11ZM12 16.1C14.76 16.1 17.3 14 17.3 11H19C19 14.42 16.28 17.24 13 17.72V21H11V17.72C7.72 17.23 5 14.41 5 11H6.7C6.7 14 9.24 16.1 12 16.1ZM12 4C11.2 4 11 4.66667 11 5V11C11 11.3333 11.2 12 12 12C12.8 12 13 11.3333 13 11V5C13 4.66667 12.8 4 12 4Z" fill="currentColor" />
         <path fillRule="evenodd" clipRule="evenodd" d="M14.99 11C14.99 12.66 13.66 14 12 14C10.34 14 9 12.66 9 11V5C9 3.34 10.34 2 12 2C13.66 2 15 3.34 15 5L14.99 11ZM12 16.1C14.76 16.1 17.3 14 17.3 11H19C19 14.42 16.28 17.24 13 17.72V22H11V17.72C7.72 17.23 5 14.41 5 11H6.7C6.7 14 9.24 16.1 12 16.1Z" fill="currentColor" />
     </Icon >
-);
+));
 
 export const CogWheel = (props: IconProps = {}) => () => (
     <Icon
@@ -334,9 +279,6 @@ export const CogWheel = (props: IconProps = {}) => () => (
         />
     </Icon>
 );
-
-
-
 
 export const DeleteIcon = createIcon((props: IconProps) => (
     <Icon
@@ -353,7 +295,7 @@ export const DeleteIcon = createIcon((props: IconProps) => (
     </Icon>
 ));
 
-export const PlusIcon = (props: IconProps) => () => (
+export const PlusIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -363,10 +305,10 @@ export const PlusIcon = (props: IconProps) => () => (
             points="15 10 10 10 10 15 8 15 8 10 3 10 3 8 8 8 8 3 10 3 10 8 15 8"
         />
     </Icon>
-);
+));
 
 
-export const NoEntrySignIcon = (props: IconProps) => () => (
+export const NoEntrySignIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -379,10 +321,10 @@ export const NoEntrySignIcon = (props: IconProps) => () => (
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"
         />
     </Icon>
-);
+));
 
 
-export const SafetyIcon = (props: IconProps) => () => (
+export const SafetyIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -393,11 +335,10 @@ export const SafetyIcon = (props: IconProps) => () => (
             d="M4.27 5.22A2.66 2.66 0 0 0 3 7.5v2.3c0 5.6 3.3 10.68 8.42 12.95.37.17.79.17 1.16 0A14.18 14.18 0 0 0 21 9.78V7.5c0-.93-.48-1.78-1.27-2.27l-6.17-3.76a3 3 0 0 0-3.12 0L4.27 5.22ZM6 7.68l6-3.66V12H6.22C6.08 11.28 6 10.54 6 9.78v-2.1Zm6 12.01V12h5.78A11.19 11.19 0 0 1 12 19.7Z"
         />
     </Icon>
+));
 
-);
 
-
-export const NotesIcon = (props: IconProps) => () => (
+export const NotesIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -412,10 +353,10 @@ export const NotesIcon = (props: IconProps) => () => (
             d="M19 4.49996V4.99996C19 6.65681 17.6569 7.99996 16 7.99996H8C6.34315 7.99996 5 6.65681 5 4.99996V4.49996C5 4.22382 4.77446 3.99559 4.50209 4.04109C3.08221 4.27826 2 5.51273 2 6.99996V19C2 20.6568 3.34315 22 5 22H19C20.6569 22 22 20.6568 22 19V6.99996C22 5.51273 20.9178 4.27826 19.4979 4.04109C19.2255 3.99559 19 4.22382 19 4.49996ZM8 12C7.44772 12 7 12.4477 7 13C7 13.5522 7.44772 14 8 14H16C16.5523 14 17 13.5522 17 13C17 12.4477 16.5523 12 16 12H8ZM7 17C7 16.4477 7.44772 16 8 16H13C13.5523 16 14 16.4477 14 17C14 17.5522 13.5523 18 13 18H8C7.44772 18 7 17.5522 7 17Z"
         />
     </Icon>
-);
+));
 
 
-export const FolderIcon = (props: IconProps) => () => (
+export const FolderIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -424,11 +365,11 @@ export const FolderIcon = (props: IconProps) => () => (
             d="M2 5a3 3 0 0 1 3-3h3.93a2 2 0 0 1 1.66.9L12 5h7a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5Z"
         />
     </Icon>
-);
+));
 
 
 
-export const RestartIcon = (props: IconProps) => () => (
+export const RestartIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -437,9 +378,9 @@ export const RestartIcon = (props: IconProps) => () => (
             d="M4 12a8 8 0 0 1 14.93-4H15a1 1 0 1 0 0 2h6a1 1 0 0 0 1-1V3a1 1 0 1 0-2 0v3a9.98 9.98 0 0 0-18 6 10 10 0 0 0 16.29 7.78 1 1 0 0 0-1.26-1.56A8 8 0 0 1 4 12Z"
         />
     </Icon>
-);
+));
 
-export const PaintbrushIcon = (props: IconProps) => () => (
+export const PaintbrushIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -450,9 +391,9 @@ export const PaintbrushIcon = (props: IconProps) => () => (
             d="M15.35 7.24C15.9 6.67 16 5.8 16 5a3 3 0 1 1 3 3c-.8 0-1.67.09-2.24.65a1.5 1.5 0 0 0 0 2.11l1.12 1.12a3 3 0 0 1 0 4.24l-5 5a3 3 0 0 1-4.25 0l-5.76-5.75a3 3 0 0 1 0-4.24l4.04-4.04.97-.97a3 3 0 0 1 4.24 0l1.12 1.12c.58.58 1.52.58 2.1 0ZM6.9 9.9 4.3 12.54a1 1 0 0 0 0 1.42l2.17 2.17.83-.84a1 1 0 0 1 1.42 1.42l-.84.83.59.59 1.83-1.84a1 1 0 0 1 1.42 1.42l-1.84 1.83.17.17a1 1 0 0 0 1.42 0l2.63-2.62L6.9 9.9Z"
         />
     </Icon>
-);
+));
 
-export const GithubIcon = (props: IconProps) => () => (
+export const GithubIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
         viewBox="-3 -3 30 30"
@@ -462,9 +403,9 @@ export const GithubIcon = (props: IconProps) => () => (
             d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577v-2.17c-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.083-.73.083-.73 1.205.084 1.84 1.237 1.84 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.775.42-1.305.763-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.467-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.98-.398 3-.403 1.02.005 2.043.137 3 .403 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.24 2.873.118 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.803 5.625-5.475 5.92.43.37.823 1.102.823 2.222v3.293c0 .32.218.694.825.577C20.565 21.797 24 17.298 24 12c0-6.63-5.37-12-12-12z"
         />
     </Icon>
-);
+));
 
-export const WebsiteIcon = (props: IconProps) => () => (
+export const WebsiteIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -473,9 +414,9 @@ export const WebsiteIcon = (props: IconProps) => () => (
             d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zM4 12c0-.899.156-1.762.431-2.569L6 11l2 2v2l2 2 1 1v1.931C7.061 19.436 4 16.072 4 12zm14.33 4.873C17.677 16.347 16.687 16 16 16v-1a2 2 0 0 0-2-2h-4v-3a2 2 0 0 0 2-2V7h1a2 2 0 0 0 2-2v-.411C17.928 5.778 20 8.65 20 12a7.947 7.947 0 0 1-1.67 4.873z"
         />
     </Icon>
-);
+));
 
-export const CodeIcon = (props: IconProps) => () => (
+export const CodeIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -485,7 +426,7 @@ export const CodeIcon = (props: IconProps) => () => (
             d="M12.9297 3.25007C12.7343 3.05261 12.4154 3.05226 12.2196 3.24928L11.5746 3.89824C11.3811 4.09297 11.3808 4.40733 11.5739 4.60245L16.5685 9.64824C16.7614 9.84309 16.7614 10.1569 16.5685 10.3517L11.5739 15.3975C11.3808 15.5927 11.3811 15.907 11.5746 16.1017L12.2196 16.7507C12.4154 16.9477 12.7343 16.9474 12.9297 16.7499L19.2604 10.3517C19.4532 10.1568 19.4532 9.84314 19.2604 9.64832L12.9297 3.25007ZM8.42616 4.60245C8.6193 4.40733 8.61898 4.09297 8.42545 3.89824L7.78047 3.24928C7.58466 3.05226 7.26578 3.05261 7.07041 3.25007L0.739669 9.64832C0.5469 9.84314 0.546901 10.1568 0.739669 10.3517L7.07041 16.7499C7.26578 16.9474 7.58465 16.9477 7.78047 16.7507L8.42545 16.1017C8.61898 15.907 8.6193 15.5927 8.42616 15.3975L3.43155 10.3517C3.23869 10.1569 3.23869 9.84309 3.43155 9.64824L8.42616 4.60245Z"
         />
     </Icon>
-);
+));
 
 
 export const StarIcon = createIcon((props: IconProps) => (
@@ -500,7 +441,7 @@ export const StarIcon = createIcon((props: IconProps) => (
 ));
 
 
-export const LightningIcon = (props: IconProps) => () => (
+export const LightningIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -509,7 +450,7 @@ export const LightningIcon = (props: IconProps) => () => (
             d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"
         />
     </Icon>
-);
+));
 
 
 export const ClockIcon = createIcon((props: IconProps) => (
@@ -526,7 +467,7 @@ export const ClockIcon = createIcon((props: IconProps) => (
 ));
 
 
-export const InviteIcon = (props: IconProps) => () => (
+export const InviteIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -539,10 +480,10 @@ export const InviteIcon = (props: IconProps) => () => (
             d="M19 14a1 1 0 0 1 1 1v3h3a1 1 0 0 1 0 2h-3v3a1 1 0 0 1-2 0v-3h-3a1 1 0 1 1 0-2h3v-3a1 1 0 0 1 1-1Z"
         />
     </Icon>
-);
+));
 
 
-export const BoostIcon = (props: IconProps) => () => (
+export const BoostIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -557,10 +498,10 @@ export const BoostIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const InsightsIcon = (props: IconProps) => () => (
+export const InsightsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -571,10 +512,10 @@ export const InsightsIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const CreateChannelIcon = (props: IconProps) => () => (
+export const CreateChannelIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -586,10 +527,10 @@ export const CreateChannelIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const CreateCategoryIcon = (props: IconProps) => () => (
+export const CreateCategoryIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -600,10 +541,10 @@ export const CreateCategoryIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const CreateEventIcon = (props: IconProps) => () => (
+export const CreateEventIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -622,10 +563,10 @@ export const CreateEventIcon = (props: IconProps) => () => (
             d="M7 1a1 1 0 0 1 1 1v.75c0 .14.11.25.25.25h7.5c.14 0 .25-.11.25-.25V2a1 1 0 1 1 2 0v.75c0 .14.11.25.25.25H19a3 3 0 0 1 3 3 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 3 3 0 0 1 3-3h.75c.14 0 .25-.11.25-.25V2a1 1 0 0 1 1-1Z"
         />
     </Icon>
-);
+));
 
 
-export const ActiveThreadsIcon = (props: IconProps) => () => (
+export const ActiveThreadsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -634,10 +575,10 @@ export const ActiveThreadsIcon = (props: IconProps) => () => (
             d="M12 22a10 10 0 1 0-8.45-4.64c.13.19.11.44-.04.61l-2.06 2.37A1 1 0 0 0 2.2 22H12Z"
         />
     </Icon>
-);
+));
 
 
-export const AppDirectoryIcon = (props: IconProps) => () => (
+export const AppDirectoryIcon = createIcon((props: IconProps) => (
 
     <Icon
         {...props}
@@ -649,10 +590,10 @@ export const AppDirectoryIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const BellIcon = (props: IconProps) => () => (
+export const BellIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -661,10 +602,10 @@ export const BellIcon = (props: IconProps) => () => (
             d="M9.7 2.89c.18-.07.32-.24.37-.43a2 2 0 0 1 3.86 0c.05.2.19.36.38.43A7 7 0 0 1 19 9.5v2.09c0 .12.05.24.13.33l1.1 1.22a3 3 0 0 1 .77 2.01v.28c0 .67-.34 1.29-.95 1.56-1.31.6-4 1.51-8.05 1.51-4.05 0-6.74-.91-8.05-1.5-.61-.28-.95-.9-.95-1.57v-.28a3 3 0 0 1 .77-2l1.1-1.23a.5.5 0 0 0 .13-.33V9.5a7 7 0 0 1 4.7-6.61ZM9.18 19.84A.16.16 0 0 0 9 20a3 3 0 1 0 6 0c0-.1-.09-.17-.18-.16a24.86 24.86 0 0 1-5.64 0Z"
         />
     </Icon>
-);
+));
 
 
-export const PrivacyIcon = (props: IconProps) => () => (
+export const PrivacyIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -677,10 +618,10 @@ export const PrivacyIcon = (props: IconProps) => () => (
             d="M19.91 5.41c-.84 0-1.52-.65-1.52-1.46v-.3c0-.9-.77-1.65-1.71-1.65H7.31c-.94 0-1.71.74-1.71 1.65v.3c0 .81-.68 1.46-1.52 1.46H3.7c-.94 0-1.7.73-1.7 1.64v3.52l.01.49c.05 3.11.94 4.69 2.92 6.63C6.72 19.46 11.58 22 11.99 22c.41 0 5.27-2.54 7.06-4.31 1.98-1.95 2.92-3.53 2.92-6.63L22 7.05c0-.9-.76-1.64-1.7-1.64h-.39Z"
         />
     </Icon>
-);
+));
 
 
-export const LeaveIcon = (props: IconProps) => () => (
+export const LeaveIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -699,9 +640,9 @@ export const LeaveIcon = (props: IconProps) => () => (
             d="M15.3 16.7a1 1 0 0 1 1.4-1.4l4.3 4.29V16a1 1 0 1 1 2 0v6a1 1 0 0 1-1 1h-6a1 1 0 1 1 0-2h3.59l-4.3-4.3Z"
         />
     </Icon>
-);
+));
 
-export const LockIcon = (props: IconProps) => () => (
+export const LockIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -712,10 +653,10 @@ export const LockIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const NitroIcon = (props: IconProps) => () => (
+export const NitroIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -724,10 +665,10 @@ export const NitroIcon = (props: IconProps) => () => (
             d="M16.23 12c0 1.29-.95 2.25-2.22 2.25A2.18 2.18 0 0 1 11.8 12c0-1.29.95-2.25 2.22-2.25 1.27 0 2.22.96 2.22 2.25ZM23 12c0 5.01-4 9-8.99 9a8.93 8.93 0 0 1-8.75-6.9H3.34l-.9-4.2H5.3c.26-.96.68-1.89 1.21-2.7H1.89L1 3h12.74C19.13 3 23 6.99 23 12Zm-4.26 0c0-2.67-2.1-4.8-4.73-4.8A4.74 4.74 0 0 0 9.28 12c0 2.67 2.1 4.8 4.73 4.8a4.74 4.74 0 0 0 4.73-4.8Z"
         />
     </Icon>
-);
+));
 
 
-export const EmojiIcon = (props: IconProps) => () => (
+export const EmojiIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -738,10 +679,10 @@ export const EmojiIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const LeafIcon = (props: IconProps) => () => (
+export const LeafIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -750,10 +691,10 @@ export const LeafIcon = (props: IconProps) => () => (
             d="M9.8 14.6c-.45.31-.9.6-1.37.89l-.02.01-1.15.73c-.85.57-1.68 1.2-2.4 2.1a7.75 7.75 0 0 0-.7 1.03c-.39.69-.7 1.48-.94 2.42a1 1 0 0 0 1.94.49c.12-.49.26-.9.42-1.28 1.98.08 9.05-.04 12.73-5.34 3.5-5.02 2.89-10.16 2.01-13.89-.19-.81-1.26-1-1.85-.42-1.8 1.8-3.69 2.32-5.67 2.86-2.34.63-4.8 1.3-7.35 4.15a9.13 9.13 0 0 0-2.13 8.7c.9-1.11 1.92-1.88 2.84-2.48.4-.28.8-.53 1.18-.76a13.7 13.7 0 0 0 3.55-2.83 1 1 0 1 1 1.52 1.3A13.44 13.44 0 0 1 9.8 14.6Z"
         />
     </Icon>
-);
+));
 
 
-export const SaladIcon = (props: IconProps) => () => (
+export const SaladIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -762,10 +703,10 @@ export const SaladIcon = (props: IconProps) => () => (
             d="M7 1a1 1 0 0 0-1 1v.2c0 .79-.4 1.53-1.05 1.97A4.37 4.37 0 0 0 3 7.8V8a1 1 0 0 0 2 0v-.2c0-.79.4-1.53 1.05-1.97A4.37 4.37 0 0 0 8 2.2V2a1 1 0 0 0-1-1ZM10 3a1 1 0 1 1 2 0v.42a3.2 3.2 0 0 1-2.18 3.03A1.2 1.2 0 0 0 9 7.58V8a1 1 0 0 1-2 0v-.42c0-1.37.88-2.6 2.18-3.03.5-.16.82-.62.82-1.13V3ZM2 11a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1 10 10 0 0 1-4.7 8.49.6.6 0 0 0-.3.51 2 2 0 0 1-2 2H9a2 2 0 0 1-2-2 .6.6 0 0 0-.3-.51A10 10 0 0 1 2 11ZM20.85 8.02c.16.52-.3.98-.85.98h-8c-.55 0-1.01-.46-.85-.98a4.07 4.07 0 0 1 1.31-1.84 5.23 5.23 0 0 1 1.63-.88 6.1 6.1 0 0 1 3.82 0c.61.2 1.16.5 1.63.87a4.07 4.07 0 0 1 1.3 1.85Z"
         />
     </Icon>
-);
+));
 
 
-export const BikeIcon = (props: IconProps) => () => (
+export const BikeIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -776,10 +717,10 @@ export const BikeIcon = (props: IconProps) => () => (
             clipRule="evenodd"
         />
     </Icon>
-);
+));
 
 
-export const LanternIcon = (props: IconProps) => () => (
+export const LanternIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -788,10 +729,10 @@ export const LanternIcon = (props: IconProps) => () => (
             d="M10.41 3.59 11.6 2.4a2 2 0 0 1 2.82 0l1.3 1.3a1 1 0 0 0 .7.29h4.18a1.41 1.41 0 0 1 1 2.41L14.4 13.6a1.41 1.41 0 0 1-2.41-1V8.4l-3.11 3.12a2 2 0 0 0-.53 1.87L9.9 20H15a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2h4.86L6.4 13.86a4 4 0 0 1 1.06-3.75L10.8 6.8l-.38-.38a2 2 0 0 1 0-2.82Z"
         />
     </Icon>
-);
+));
 
 
-export const HeartIcon = (props: IconProps) => () => (
+export const HeartIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -800,10 +741,10 @@ export const HeartIcon = (props: IconProps) => () => (
             d="M12.47 21.73a.92.92 0 0 1-.94 0C9.43 20.48 1 15.09 1 8.75A5.75 5.75 0 0 1 6.75 3c2.34 0 3.88.9 5.25 2.26A6.98 6.98 0 0 1 17.25 3 5.75 5.75 0 0 1 23 8.75c0 6.34-8.42 11.73-10.53 12.98Z"
         />
     </Icon>
-);
+));
 
 
-export const FlagIcon = (props: IconProps) => () => (
+export const FlagIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -812,10 +753,10 @@ export const FlagIcon = (props: IconProps) => () => (
             d="M3 1a1 1 0 0 1 1 1v.82l8.67-1.45A2 2 0 0 1 15 3.35v1.47l5.67-.95A2 2 0 0 1 23 5.85v7.3a2 2 0 0 1-1.67 1.98l-9 1.5a2 2 0 0 1-1.78-.6c-.2-.21-.08-.54.18-.68a5.01 5.01 0 0 0 1.94-1.94c.18-.32-.1-.66-.46-.6L4 14.18V21a1 1 0 1 1-2 0V2a1 1 0 0 1 1-1Z"
         />
     </Icon>
-);
+));
 
 
-export const MessagesIcon = (props: IconProps) => () => (
+export const MessagesIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -830,10 +771,10 @@ export const MessagesIcon = (props: IconProps) => () => (
             d="M23 8.8a.5.5 0 0 0-.78-.41l-9.53 6.35c-.42.28-.96.28-1.38 0L1.78 8.39A.5.5 0 0 0 1 8.8V18a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V8.8Z"
         />
     </Icon>
-);
+));
 
 
-export const PhoneIcon = (props: IconProps) => () => (
+export const PhoneIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -846,10 +787,10 @@ export const PhoneIcon = (props: IconProps) => () => (
             d="M13 7a1 1 0 0 1 1-1 4 4 0 0 1 4 4 1 1 0 1 1-2 0 2 2 0 0 0-2-2 1 1 0 0 1-1-1Z"
         />
     </Icon>
-);
+));
 
 
-export const AddUserIcon = (props: IconProps) => () => (
+export const AddUserIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -862,10 +803,10 @@ export const AddUserIcon = (props: IconProps) => () => (
             d="M19 14a1 1 0 0 1 1 1v3h3a1 1 0 0 1 0 2h-3v3a1 1 0 0 1-2 0v-3h-3a1 1 0 1 1 0-2h3v-3a1 1 0 0 1 1-1Z"
         />
     </Icon>
-);
+));
 
 
-export const PinIcon = (props: IconProps) => () => (
+export const PinIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -874,10 +815,10 @@ export const PinIcon = (props: IconProps) => () => (
             d="M19.38 11.38a3 3 0 0 0 4.24 0l.03-.03a.5.5 0 0 0 0-.7L13.35.35a.5.5 0 0 0-.7 0l-.03.03a3 3 0 0 0 0 4.24L13 5l-2.92 2.92-3.65-.34a2 2 0 0 0-1.6.58l-.62.63a1 1 0 0 0 0 1.42l9.58 9.58a1 1 0 0 0 1.42 0l.63-.63a2 2 0 0 0 .58-1.6l-.34-3.64L19 11l.38.38ZM9.07 17.07a.5.5 0 0 1-.08.77l-5.15 3.43a.5.5 0 0 1-.63-.06l-.42-.42a.5.5 0 0 1-.06-.63L6.16 15a.5.5 0 0 1 .77-.08l2.14 2.14Z"
         />
     </Icon>
-);
+));
 
 
-export const VideoIcon = (props: IconProps) => () => (
+export const VideoIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -886,9 +827,9 @@ export const VideoIcon = (props: IconProps) => () => (
             d="M4 4a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h11a3 3 0 0 0 3-3v-2.12a1 1 0 0 0 .55.9l3 1.5a1 1 0 0 0 1.45-.9V7.62a1 1 0 0 0-1.45-.9l-3 1.5a1 1 0 0 0-.55.9V7a3 3 0 0 0-3-3H4Z"
         />
     </Icon>
-);
+));
 
-export const ShopIcon = (props: IconProps) => () => (
+export const ShopIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -901,9 +842,9 @@ export const ShopIcon = (props: IconProps) => () => (
             d="M21 11.42V19a3 3 0 0 1-3 3h-2.75a.25.25 0 0 1-.25-.25V16a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v5.75c0 .14-.11.25-.25.25H6a3 3 0 0 1-3-3v-7.58c0-.18.2-.3.37-.24a4.46 4.46 0 0 0 4.94-1.1c.1-.12.3-.12.4 0a4.49 4.49 0 0 0 6.58 0c.1-.12.3-.12.4 0a4.45 4.45 0 0 0 4.94 1.1c.17-.07.37.06.37.24Z"
         />
     </Icon>
-);
+));
 
-export const FriendsIcon = (props: IconProps) => () => (
+export const FriendsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -916,9 +857,9 @@ export const FriendsIcon = (props: IconProps) => () => (
             d="M3 5v-.75C3 3.56 3.56 3 4.25 3s1.24.56 1.33 1.25C6.12 8.65 9.46 12 13 12h1a8 8 0 0 1 8 8 2 2 0 0 1-2 2 .21.21 0 0 1-.2-.15 7.65 7.65 0 0 0-1.32-2.3c-.15-.2-.42-.06-.39.17l.25 2c.02.15-.1.28-.25.28H9a2 2 0 0 1-2-2v-2.22c0-1.57-.67-3.05-1.53-4.37A15.85 15.85 0 0 1 3 5Z"
         />
     </Icon>
-);
+));
 
-export const DiscoverIcon = (props: IconProps) => () => (
+export const DiscoverIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -933,9 +874,9 @@ export const DiscoverIcon = (props: IconProps) => () => (
             d="M23 12a11 11 0 1 1-22 0 11 11 0 0 1 22 0ZM7.74 9.3A2 2 0 0 1 9.3 7.75l7.22-1.45a1 1 0 0 1 1.18 1.18l-1.45 7.22a2 2 0 0 1-1.57 1.57l-7.22 1.45a1 1 0 0 1-1.18-1.18L7.74 9.3Z"
         />
     </Icon>
-);
+));
 
-export const DocumentIcon = (props: IconProps) => () => (
+export const DocumentIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -950,9 +891,9 @@ export const DocumentIcon = (props: IconProps) => () => (
             d="M19 14a1 1 0 0 1 1 1v3h3a1 1 0 1 1 0 2h-3v3a1 1 0 1 1-2 0v-3h-3a1 1 0 1 1 0-2h3v-3a1 1 0 0 1 1-1Z"
         />
     </Icon>
-);
+));
 
-export const CreateGroupIcon = (props: IconProps) => () => (
+export const CreateGroupIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -965,9 +906,9 @@ export const CreateGroupIcon = (props: IconProps) => () => (
             d="M20.76 12.57c.4.3 1.23.13 1.24-.37V12a10 10 0 1 0-18.44 5.36c.12.19.1.44-.04.61l-2.07 2.37A1 1 0 0 0 2.2 22h10c.5-.01.67-.84.37-1.24A3 3 0 0 1 15 16h.5a.5.5 0 0 0 .5-.5V15a3 3 0 0 1 4.76-2.43Z"
         />
     </Icon>
-);
+));
 
-export const BookmarkIcon = (props: IconProps) => () => (
+export const BookmarkIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -976,9 +917,9 @@ export const BookmarkIcon = (props: IconProps) => () => (
             d="M4 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v16a1 1 0 0 1-1.67.74l-5.66-5.13a1 1 0 0 0-1.34 0l-5.66 5.13A1 1 0 0 1 4 20.99V5Z"
         />
     </Icon>
-);
+));
 
-export const FireIcon = (props: IconProps) => () => (
+export const FireIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -987,9 +928,9 @@ export const FireIcon = (props: IconProps) => () => (
             d="M834.1 469.2A347.49 347.49 0 0 0 751.2 354l-29.1-26.7a8.09 8.09 0 0 0-13 3.3l-13 37.3c-8.1 23.4-23 47.3-44.1 70.8-1.4 1.5-3 1.9-4.1 2-1.1.1-2.8-.1-4.3-1.5-1.4-1.2-2.1-3-2-4.8 3.7-60.2-14.3-128.1-53.7-202C555.3 171 510 123.1 453.4 89.7l-41.3-24.3c-5.4-3.2-12.3 1-12 7.3l2.2 48c1.5 32.8-2.3 61.8-11.3 85.9-11 29.5-26.8 56.9-47 81.5a295.64 295.64 0 0 1-47.5 46.1 352.6 352.6 0 0 0-100.3 121.5A347.75 347.75 0 0 0 160 610c0 47.2 9.3 92.9 27.7 136a349.4 349.4 0 0 0 75.5 110.9c32.4 32 70 57.2 111.9 74.7C418.5 949.8 464.5 959 512 959s93.5-9.2 136.9-27.3A348.6 348.6 0 0 0 760.8 857c32.4-32 57.8-69.4 75.5-110.9a344.2 344.2 0 0 0 27.7-136c0-48.8-10-96.2-29.9-140.9z"
         />
     </Icon>
-);
+));
 
-export const SocialIcon = (props: IconProps) => () => (
+export const SocialIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -998,9 +939,9 @@ export const SocialIcon = (props: IconProps) => () => (
             d="M20.3 5.41h-.39c-.84 0-1.52-.65-1.52-1.46v-.3c0-.9-.77-1.65-1.71-1.65H7.31c-.94 0-1.71.74-1.71 1.65v.3c0 .81-.68 1.46-1.52 1.46H3.7c-.94 0-1.7.73-1.7 1.64v3.52l.01.49c.05 3.11.94 4.69 2.92 6.63C6.72 19.46 11.58 22 11.99 22c.41 0 5.27-2.54 7.06-4.31 1.98-1.95 2.92-3.53 2.92-6.63L22 7.05c0-.9-.76-1.64-1.7-1.64Zm-8.32.03a3.15 3.15 0 1 1-.01 6.3 3.15 3.15 0 0 1 .01-6.3Zm4.52 11.67c-.97.68-2.86 1.62-3.87 2.11-.42.2-.91.2-1.33 0a40.17 40.17 0 0 1-3.82-2.1.87.87 0 0 1-.37-.85c.42-2.69 2.46-3.21 4.89-3.21 2.43 0 4.4.68 4.87 3.08a.97.97 0 0 1-.38.98l.01-.01Z"
         />
     </Icon>
-);
+));
 
-export const FamilyIcon = (props: IconProps) => () => (
+export const FamilyIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1009,9 +950,9 @@ export const FamilyIcon = (props: IconProps) => () => (
             d="M14.5 8a3 3 0 1 0-2.7-4.3c-.2.4.06.86.44 1.12a5 5 0 0 1 2.14 3.08c.01.06.06.1.12.1ZM18.44 17.27c.15.43.54.73 1 .73h1.06c.83 0 1.5-.67 1.5-1.5a7.5 7.5 0 0 0-6.5-7.43c-.55-.08-.99.38-1.1.92-.06.3-.15.6-.26.87-.23.58-.05 1.3.47 1.63a9.53 9.53 0 0 1 3.83 4.78ZM12.5 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2 20.5a7.5 7.5 0 0 1 15 0c0 .83-.67 1.5-1.5 1.5a.2.2 0 0 1-.2-.16c-.2-.96-.56-1.87-.88-2.54-.1-.23-.42-.15-.42.1v2.1a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2.1c0-.25-.31-.33-.42-.1-.32.67-.67 1.58-.88 2.54a.2.2 0 0 1-.2.16A1.5 1.5 0 0 1 2 20.5Z"
         />
     </Icon>
-);
+));
 
-export const AppsIcon = (props: IconProps) => () => (
+export const AppsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1020,9 +961,9 @@ export const AppsIcon = (props: IconProps) => () => (
             d="M2.06 7.61c-.25.95.31 1.92 1.26 2.18l4.3 1.15c.94.25 1.91-.31 2.17-1.26l1.15-4.3c.25-.94-.31-1.91-1.26-2.17l-4.3-1.15c-.94-.25-1.91.31-2.17 1.26l-1.15 4.3ZM12.98 7.87a2 2 0 0 0 1.75 2.95H20a2 2 0 0 0 1.76-2.95l-2.63-4.83a2 2 0 0 0-3.51 0l-2.63 4.83ZM5.86 13.27a.89.89 0 0 1 1.28 0l.75.77a.9.9 0 0 0 .54.26l1.06.12c.5.06.85.52.8 1.02l-.13 1.08c-.02.2.03.42.14.6l.56.92c.27.43.14 1-.28 1.26l-.9.58a.92.92 0 0 0-.37.48l-.36 1.02a.9.9 0 0 1-1.15.57l-1-.36a.89.89 0 0 0-.6 0l-1 .36a.9.9 0 0 1-1.15-.57l-.36-1.02a.92.92 0 0 0-.37-.48l-.9-.58a.93.93 0 0 1-.28-1.26l.56-.93c.11-.17.16-.38.14-.59l-.12-1.08c-.06-.5.3-.96.8-1.02l1.05-.12a.9.9 0 0 0 .54-.26l.75-.77ZM18.52 13.71a1.1 1.1 0 0 0-2.04 0l-.46 1.24c-.19.5-.57.88-1.07 1.07l-1.24.46a1.1 1.1 0 0 0 0 2.04l1.24.46c.5.19.88.57 1.07 1.07l.46 1.24c.35.95 1.7.95 2.04 0l.46-1.24c.19-.5.57-.88 1.07-1.07l1.24-.46a1.1 1.1 0 0 0 0-2.04l-1.24-.46a1.8 1.8 0 0 1-1.07-1.07l-.46-1.24Z"
         />
     </Icon>
-);
+));
 
-export const ConnectionsIcon = (props: IconProps) => () => (
+export const ConnectionsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1035,9 +976,9 @@ export const ConnectionsIcon = (props: IconProps) => () => (
             d="M14.7 10.7a1 1 0 0 0-1.4-1.4l-4 4a1 1 0 1 0 1.4 1.4l4-4Z"
         />
     </Icon>
-);
+));
 
-export const ClipsIcon = (props: IconProps) => () => (
+export const ClipsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1052,9 +993,9 @@ export const ClipsIcon = (props: IconProps) => () => (
             d="M2 10.5c0-.28.22-.5.5-.5h19c.28 0 .5.22.5.5V19a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-8.5ZM5 14a1 1 0 0 1 1-1h9a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Zm1 3a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2H6Z"
         />
     </Icon>
-);
+));
 
-export const BillingIcon = (props: IconProps) => () => (
+export const BillingIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1069,9 +1010,9 @@ export const BillingIcon = (props: IconProps) => () => (
             d="M1 10h22v8a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3v-8Zm4 3a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H5Zm-1 4a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1Zm13-4a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2h-2Z"
         />
     </Icon>
-);
+));
 
-export const ColorsIcon = (props: IconProps) => () => (
+export const ColorsIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1082,9 +1023,9 @@ export const ColorsIcon = (props: IconProps) => () => (
             d="M19 16h-5a2 2 0 0 0-2 2v2c0 1.66-1.37 3.04-2.96 2.6A11 11 0 1 1 23 12c0 2.2-2 4-4 4ZM13.5 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM17.25 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm-9-1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-3.75 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
         />
     </Icon>
-);
+));
 
-export const LanguageIcon = (props: IconProps) => () => (
+export const LanguageIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1099,9 +1040,9 @@ export const LanguageIcon = (props: IconProps) => () => (
             d="M22.77 22H20.5l-.99-2.77H14.3L13.3 22h-2.27l4.72-12.42h2.3L22.77 22ZM16.9 11.87l-1.92 5.43h3.85l-1.93-5.43Z"
         />
     </Icon>
-);
+));
 
-export const MediaIcon = (props: IconProps) => () => (
+export const MediaIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1112,9 +1053,9 @@ export const MediaIcon = (props: IconProps) => () => (
             d="M2 5a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5Zm13.35 8.13 3.5 4.67c.37.5.02 1.2-.6 1.2H5.81a.75.75 0 0 1-.59-1.22l1.86-2.32a1.5 1.5 0 0 1 2.34 0l.5.64 2.23-2.97a2 2 0 0 1 3.2 0ZM10.2 5.98c.23-.91-.88-1.55-1.55-.9a.93.93 0 0 1-1.3 0c-.67-.65-1.78-.01-1.55.9a.93.93 0 0 1-.65 1.12c-.9.26-.9 1.54 0 1.8.48.14.77.63.65 1.12-.23.91.88 1.55 1.55.9a.93.93 0 0 1 1.3 0c.67.65 1.78.01 1.55-.9a.93.93 0 0 1 .65-1.12c.9-.26.9-1.54 0-1.8a.93.93 0 0 1-.65-1.12Z"
         />
     </Icon>
-);
+));
 
-export const DiscordIcon = (props: IconProps) => () => (
+export const DiscordIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1123,9 +1064,9 @@ export const DiscordIcon = (props: IconProps) => () => (
             d="M19.73 4.87a18.2 18.2 0 0 0-4.6-1.44c-.21.4-.4.8-.58 1.21-1.69-.25-3.4-.25-5.1 0-.18-.41-.37-.82-.59-1.2-1.6.27-3.14.75-4.6 1.43A19.04 19.04 0 0 0 .96 17.7a18.43 18.43 0 0 0 5.63 2.87c.46-.62.86-1.28 1.2-1.98-.65-.25-1.29-.55-1.9-.92.17-.12.32-.24.47-.37 3.58 1.7 7.7 1.7 11.28 0l.46.37c-.6.36-1.25.67-1.9.92.35.7.75 1.35 1.2 1.98 2.03-.63 3.94-1.6 5.64-2.87.47-4.87-.78-9.09-3.3-12.83ZM8.3 15.12c-1.1 0-2-1.02-2-2.27 0-1.24.88-2.26 2-2.26s2.02 1.02 2 2.26c0 1.25-.89 2.27-2 2.27Zm7.4 0c-1.1 0-2-1.02-2-2.27 0-1.24.88-2.26 2-2.26s2.02 1.02 2 2.26c0 1.25-.88 2.27-2 2.27Z"
         />
     </Icon>
-);
+));
 
-export const ErrorIcon = (props: IconProps) => () => (
+export const ErrorIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1134,9 +1075,9 @@ export const ErrorIcon = (props: IconProps) => () => (
             d="M12 23a11 11 0 1 0 0-22 11 11 0 0 0 0 22Zm1.44-15.94L13.06 14a1.06 1.06 0 0 1-2.12 0l-.38-6.94a1 1 0 0 1 1-1.06h.88a1 1 0 0 1 1 1.06Zm-.19 10.69a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0Z"
         />
     </Icon>
-);
+));
 
-export const CheckmarkIcon = (props: IconProps) => () => (
+export const CheckmarkIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1145,9 +1086,9 @@ export const CheckmarkIcon = (props: IconProps) => () => (
             d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm5.7 7.3-7 7a1 1 0 0 1-1.4 0l-3-3a1 1 0 0 1 1.4-1.42L10 14.58l6.3-6.3a1 1 0 0 1 1.4 1.42z"
         />
     </Icon>
-);
+));
 
-export const CrossmarkIcon = (props: IconProps) => () => (
+export const CrossmarkIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1158,9 +1099,9 @@ export const CrossmarkIcon = (props: IconProps) => () => (
             d="M12 23a11 11 0 1 0 0-22 11 11 0 0 0 0 22Zm4.7-15.7a1 1 0 0 0-1.4 0L12 10.58l-3.3-3.3a1 1 0 0 0-1.4 1.42L10.58 12l-3.3 3.3a1 1 0 1 0 1.42 1.4L12 13.42l3.3 3.3a1 1 0 0 0 1.4-1.42L13.42 12l3.3-3.3a1 1 0 0 0 0-1.4Z"
         />
     </Icon>
-);
+));
 
-export const WarningIcon = (props: IconProps) => () => (
+export const WarningIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
     >
@@ -1171,7 +1112,7 @@ export const WarningIcon = (props: IconProps) => () => (
             d="M10 3.1a2.37 2.37 0 0 1 4 0l8.71 14.75c.84 1.41-.26 3.15-2 3.15H3.29c-1.74 0-2.84-1.74-2-3.15L9.99 3.1Zm3.25 14.65a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0ZM13.06 14l.37-5.94a1 1 0 0 0-1-1.06h-.87a1 1 0 0 0-1 1.06l.38 5.94a1.06 1.06 0 0 0 2.12 0Z"
         />
     </Icon>
-);
+));
 
 export const SpeakerFull = createIcon((props: IconProps) => (
     <Icon
@@ -1213,3 +1154,4 @@ export const SpeakerMute = createIcon((props: IconProps) => (
 (SpeakerLow as any).iconName = "SpeakerLow";
 (SpeakerFull as any).iconName = "SpeakerFull";
 (StarIcon as any).iconName = "StarIcon";
+(FolderIcon as any).iconName = "FolderIcon";

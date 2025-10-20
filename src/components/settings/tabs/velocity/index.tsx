@@ -20,7 +20,7 @@ import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
-import { FolderIcon, GithubIcon, IconTypes, LogIcon, PaintbrushIcon, RestartIcon } from "@components/index";
+import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/index";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
@@ -162,13 +162,13 @@ function VelocitySettings() {
 
                 <QuickActionCard>
                     <QuickAction
-                        Icon={LogIcon(IconTypes.DEFAULT)}
+                        Icon={LogIcon()}
                         text="Notification Log"
                         action={openNotificationLogModal}
                     />
 
                     <QuickAction
-                        Icon={PaintbrushIcon(IconTypes.DEFAULT)}
+                        Icon={PaintbrushIcon()}
                         text="Edit QuickCSS"
                         action={() => VelocityNative.quickCss.openEditor()}
                     />
@@ -176,12 +176,12 @@ function VelocitySettings() {
                     {!IS_WEB && (
                         <>
                             <QuickAction
-                                Icon={RestartIcon(IconTypes.DEFAULT)}
+                                Icon={RestartIcon()}
                                 text="Relaunch Discord"
                                 action={relaunch}
                             />
                             <QuickAction
-                                Icon={FolderIcon(IconTypes.DEFAULT)}
+                                Icon={FolderIcon()}
                                 text="Open Settings Folder"
                                 action={() => VelocityNative.settings.openFolder()}
                             />
@@ -189,7 +189,7 @@ function VelocitySettings() {
                     )}
 
                     <QuickAction
-                        Icon={GithubIcon(IconTypes.DEFAULT)}
+                        Icon={GithubIcon()}
                         text="View Source Code"
                         action={() =>
                             VelocityNative.native.openExternal("https://github.com/" + gitRemote)

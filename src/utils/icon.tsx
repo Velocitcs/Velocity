@@ -1,4 +1,4 @@
-/*
+/*!
  * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2022 Vendicated and contributors
  *
@@ -16,23 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { cl } from "../utils/misc";
-import { CopyButton } from "./CopyButton";
+/*
+ * Velocity, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-export interface ButtonRowProps {
-    theme: import("./Highlighter").ThemeBase;
-    content: string;
+import { React } from "@webpack/common";
+
+type IconComponent = () => () => React.ReactElement;
+
+export enum Iconclasses {
+    vc_icon = "vc-icon",
+    discord = "icon_c1e9c4",
+    popover = "icon_f84418"
 }
 
-export function ButtonRow({ content, theme }: ButtonRowProps) {
-    return <div className={cl("btns")}>
-        <CopyButton
-            content={content}
-            className={cl("btn")}
-            style={{
-                backgroundColor: theme.accentBgColor,
-                color: theme.accentFgColor,
-            }}
-        />
-    </div>;
+export function setIconClassName(IconComponent: IconComponent, className: Iconclasses | string): () => React.ReactElement {
+    const element = IconComponent()();
+    return () => {
+        const cloned = React.cloneElement(element as React.ReactElement<any>, { className });
+        return cloned;
+    };
 }

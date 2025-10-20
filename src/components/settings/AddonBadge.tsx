@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./AddonBadge.css";
+
+import { React } from "@webpack/common";
+
 export const AddonBadgeTypes = {
     BRAND: "BRAND",
     PRIMARY: "PRIMARY",
@@ -49,7 +53,7 @@ export function AddonBadge({ text, color, backgroundColor, icon, type = "CUSTOM"
                 textTransform: "uppercase",
                 cursor: onClick ? "pointer" : "default"
             }}>
-            {icon && <span style={{ display: "flex", alignItems: "center" }}>{icon}</span>}
+            {icon && React.cloneElement(icon as React.ReactElement<any>, { className: "vc-addon-badge-icon" })}
             {text}
         </div>
     );

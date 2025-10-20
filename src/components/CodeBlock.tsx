@@ -12,7 +12,7 @@ const CodeContainerClasses = findByPropsLazy("markup", "codeContainer");
 /**
  * Renders code in a Discord codeblock
  */
-export function CodeBlock(props: { content?: string, lang: string; }) {
+export function CodeBlock(props: { content?: string, lang?: string; }) {
     return (
         <div className={CodeContainerClasses.markup}>
             {Parser.defaultRules.codeBlock.react(props, null, {})}

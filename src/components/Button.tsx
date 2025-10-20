@@ -11,7 +11,7 @@ import type { Button as DiscordButton } from "@discord-types";
 import { classes } from "@utils/misc";
 import type { ComponentPropsWithRef, ComponentType } from "react";
 
-import { IconTypes, OpenExternalIcon } from "./Icons";
+import { OpenExternalIcon } from "./Icons";
 
 const btnCls = classNameFactory("vc-btn-");
 const textBtnCls = classNameFactory("vc-text-btn-");
@@ -33,7 +33,6 @@ export type ButtonProps = ComponentPropsWithRef<"button"> & {
     size?: ButtonSize;
     icon?: ComponentType<any>;
 };
-
 export function Button({
     variant = "primary",
     size = "medium",
@@ -58,12 +57,14 @@ export function Button({
                         marginLeft: "-4px",
                     }}
                 >
-                    <Icon {...IconTypes.SMALL} />
+                    <Icon />
                 </span>
             )}
             {children}
             {variant === "link" && !Icon && (
-                <OpenExternalIcon className={btnCls("link-icon")} {...IconTypes.SMALL} />
+                <span className={btnCls("link-icon")}>
+                    {OpenExternalIcon()()}
+                </span>
             )}
         </button>
     );

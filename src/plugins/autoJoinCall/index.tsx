@@ -16,10 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { CogWheel } from "@components/Icons";
+import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
+import { Menu } from "@webpack/common";
 
 const VoiceActions = findByPropsLazy("selectVoiceChannel", "disconnect");
 const ChannelStore = findByPropsLazy("getChannel", "getDMFromUserId");
@@ -70,11 +74,26 @@ function joinCall(channelId: string) {
     } catch (e) { }
 }
 
+const streamContextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
+    children.push(
+        <Menu.MenuItem
+            id="vc-autojoin-settings"
+            label="Auto Join Settings"
+            icon={CogWheel()}
+            action={() => openPluginModal(Velocity.Plugins.plugins.autoJoinCall)}
+        />
+    );
+};
+
 export default definePlugin({
     name: "autoJoinCall",
     description: "Automatically joins the specified DM or guild call",
     authors: [Devs.Velocity],
     settings,
+
+    contextMenus: {
+        "more-settings-context": streamContextMenuPatch
+    },
 
     flux: {
         CALL_CREATE(data: { channelId: string; }) {
@@ -94,13 +113,3 @@ export default definePlugin({
         joinCall(channelId);
     }
 });
-// 7900f5
-
-// - Founder of GreatBot 👑
-
-// the era of **//e bloxburg** comes back
-
-//* *GreatBot Support Server**
-// https://discord.gg/dvTE7gXanj
-// r̶etB̶o̵t̴ ̷s̴in̶e̵ ̶2̴0̸2̶4/ //e quit
-// ୧ ‧₊˚ RoScripter999 ·

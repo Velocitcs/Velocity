@@ -21,10 +21,11 @@ import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { CodeIcon, CopyIcon, IconTypes, LogIcon } from "@components/Icons";
+import { CodeIcon, CopyIcon, LogIcon } from "@components/Icons";
 import { Message } from "@discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild, getIntlMessage } from "@utils/discord";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { Margins } from "@utils/margins";
 import { copyWithToast } from "@utils/misc";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
@@ -74,17 +75,6 @@ function makeNoteSpan(text: string, color: string) {
     );
 }
 
-function detectLangAndContent(msgContent: string) {
-    let lang = "plaintext";
-    let content = msgContent;
-    const match = msgContent.match(/```(\w+)?\n?([\s\S]*?)```/);
-    if (match) {
-        if (match[1]) lang = match[1].toLowerCase();
-        content = match[2];
-    }
-    return { lang, content };
-}
-
 function openViewRawModal(json: string, type: string, content?: string) {
     const key = openModal(props => (
         <ErrorBoundary>
@@ -100,14 +90,10 @@ function openViewRawModal(json: string, type: string, content?: string) {
                                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                     <Forms.FormTitle tag="h5" style={{ margin: 0 }}>Content</Forms.FormTitle>
                                     {/[^\u0000-\u007f]/.test(content) && makeNoteSpan("Unicode", "#ff5555")}
-                                    {(() => {
-                                        const { lang } = detectLangAndContent(content);
-                                        return lang !== "plaintext" && makeNoteSpan(lang.toUpperCase() + " Codeblock", "#00bfff");
-                                    })()}
                                     {/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u.test(content) && makeNoteSpan("Emoji", "#6fff00")}
                                     {/[\u0000]/.test(content) && makeNoteSpan("Invisible Unicode", "#888888")}
                                 </div>
-                                <CodeBlock content={detectLangAndContent(content).content} lang={detectLangAndContent(content).lang} />
+                                <CodeBlock content={content} />
                                 <Divider className={Margins.bottom20} />
                             </>
                         )}
@@ -118,11 +104,11 @@ function openViewRawModal(json: string, type: string, content?: string) {
                 </ModalContent >
                 <ModalFooter>
                     <Flex cellSpacing={10}>
-                        <Button icon={CodeIcon(IconTypes.DEFAULT)} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
+                        <Button icon={CodeIcon()} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
                             Copy {type} JSON
                         </Button>
                         {!!content && (
-                            <Button icon={CopyIcon(IconTypes.DEFAULT)} onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
+                            <Button icon={CopyIcon()} onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
                                 Copy Raw Content
                             </Button>
                         )}
@@ -155,7 +141,7 @@ const messageContextCallback: NavContextMenuPatchCallback = (children, props) =>
             id="vc-view-message-raw"
             label="View Raw"
             action={() => openViewRawModalMessage(props.message)}
-            icon={LogIcon(IconTypes.DEFAULT)}
+            icon={setIconClassName(LogIcon, Iconclasses.discord)}
         />
     );
 };
@@ -186,7 +172,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
                         openViewRawModal(JSON.stringify(value, null, 4), name);
                     }
                 }}
-                icon={LogIcon(IconTypes.DEFAULT)}
+                icon={LogIcon()}
             />
         );
     };
@@ -204,7 +190,7 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
             id={"vc-view-role-raw"}
             label="View Raw"
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
-            icon={LogIcon(IconTypes.DEFAULT)}
+            icon={setIconClassName(LogIcon, Iconclasses.discord)}
         />
     );
 };
@@ -230,7 +216,7 @@ export default definePlugin({
 
         return {
             label: "View Raw",
-            icon: () => LogIcon(IconTypes.DEFAULT)(),
+            icon: () => setIconClassName(LogIcon, Iconclasses.popover)(),
             message: msg,
             channel,
             onClick: () => openViewRawModalMessage(msg)

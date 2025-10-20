@@ -5,7 +5,7 @@
  */
 
 import { Settings } from "@api/Settings";
-import { IconTypes, StarIcon } from "@components/Icons";
+import { ClockIcon } from "@components/Icons";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings/AddonBadge";
 import { BackupAndRestoreTab, CloudTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VelocityTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
@@ -87,7 +87,7 @@ export default definePlugin({
                 section: "VelocityPlugins",
                 label: "Plugins",
                 element: PluginsTab,
-                icon: <AddonBadge text="BETA" icon={StarIcon(IconTypes.BADGE)()} type={AddonBadgeTypes.BRAND} />,
+                icon: <AddonBadge text="BETA" icon={ClockIcon()()} type={AddonBadgeTypes.BRAND} />,
                 className: "vc-plugins"
             },
             {

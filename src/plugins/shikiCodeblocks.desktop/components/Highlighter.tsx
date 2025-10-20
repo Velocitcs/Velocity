@@ -26,7 +26,6 @@ import { useShikiSettings } from "../hooks/useShikiSettings";
 import { useTheme } from "../hooks/useTheme";
 import { hex2Rgb } from "../utils/color";
 import { cl, shouldUseHljs } from "../utils/misc";
-import { ButtonRow } from "./ButtonRow";
 import { Code } from "./Code";
 import { Header } from "./Header";
 
@@ -113,10 +112,6 @@ export const Highlighter = ({
                     content={content}
                     tokens={tokens}
                 />
-                {!isPreview && <ButtonRow
-                    content={content}
-                    theme={themeBase}
-                />}
             </code>
         </div>
     );

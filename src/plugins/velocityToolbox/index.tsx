@@ -21,7 +21,7 @@ import "./index.css";
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { Settings, useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { AppearanceIcon, IconTypes, LogIcon, PencilIcon } from "@components/Icons";
+import { AppearanceIcon, LogIcon, PencilIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
@@ -67,7 +67,7 @@ function VelocityPopout(onClose: () => void) {
             <Menu.MenuItem
                 id="vc-toolbox-notifications"
                 label="Open Notification Log"
-                icon={LogIcon({ ...IconTypes.MEDIUM })}
+                icon={LogIcon()}
                 action={openNotificationLogModal}
             />
             <Menu.MenuCheckboxItem
@@ -81,7 +81,7 @@ function VelocityPopout(onClose: () => void) {
             <Menu.MenuItem
                 id="vc-toolbox-quickcss"
                 label="Open QuickCSS"
-                icon={PencilIcon({ ...IconTypes.MEDIUM })}
+                icon={PencilIcon()}
                 action={() => VelocityNative.quickCss.openEditor()}
             />
             {...pluginEntries}
@@ -109,7 +109,7 @@ function VelocityPopoutButton({ buttonClass }: { buttonClass: string; }) {
                     className={`vc-toolbox-btn ${buttonClass}`}
                     onClick={() => setShow(v => !v)}
                     tooltip={isShown ? null : "Velocity Toolbox"}
-                    icon={AppearanceIcon({ ...IconTypes.MEDIUM })}
+                    icon={AppearanceIcon()}
                     selected={isShown}
                 />
             )}

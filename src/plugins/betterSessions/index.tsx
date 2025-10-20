@@ -21,7 +21,6 @@ import "./styles.css";
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { IconTypes } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
@@ -131,7 +130,7 @@ export default definePlugin({
     }, { noop: true }),
     renderIcon: ErrorBoundary.wrap(({ session, DeviceIcon }: { session: Session, DeviceIcon: React.ComponentType<any>; }) => {
         const PlatformIcon = GetPlatformIcon(session.client_info.platform);
-        const iconResult = PlatformIcon(IconTypes.MEDIUM);
+        const iconResult = PlatformIcon();
         const icon = typeof iconResult === "function" ? iconResult() : iconResult;
 
         return (
