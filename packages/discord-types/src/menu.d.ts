@@ -28,6 +28,13 @@ export interface Menu {
         childRowHeight?: number;
         listClassName?: string;
         disabled?: boolean;
+        className?: string;
+        focusedClassName?: string;
+        children?: ReactNode;
+        hasSubmenu?: boolean;
+        dontCloseOnAction?: boolean;
+        keepItemStyles?: boolean;
+        separator?: boolean;
     }>;
     MenuCheckboxItem: RC<{
         id: string;

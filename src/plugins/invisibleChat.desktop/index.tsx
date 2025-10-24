@@ -174,10 +174,7 @@ export default definePlugin({
             type: "rich",
             rawTitle: "Decrypted Message",
             color: "#45f5f5",
-            rawDescription: revealed,
-            footer: {
-                text: "Made with ❤️ by c0dine and Sammy!",
-            },
+            rawDescription: revealed
         });
 
         if (urlCheck?.length) {

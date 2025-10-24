@@ -70,6 +70,7 @@ export const AppearanceIcon = createIcon((props: IconProps) => (
 export const PencilIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
+        aria-label="Pencil"
     >
         <path
             fill="currentColor"
@@ -283,13 +284,14 @@ export const CogWheel = (props: IconProps = {}) => () => (
 export const DeleteIcon = createIcon((props: IconProps) => (
     <Icon
         {...props}
+        aria-label="Delete"
     >
         <path
-            fill="var(--status-danger)"
+            fill="currentColor"
             d="M15 3.999V2H9V3.999H3V5.999H21V3.999H15Z"
         />
         <path
-            fill="var(--status-danger)"
+            fill="currentColor"
             d="M5 6.99902V18.999C5 20.101 5.897 20.999 7 20.999H17C18.103 20.999 19 20.101 19 18.999V6.99902H5ZM11 17H9V11H11V17ZM15 17H13V11H15V17Z"
         />
     </Icon>
@@ -1087,6 +1089,8 @@ export const CheckmarkIcon = createIcon((props: IconProps) => (
         />
     </Icon>
 ));
+
+
 
 export const CrossmarkIcon = createIcon((props: IconProps) => (
     <Icon

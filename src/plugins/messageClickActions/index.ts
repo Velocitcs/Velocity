@@ -1,42 +1,60 @@
 /*
- * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * Velocity, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { MessageFlags } from "@discord-types/enums";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { FluxDispatcher, MessageTypeSets, PermissionsBits, PermissionStore, UserStore, WindowStore } from "@webpack/common";
+import {
+    FluxDispatcher,
+    MessageTypeSets,
+    PermissionsBits,
+    PermissionStore,
+    UserStore,
+    WindowStore
+} from "@webpack/common";
 import NoReplyMentionPlugin from "plugins/noReplyMention";
 
 const MessageActions = findByPropsLazy("deleteMessage", "startEditMessage");
 const EditStore = findByPropsLazy("isEditing", "isEditingAny");
 
-let isDeletePressed = false;
-const keydown = (e: KeyboardEvent) => e.key === "Backspace" && (isDeletePressed = true);
-const keyup = (e: KeyboardEvent) => e.key === "Backspace" && (isDeletePressed = false);
-const focusChanged = () => !WindowStore.isFocused() && (isDeletePressed = false);
+let isPressedKey = false;
+
+const keydown = (e: KeyboardEvent) => {
+    if (e.key === settings.store.deleteKey) isPressedKey = true;
+};
+const keyup = (e: KeyboardEvent) => {
+    if (e.key === settings.store.deleteKey) isPressedKey = false;
+};
+const focusChanged = () => {
+    if (!WindowStore.isFocused()) isPressedKey = false;
+};
 
 const settings = definePluginSettings({
     enableDeleteOnClick: {
         type: OptionType.BOOLEAN,
-        description: "Enable delete on click while holding backspace",
+        description: "Enable delete on click while holding key",
         default: true
+    },
+    deleteKey: {
+        type: OptionType.SELECT,
+        description: "Key to hold for delete on click",
+        options: [
+            { label: "Backspace", value: "Backspace", default: true },
+            { label: "Delete", value: "Delete" },
+            { label: "Shift", value: "Shift" },
+            { label: "Control", value: "Control" },
+            { label: "Alt", value: "Alt" },
+            { label: "Q", value: "q" },
+            { label: "Z", value: "z" },
+            { label: "X", value: "x" },
+            { label: "C", value: "c" },
+            { label: "V", value: "v" }
+        ]
     },
     enableDoubleClickToEdit: {
         type: OptionType.BOOLEAN,
@@ -48,6 +66,16 @@ const settings = definePluginSettings({
         description: "Enable double click to reply",
         default: true
     },
+    doubleClickAction: {
+        type: OptionType.SELECT,
+        description: "What counts as a double click",
+        options: [
+            { label: "Double Click (2 clicks)", value: 2, default: true },
+            { label: "Triple Click (3 clicks)", value: 3 },
+            { label: "Quadruple Click (4 clicks)", value: 4 },
+            { label: "Single Click (1 click)", value: 1 }
+        ]
+    },
     requireModifier: {
         type: OptionType.BOOLEAN,
         description: "Only do double click actions when shift/ctrl is held",
@@ -57,7 +85,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "MessageClickActions",
-    description: "Hold Backspace and click to delete, double click to edit/reply",
+    description: "Hold key and click to delete, double click to edit/reply",
     authors: [Devs.Ven],
 
     settings,
@@ -76,20 +104,26 @@ export default definePlugin({
 
     onMessageClick(msg, channel, event) {
         const isMe = msg.author.id === UserStore.getCurrentUser().id;
-        if (!isDeletePressed) {
-            if (event.detail < 2) return;
+
+        // Only handle normal click / double click
+        if (!isPressedKey) {
+            if (event.detail < settings.store.doubleClickAction) return;
             if (settings.store.requireModifier && !event.ctrlKey && !event.shiftKey) return;
             if (channel.guild_id && !PermissionStore.can(PermissionsBits.SEND_MESSAGES, channel)) return;
             if (msg.deleted === true) return;
 
             if (isMe) {
-                if (!settings.store.enableDoubleClickToEdit || EditStore.isEditing(channel.id, msg.id) || msg.state !== "SENT") return;
+                if (
+                    !settings.store.enableDoubleClickToEdit ||
+                    EditStore.isEditing(channel.id, msg.id) ||
+                    msg.state !== "SENT"
+                )
+                    return;
 
                 MessageActions.startEditMessage(channel.id, msg.id, msg.content);
                 event.preventDefault();
             } else {
                 if (!settings.store.enableDoubleClickToReply) return;
-
                 if (!MessageTypeSets.REPLYABLE.has(msg.type) || msg.hasFlag(MessageFlags.EPHEMERAL)) return;
 
                 const isShiftPress = event.shiftKey && !settings.store.requireModifier;
@@ -105,7 +139,10 @@ export default definePlugin({
                     showMentionToggle: channel.guild_id !== null
                 });
             }
-        } else if (settings.store.enableDeleteOnClick && (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel))) {
+        } else if (
+            settings.store.enableDeleteOnClick &&
+            (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel))
+        ) {
             if (msg.deleted) {
                 FluxDispatcher.dispatch({
                     type: "MESSAGE_DELETE",
@@ -118,5 +155,5 @@ export default definePlugin({
             }
             event.preventDefault();
         }
-    },
+    }
 });

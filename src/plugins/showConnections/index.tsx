@@ -23,6 +23,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { CopyIcon, LinkIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { setIconClassName } from "@utils/icon";
 import { copyWithToast } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { ConnectedAccount, User } from "@vencord/discord-types";
@@ -119,7 +120,7 @@ function CompactConnectionComponent({ connection, theme }: { connection: Connect
                 <span className="vc-sc-tooltip">
                     <span className="vc-sc-connection-name">{connection.name}</span>
                     {connection.verified && <VerifiedIcon />}
-                    <TooltipIcon height={16} width={16} className="vc-sc-tooltip-icon" />
+                    {setIconClassName(TooltipIcon, "vc-sc-tooltip-icon")()}
                 </span>
             }
             key={connection.id}

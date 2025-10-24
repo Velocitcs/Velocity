@@ -7,6 +7,7 @@
 export * from "./BaseText";
 export * from "./CheckedTextInput";
 export * from "./CodeBlock";
+export * from "./DisabledLine";
 export * from "./Divider";
 export { default as ErrorBoundary } from "./ErrorBoundary";
 export * from "./ErrorCard";

@@ -20,6 +20,7 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { LinkIcon } from "@components/Icons";
 import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import definePlugin from "@utils/types";
 import type { Channel, User } from "@vencord/discord-types";
 import { Menu } from "@webpack/common";
@@ -38,14 +39,14 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: U
             id="vc-copy-user-url"
             label="Copy User URL"
             action={() => copyToClipboard(`<https://discord.com/users/${user.id}>`)}
-            icon={LinkIcon}
+            icon={setIconClassName(LinkIcon, Iconclasses.discord)}
         />
     );
 };
 
 export default definePlugin({
     name: "CopyUserURLs",
-    authors: [Devs.castdrian],
+    authors: [Devs.castdrian, Devs.Velocity],
     description: "Adds a 'Copy User URL' option to the user context menu.",
     contextMenus: {
         "user-context": UserContextMenuPatch

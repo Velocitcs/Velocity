@@ -38,22 +38,27 @@ export default definePlugin({
 
         return (
             <Tooltip text={recentlyCopied ? "Copied!" : bytesLeft > 0 ? "File too large to copy" : "Copy File Contents"}>
-                {tooltipProps => (
-                    <div
-                        {...tooltipProps}
-                        className="vc-cfc-button"
-                        role="button"
-                        onClick={() => {
-                            if (!recentlyCopied && bytesLeft <= 0) {
-                                copyWithToast(fileContents);
-                                setRecentlyCopied(true);
-                                setTimeout(() => setRecentlyCopied(false), 2000);
-                            }
-                        }}
-                    >
-                        {recentlyCopied ? <CheckMarkIcon /> : bytesLeft > 0 ? <NoEntrySignIcon color="var(--channel-icon)" /> : <CopyIcon />}
-                    </div>
-                )}
+                {tooltipProps => {
+                    const NoEntryIcon = NoEntrySignIcon({ color: "var(--channel-icon)" });
+                    const CopyIconComponent = CopyIcon();
+
+                    return (
+                        <div
+                            {...tooltipProps}
+                            className="vc-cfc-button"
+                            role="button"
+                            onClick={() => {
+                                if (!recentlyCopied && bytesLeft <= 0) {
+                                    copyWithToast(fileContents);
+                                    setRecentlyCopied(true);
+                                    setTimeout(() => setRecentlyCopied(false), 2000);
+                                }
+                            }}
+                        >
+                            {recentlyCopied ? <CheckMarkIcon /> : bytesLeft > 0 ? <NoEntryIcon /> : <CopyIconComponent />}
+                        </div>
+                    );
+                }}
             </Tooltip>
         );
     }, { noop: true }),

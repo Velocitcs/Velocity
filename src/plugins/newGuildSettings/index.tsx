@@ -23,6 +23,7 @@ import {
 import { definePluginSettings } from "@api/Settings";
 import { CogWheel } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import definePlugin, { OptionType } from "@utils/types";
 import { Guild } from "@vencord/discord-types";
 import { findByCodeLazy, findByPropsLazy, mapMangledModuleLazy } from "@webpack";
@@ -88,7 +89,7 @@ const makeContextMenuPatch: (shouldAddIcon: boolean) => NavContextMenuPatchCallb
         <Menu.MenuItem
             label="Apply NewGuildSettings"
             id="vc-newguildsettings-apply"
-            icon={shouldAddIcon ? CogWheel : void 0}
+            icon={shouldAddIcon ? setIconClassName(CogWheel, Iconclasses.discord) : void 0}
             action={() => applyDefaultSettings(guild.id)}
         />
     );

@@ -9,6 +9,7 @@ import { classNameFactory } from "@api/Styles";
 import { LeaveIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
@@ -212,7 +213,7 @@ export default definePlugin({
             if (logoutItem) {
                 result.push(
                     <Menu.MenuSeparator key="logout-sep" />,
-                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: LeaveIcon() } }
+                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: setIconClassName(LeaveIcon, Iconclasses.popover) } }
                 );
             }
 

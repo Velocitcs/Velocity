@@ -168,7 +168,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                                             : (
                                                                 <Flex style={{ gap: "0.2em", justifyItems: "center" }}>
                                                                     @owner
-                                                                    <OwnerCrownIcon height={18} width={18} aria-hidden="true" />
+                                                                    {OwnerCrownIcon({ height: 18, width: 18, "aria-hidden": "true" })()}
                                                                 </Flex>
                                                             )
                                                 }
@@ -207,7 +207,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                             return typeof description === "function" ? i18n.intl.format(description, {}) : description;
                                         })()
                                     }>
-                                        {props => <InfoIcon {...props} />}
+                                        {props => InfoIcon({ ...props })()}
                                     </Tooltip>
                                 </div>
                             ))}

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { DeleteIcon } from "@components/Icons";
 import { classes } from "@utils/misc";
 import { findByPropsLazy } from "@webpack";
 import { Tooltip } from "@webpack/common";
@@ -33,7 +32,7 @@ export function DeleteButton({ onClick }: { onClick(): void; }) {
                     onClick={onClick}
                     role="button"
                 >
-                    <DeleteIcon width="20" height="20" />
+                    DeleteIcon()
                 </div>
             )}
         </Tooltip>

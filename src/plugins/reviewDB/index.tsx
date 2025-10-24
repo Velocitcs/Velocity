@@ -22,6 +22,7 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { NotesIcon, OpenExternalIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { Guild, User } from "@vencord/discord-types";
@@ -43,7 +44,7 @@ const guildPopoutPatch: NavContextMenuPatchCallback = (children, { guild }: { gu
         <Menu.MenuItem
             label="View Reviews"
             id="vc-rdb-server-reviews"
-            icon={OpenExternalIcon}
+            icon={setIconClassName(OpenExternalIcon, Iconclasses.popover)}
             action={() => openReviewsModal(guild.id, guild.name, ReviewType.Server)}
         />
     );
@@ -55,7 +56,7 @@ const userContextPatch: NavContextMenuPatchCallback = (children, { user }: { use
         <Menu.MenuItem
             label="View Reviews"
             id="vc-rdb-user-reviews"
-            icon={OpenExternalIcon}
+            icon={setIconClassName(OpenExternalIcon, Iconclasses.popover)}
             action={() => openReviewsModal(user.id, user.username, ReviewType.User)}
         />
     );
@@ -153,7 +154,7 @@ export default definePlugin({
                     onClick={() => openReviewsModal(user.id, user.username, ReviewType.User)}
                     className={classes(BannerButtonClasses.bannerButton)}
                 >
-                    <NotesIcon height={16} width={16} />
+                    {NotesIcon({ height: 16, width: 16 })()}
                 </Clickable>
             </TooltipContainer>
         );

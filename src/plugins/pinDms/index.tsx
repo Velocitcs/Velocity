@@ -1,14 +1,28 @@
 /*
- * Velocity, a Discord client mod
- * Copyright (c) 2024 Vendicated and contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
+ * Velocity, a modification for Discord's desktop app
+ * Copyright (c) 2022 Vendicated and contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { DeleteIcon, PencilIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { Channel } from "@vencord/discord-types";
@@ -272,6 +286,7 @@ export default definePlugin({
                             <Menu.MenuItem
                                 id="vc-pindms-edit-category"
                                 label="Edit Category"
+                                icon={setIconClassName(PencilIcon, Iconclasses.discord)}
                                 action={() => openCategoryModal(category.id, null)}
                             />
 
@@ -282,6 +297,7 @@ export default definePlugin({
                                             canMoveCategoryInDirection(category.id, -1) && <Menu.MenuItem
                                                 id="vc-pindms-move-category-up"
                                                 label="Move Up"
+                                                icon={() => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14L12 9L17 14H7Z" /></svg>}
                                                 action={() => moveCategory(category.id, -1)}
                                             />
                                         }
@@ -289,6 +305,7 @@ export default definePlugin({
                                             canMoveCategoryInDirection(category.id, 1) && <Menu.MenuItem
                                                 id="vc-pindms-move-category-down"
                                                 label="Move Down"
+                                                icon={() => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10L12 15L17 10H7Z" /></svg>}
                                                 action={() => moveCategory(category.id, 1)}
                                             />
                                         }
@@ -302,6 +319,7 @@ export default definePlugin({
                                 id="vc-pindms-delete-category"
                                 color="danger"
                                 label="Delete Category"
+                                icon={setIconClassName(DeleteIcon, Iconclasses.discord)}
                                 action={() => removeCategory(category.id)}
                             />
 
@@ -312,7 +330,7 @@ export default definePlugin({
             >
                 <h2
                     className={classes(headerClasses.privateChannelsHeaderContainer, "vc-pindms-section-container", category.collapsed ? "vc-pindms-collapsed" : "")}
-                    style={{ color: `#${category.color.toString(16).padStart(6, "0")}` }}
+                    style={{ color: `#${category.color.toString(16).padStart(6, "0")}`, textTransform: "none" }}
                 >
                     <span className={headerClasses.headerText}>
                         {category?.name ?? "uh oh"}

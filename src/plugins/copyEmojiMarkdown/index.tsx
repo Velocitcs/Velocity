@@ -5,7 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { CopyIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { copyWithToast } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
@@ -62,6 +64,7 @@ export default definePlugin({
                 <Menu.MenuItem
                     id="vc-copy-emoji-markdown"
                     label="Copy Emoji Markdown"
+                    icon={setIconClassName(CopyIcon, Iconclasses.discord)}
                     action={() => {
                         copyWithToast(
                             getEmojiMarkdown(target, settings.store.copyUnicode),

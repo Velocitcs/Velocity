@@ -1,5 +1,5 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Velocity, a modification for Discord's desktop app
  * Copyright (c) 2022 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-declare global {
-    export var VelocityNative: typeof import("./VelocityNative").default;
-    export var Velocity: typeof import("./Velocity");
-}
+import { SVGProps } from "react";
 
-export { };
+export function DisabledLine(props: SVGProps<SVGSVGElement>) {
+    return (
+        <>
+            <path stroke="#000" strokeWidth="2" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />
+            <path fill="var(--status-danger)" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />
+        </>
+    );
+}

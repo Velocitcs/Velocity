@@ -31,6 +31,13 @@ export interface MessagePopoverButtonItem {
     channel: Channel,
     onClick?: MouseEventHandler<HTMLButtonElement>,
     onContextMenu?: MouseEventHandler<HTMLButtonElement>;
+    showNewBadge?: boolean;
+    disabled?: boolean;
+    dangerous?: boolean;
+    separator?: boolean;
+    selected?: boolean;
+    onTooltipShow?: () => void;
+    onTooltipHide?: () => void;
 }
 
 export type MessagePopoverButtonFactory = (message: Message) => MessagePopoverButtonItem | null;

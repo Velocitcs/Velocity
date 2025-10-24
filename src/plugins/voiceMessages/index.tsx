@@ -58,7 +58,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
             id="vc-send-vmsg"
             label={
                 <div className={OptionClasses.optionLabel}>
-                    <Microphone className={OptionClasses.optionIcon} height={24} width={24} />
+                    {Microphone({ className: OptionClasses.optionIcon, height: 24, width: 24 })()}
                     <div className={OptionClasses.optionName}>Send voice message</div>
                 </div>
             }
