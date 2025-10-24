@@ -244,7 +244,6 @@ const messageContextCallback: NavContextMenuPatchCallback = (children, props) =>
             <Menu.MenuItem
                 id="vc-embed-data"
                 label="Embed Data"
-                icon={setIconClassName(CodeIcon, Iconclasses.discord)}
             >
                 <Menu.MenuItem
                     id="vc-copy-embed-data"
