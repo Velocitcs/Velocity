@@ -20,9 +20,9 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import presetQuotesText from "file://quotes.txt";
 
-const presetQuotes = presetQuotesText.split("\n").map(quote => /^\s*[^#\s]/.test(quote) && quote.trim()).filter(Boolean) as string[];
+import { presetQuotes } from "./quotes";
+
 const noQuotesQuote = "Did you really disable all loading quotes? What a buffoon you are...";
 
 const settings = definePluginSettings({
@@ -42,15 +42,10 @@ const settings = definePluginSettings({
         default: false
     },
     additionalQuotes: {
-        description: "Additional custom quotes to possibly appear, separated by the below delimiter",
+        description: "Additional custom quotes (JSON array format)",
         type: OptionType.STRING,
-        default: "",
-    },
-    additionalQuotesDelimiter: {
-        description: "Delimiter for additional quotes",
-        type: OptionType.STRING,
-        default: "|",
-    },
+        default: "[]",
+    }
 });
 
 export default definePlugin({
@@ -79,16 +74,22 @@ export default definePlugin({
 
     mutateQuotes(quotes: string[]) {
         try {
-            const { enableDiscordPresetQuotes, additionalQuotes, additionalQuotesDelimiter, enablePluginPresetQuotes } = settings.store;
+            const { enableDiscordPresetQuotes, additionalQuotes, enablePluginPresetQuotes } = settings.store;
 
             if (!enableDiscordPresetQuotes)
                 quotes.length = 0;
 
-
             if (enablePluginPresetQuotes)
                 quotes.push(...presetQuotes);
 
-            quotes.push(...additionalQuotes.split(additionalQuotesDelimiter).filter(Boolean));
+            try {
+                const parsedQuotes = JSON.parse(additionalQuotes);
+                if (Array.isArray(parsedQuotes)) {
+                    quotes.push(...parsedQuotes.filter(q => typeof q === "string"));
+                }
+            } catch (e) {
+                new Logger("LoadingQuotes").error("Failed to parse additional quotes JSON", e);
+            }
 
             if (!quotes.length)
                 quotes.push(noQuotesQuote);

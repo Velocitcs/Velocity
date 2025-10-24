@@ -84,10 +84,13 @@ export default definePlugin({
             if (settings.store.ignoreSelf && message.author.id === currentUser?.id) return;
             if (settings.store.ignoreBots && message.author.bot) return;
 
+            if (settings.store.ignoreServers && message.guild_id) return;
+
             const response = checkRules(message.content, message.id);
             if (response) {
                 sendMessage(message.channel_id, { content: response });
             }
         }
     }
+
 });

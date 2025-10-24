@@ -23,6 +23,7 @@ import { updateMessage } from "@api/MessageUpdater";
 import { migratePluginSettings } from "@api/Settings";
 import { ImageInvisible, ImageVisible } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { Iconclasses, setIconClassName } from "@utils/icon";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { Message } from "@vencord/discord-types";
@@ -61,17 +62,10 @@ export default definePlugin({
         if (!hasMedia(msg) && !msg.messageSnapshots.some(s => hasMedia(s.message))) return null;
 
         const isHidden = hiddenMessages.has(msg.id);
-        const IconComponent = isHidden ? ImageVisible : ImageInvisible;
-
-        const WrappedIcon = (props: any) => {
-            const icon = IconComponent({});
-            const result = typeof icon === "function" ? icon() : icon;
-            return <div style={{ width: "20px", height: "20px" }}>{result}</div>;
-        };
 
         return {
             label: isHidden ? "Show Media" : "Hide Media",
-            icon: WrappedIcon,
+            icon: isHidden ? setIconClassName(ImageVisible, Iconclasses.discord) : setIconClassName(ImageInvisible, Iconclasses.discord),
             message: msg,
             channel: ChannelStore.getChannel(msg.channel_id),
             onClick: () => this.toggleHide(msg.channel_id, msg.id)

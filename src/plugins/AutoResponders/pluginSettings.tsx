@@ -267,6 +267,11 @@ export const settings = definePluginSettings({
         description: "Ignore messages from bots",
         default: true
     },
+    ignoreServers: {
+        type: OptionType.BOOLEAN,
+        description: "Ignore messages in servers",
+        default: false
+    },
     ignoreSelf: {
         type: OptionType.BOOLEAN,
         description: "Ignore your own messages",

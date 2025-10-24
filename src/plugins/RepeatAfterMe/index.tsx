@@ -79,7 +79,6 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     if (!contextMenu) return;
 
     const group = findGroupChildrenByChildId("submit-button", children);
-
     if (!group) return;
 
     const idx = group.findIndex(c => c?.props?.id === "submit-button");
@@ -87,16 +86,17 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     group.splice(idx + 1, 0,
         <Menu.MenuCheckboxItem
             id="vc-repeat-after-me"
-            label="Disable RepeatAfterMe"
-            checked={!isEnabled}
+            label="Enable Repeat After Me"
+            checked={isEnabled}
             action={() => settings.store.isEnabled = !settings.store.isEnabled}
         />
     );
 };
 
+
 export default definePlugin({
     name: "RepeatAfterMe",
-    description: "Repeats whatever someone says in DMs (ignores self messages)",
+    description: "Repeats whatever someone says in DMs",
     authors: [Devs.Velocity],
     settings,
 

@@ -32,6 +32,8 @@ import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, M
 import definePlugin from "@utils/types";
 import { Button, ChannelStore, Forms, GuildRoleStore, Menu, React, Text } from "@webpack/common";
 
+import { openEmbedRawModal } from "../CopyEmbed/index";
+
 
 function sortObject<T extends object>(obj: T): T {
     return Object.fromEntries(Object.entries(obj).sort(([k1], [k2]) => k1.localeCompare(k2))) as T;
@@ -75,7 +77,7 @@ function makeNoteSpan(text: string, color: string) {
     );
 }
 
-function openViewRawModal(json: string, type: string, content?: string) {
+function openViewRawModal(json: string, type: string, content?: string, originalMessage?: any) {
     const key = openModal(props => (
         <ErrorBoundary>
             <ModalRoot {...props} size={ModalSize.LARGE}>
@@ -112,6 +114,14 @@ function openViewRawModal(json: string, type: string, content?: string) {
                                 Copy Raw Content
                             </Button>
                         )}
+                        {originalMessage?.embeds?.length > 0 && Velocity.Plugins.isPluginEnabled("CopyEmbed") && (
+                            <Button icon={CodeIcon()} onClick={() => {
+                                closeModal(key);
+                                openEmbedRawModal(originalMessage);
+                            }}>
+                                View Embed Data
+                            </Button>
+                        )}
                     </Flex>
                 </ModalFooter>
             </ModalRoot >
@@ -120,10 +130,11 @@ function openViewRawModal(json: string, type: string, content?: string) {
 }
 
 function openViewRawModalMessage(msg: Message) {
+    const originalMsg = msg;
     msg = cleanMessage(msg);
     const msgJson = JSON.stringify(msg, null, 4);
 
-    return openViewRawModal(msgJson, "Message", msg.content);
+    return openViewRawModal(msgJson, "Message", msg.content, originalMsg);
 }
 
 function openViewRawModalUser(user: any) {

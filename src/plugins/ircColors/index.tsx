@@ -16,26 +16,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { hash as h64 } from "@intrnl/xxhash64";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { useMemo } from "@webpack/common";
+import { Menu, Toasts } from "@webpack/common";
 
-// Calculate a CSS color string based on the user ID
+import { CustomUserColorsSettings } from "./settings";
+
+type UserColorRule = {
+    userId: string;
+    color: string;
+};
+
+const makeEmptyUserColorRule = (): UserColorRule => ({
+    userId: "",
+    color: ""
+});
+
+const makeEmptyUserColorArray = () => [makeEmptyUserColorRule()];
+
 function calculateNameColorForUser(id?: string) {
-    const { lightness } = settings.use(["lightness"]);
-    const idHash = useMemo(() => id ? h64(id) : null, [id]);
+    const { userColorRules } = settings.store;
 
-    return idHash && `hsl(${idHash % 360n}, 100%, ${lightness}%)`;
+    const customColor = userColorRules.find(rule => rule.userId === id && rule.userId !== "");
+    if (customColor) {
+        return `#${customColor.color}`;
+    }
+
+    return null;
 }
 
 const settings = definePluginSettings({
-    lightness: {
-        description: "Lightness, in %. Change if the colors are too light or too dark",
-        type: OptionType.NUMBER,
-        default: 70,
-    },
     memberListColors: {
         description: "Replace role colors in the member list",
         restartNeeded: true,
@@ -53,20 +65,102 @@ const settings = definePluginSettings({
         restartNeeded: false,
         type: OptionType.BOOLEAN,
         default: false
+    },
+    userColors: {
+        type: OptionType.COMPONENT,
+        component: () => {
+            const { userColorRules } = settings.use(["userColorRules"]);
+            return <CustomUserColorsSettings userColorRules={userColorRules} />;
+        },
+        description: "Custom colors for specific users"
+    },
+    userColorRules: {
+        type: OptionType.CUSTOM,
+        default: makeEmptyUserColorArray(),
     }
 });
 
+function userHasCustomColor(userId: string): boolean {
+    return settings.store.userColorRules.some(r => r.userId === userId && r.userId !== "");
+}
+
+function addCustomUserColor(userId: string, color: string) {
+    const rules = settings.store.userColorRules;
+    const existingIndex = rules.findIndex(r => r.userId === userId);
+
+    if (existingIndex !== -1 && existingIndex !== rules.length - 1) {
+        rules[existingIndex].color = color;
+    } else {
+        const lastIndex = rules.length - 1;
+        if (rules[lastIndex] && !rules[lastIndex].userId) {
+            rules[lastIndex] = { userId, color };
+        } else {
+            rules.push({ userId, color });
+        }
+        rules.push(makeEmptyUserColorRule());
+    }
+
+    Toasts.show({
+        message: "Added custom color for user",
+        id: Toasts.genId(),
+        type: Toasts.Type.SUCCESS
+    });
+}
+
+function removeCustomUserColor(userId: string) {
+    const rules = settings.store.userColorRules;
+    const index = rules.findIndex(r => r.userId === userId);
+
+    if (index !== -1 && index !== rules.length - 1) {
+        rules.splice(index, 1);
+
+        Toasts.show({
+            message: "Removed custom color for user",
+            id: Toasts.genId(),
+            type: Toasts.Type.SUCCESS
+        });
+    }
+}
+
+const userContextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
+    const userId = props?.user?.id;
+    if (!userId) return;
+
+    const group = findGroupChildrenByChildId("devmode-copy-id", children);
+    if (group) {
+        const hasCustomColor = userHasCustomColor(userId);
+
+        group.push(
+            <Menu.MenuItem
+                key="vc-custom-user-color"
+                id="vc-custom-user-color"
+                label={hasCustomColor ? "Remove Custom Color" : "Set Custom Color"}
+                action={() => {
+                    if (hasCustomColor) {
+                        removeCustomUserColor(userId);
+                    } else {
+                        addCustomUserColor(userId, "ff0000");
+                    }
+                }}
+            />
+        );
+    }
+};
+
 export default definePlugin({
     name: "IrcColors",
-    description: "Makes username colors in chat unique, like in IRC clients",
+    description: "Custom username colors for specific users",
     authors: [Devs.Grzesiek11, Devs.jamesbt365],
     settings,
+
+    contextMenus: {
+        "user-context": userContextMenuPatch
+    },
 
     patches: [
         {
             find: '="SYSTEM_TAG"',
             replacement: {
-                // Override colorString with our custom color and disable gradients if applying the custom color.
                 match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i),/,
                 replace: "$self.wrapMessageColorProps($1, arguments[0]),"
             }
@@ -84,7 +178,7 @@ export default definePlugin({
     wrapMessageColorProps(colorProps: { colorString: string, colorStrings?: Record<"primaryColor" | "secondaryColor" | "tertiaryColor", string>; }, context: any) {
         try {
             const colorString = this.calculateNameColorForMessageContext(context);
-            if (colorString === colorProps.colorString) {
+            if (!colorString || colorString === colorProps.colorString) {
                 return colorProps;
             }
 
@@ -108,7 +202,6 @@ export default definePlugin({
         const colorString = context?.author?.colorString;
         const color = calculateNameColorForUser(userId);
 
-        // Color preview in role settings
         if (context?.message?.channel_id === "1337" && userId === "313337")
             return colorString;
 
