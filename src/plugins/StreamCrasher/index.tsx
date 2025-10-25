@@ -83,7 +83,7 @@ function CrashButton() {
 
 export default definePlugin({
     name: "StreamCrasher",
-    description: "Crashes your stream in Discord calls.",
+    description: "Crashes your stream in Discord calls when you're streaming.",
     authors: [Devs.Velocity],
     settings,
     patches: [
