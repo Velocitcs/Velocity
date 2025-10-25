@@ -1,20 +1,8 @@
 /*
- * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * Velocity, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
@@ -47,6 +35,13 @@ const settings = definePluginSettings({
         description: "Cooldown between repeats (seconds)",
         default: 0,
         markers: [0, 10, 20, 30, 40, 50, 60],
+        stickToMarkers: false
+    },
+    delayBeforeSend: {
+        type: OptionType.SLIDER,
+        description: "Delay before sending the repeated message (seconds)",
+        default: 0,
+        markers: [0, 1, 2, 3, 5, 10],
         stickToMarkers: false
     }
 });
@@ -93,7 +88,6 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     );
 };
 
-
 export default definePlugin({
     name: "RepeatAfterMe",
     description: "Repeats whatever someone says in DMs",
@@ -114,12 +108,16 @@ export default definePlugin({
             if (channel?.type === 1 && message.author.id !== UserStore.getCurrentUser()?.id && !message.author.bot) {
                 const now = Date.now();
                 const cooldownMs = settings.store.cooldown * 1000;
+                const delayMs = settings.store.delayBeforeSend * 1000;
 
                 if (now - lastRepeatTime < cooldownMs) return;
 
                 const { content } = message;
                 if (content) {
-                    sendMessage(message.channel_id, { content });
+                    setTimeout(() => {
+                        sendMessage(message.channel_id, { content });
+                    }, delayMs);
+
                     lastRepeatTime = now;
                 }
             }
