@@ -24,7 +24,7 @@ import { Devs } from "@utils/constants";
 import { Iconclasses, setIconClassName } from "@utils/icon";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { Menu } from "@webpack/common";
+import { FluxDispatcher, FormNotice, Menu, React, Select } from "@webpack/common";
 
 const VoiceActions = findByPropsLazy("selectVoiceChannel", "disconnect");
 const ChannelStore = findByPropsLazy("getChannel", "getDMFromUserId");
@@ -36,7 +36,7 @@ const ToggleDeafen = findByPropsLazy("toggleSelfDeaf");
 const settings = definePluginSettings({
     channelId: {
         type: OptionType.STRING,
-        description: "Channel ID (works with DM and Guild VC)",
+        description: "Channel IDs (comma separated for multiple channels)",
         default: ""
     },
     autoMute: {
@@ -48,8 +48,80 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Automatically deafen on join",
         default: false
+    },
+    autoStream: {
+        type: OptionType.BOOLEAN,
+        description: "Automatically start streaming on join",
+        default: false
+    },
+    streamSound: {
+        type: OptionType.BOOLEAN,
+        description: "Enable sound when streaming",
+        default: true
+    },
+    streamSource: {
+        type: OptionType.STRING,
+        description: "Stream source ID",
+        default: "screen:0:0",
+        hidden: true
+    },
+    streamSourcePicker: {
+        type: OptionType.COMPONENT,
+        description: "",
+        component: () => {
+            const [sources, setSources] = React.useState<{ label: string; value: string; }[]>([]);
+            const [selected, setSelected] = React.useState(settings.store.streamSource || "screen:0:0");
+
+            React.useEffect(() => {
+                (async () => {
+                    try {
+                        const srcs = await DiscordNative.desktopCapture.getDesktopCaptureSources({
+                            types: ["screen"]
+                        });
+                        setSources(
+                            srcs.map((s: any, index: number) => ({
+                                label: `Screen ${index + 1}`,
+                                value: s.id
+                            }))
+                        );
+                    } catch (err) {
+                        console.error("Failed to load sources:", err);
+                    }
+                })();
+            }, []);
+
+            return (
+                <>
+                    <Select
+                        options={sources}
+                        isSelected={v => v === selected}
+                        select={v => {
+                            setSelected(v);
+                            settings.store.streamSource = v;
+                        }}
+                        serialize={v => v}
+                    />
+                </>
+            );
+        }
     }
 });
+
+async function startStream(channelId: string) {
+    await new Promise(r => setTimeout(r, 500));
+
+    const sourceId = settings.store.streamSource;
+
+    console.log("Streaming with sourceId:", sourceId);
+
+    FluxDispatcher.dispatch({
+        type: "STREAM_START",
+        streamType: "call",
+        channelId: channelId,
+        sourceId: sourceId,
+        sound: settings.store.streamSound
+    });
+}
 
 function joinCall(channelId: string) {
     const channel = ChannelStore?.getChannel(channelId);
@@ -71,8 +143,18 @@ function joinCall(channelId: string) {
                     MediaEngineStore.setLocalMute(true);
                 }
             }
+
+            if (settings.store.autoStream) {
+                startStream(channelId);
+            }
         } catch (err) { }
     } catch (e) { }
+}
+
+function getChannelIds(): string[] {
+    const { channelId } = settings.store;
+    if (!channelId) return [];
+    return channelId.split(",").map(id => id.trim()).filter(id => id.length > 0);
 }
 
 const streamContextMenuPatch: NavContextMenuPatchCallback = children => {
@@ -88,31 +170,59 @@ const streamContextMenuPatch: NavContextMenuPatchCallback = children => {
     children.splice(4, 0, menuItem);
 };
 
+
+const streamEnablingPatch: NavContextMenuPatchCallback = children => {
+    const menuItem = (
+        <Menu.MenuCheckboxItem
+            id="vc-stream-checkbox"
+            label="Auto Stream"
+            subtext="Whether to automaticly start a stream thru AutoJoinCall plugin"
+            checked={settings.store.autoStream}
+            action={() => {
+                settings.store.autoStream = !settings.store.autoStream;
+            }}
+        />
+    );
+
+    children.splice(2, 0, menuItem);
+};
 export default definePlugin({
     name: "autoJoinCall",
-    description: "Automatically joins the specified DM or guild call",
+    description: "Automatically joins the specified DM or guild call(s)",
     authors: [Devs.Velocity],
     settings,
 
     contextMenus: {
-        "more-settings-context": streamContextMenuPatch
+        "more-settings-context": streamContextMenuPatch,
+        "manage-streams": streamEnablingPatch
     },
 
     flux: {
         CALL_CREATE(data: { channelId: string; }) {
-            const { channelId } = settings.store;
-            if (!channelId) return;
+            const channelIds = getChannelIds();
+            if (channelIds.length === 0) return;
 
-            if (data.channelId === channelId) {
-                setTimeout(() => joinCall(channelId), 100);
+            if (channelIds.includes(data.channelId)) {
+                setTimeout(() => joinCall(data.channelId), 100);
             }
         }
     },
 
     start() {
-        const { channelId } = settings.store;
-        if (!channelId) return;
+        const channelIds = getChannelIds();
+        if (channelIds.length === 0) return;
 
-        joinCall(channelId);
-    }
+        channelIds.forEach(id => joinCall(id));
+    },
+
+    settingsAboutComponent: () => (
+        <>
+            <FormNotice
+                messageType="danger"
+                textColor="text-feedback-danger"
+            >
+                This will force your streams to the selected screen no matter what (only if StreamCrasher is enabled)
+            </FormNotice>
+        </>
+    )
 });

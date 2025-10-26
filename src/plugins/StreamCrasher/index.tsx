@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { WarningIcon } from "@components/Icons";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings";
@@ -36,7 +36,6 @@ function CrashButton() {
         if (!channelId) return;
 
         (async () => {
-            /* DO NOT REMOVE: wait 500ms so discord doesnt fucking freak out */
             await new Promise(r => setTimeout(r, 500));
 
             let sourceId;
@@ -44,18 +43,26 @@ function CrashButton() {
             if (settings.store.isEnabled) {
                 sourceId = "FAKE_CRASH_SOURCE_ID";
             } else {
-                const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-                    types: ["screen", "window"]
-                });
-                sourceId = sources[0]?.id ?? "default";
+                const autoJoinSettings = Settings.plugins.autoJoinCall as any;
+                const autoJoinEnabled = Velocity.Plugins.isPluginEnabled("autoJoinCall");
+
+                if (autoJoinEnabled && autoJoinSettings?.autoStream && autoJoinSettings?.streamSource) {
+                    sourceId = autoJoinSettings.streamSource;
+                } else {
+                    const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
+                        types: ["screen", "window"]
+                    });
+                    sourceId = sources[0]?.id ?? "default";
+                }
             }
+
+            console.log("StreamCrasher dispatching with sourceId:", sourceId);
 
             FluxDispatcher.dispatch({
                 type: "STREAM_START",
                 streamType: "call",
                 channelId,
-                sourceId,
-                sound: true
+                sourceId
             });
         })();
     }, [isStreaming, settings.store.isEnabled]);
@@ -98,4 +105,3 @@ export default definePlugin({
     renderBadge: () => <AddonBadge text="BETA" type={AddonBadgeTypes.PRIMARY} icon={WarningIcon()()} />,
     CrashButton: ErrorBoundary.wrap(CrashButton, { noop: true })
 });
-

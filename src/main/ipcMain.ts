@@ -106,6 +106,12 @@ ipcMain.handle(IpcEvents.DELETE_THEME, async (_, fileName: string) => {
     await unlink(safePath);
 });
 
+ipcMain.handle(IpcEvents.UPLOAD_THEME, async (_, fileName: string, content: string) => {
+    const safePath = ensureSafePath(THEMES_DIR, fileName);
+    if (!safePath) throw new Error(`Unsafe path ${fileName}`);
+    writeFileSync(safePath, content);
+});
+
 ipcMain.handle(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));
 ipcMain.handle(IpcEvents.OPEN_SETTINGS_FOLDER, () => shell.openPath(SETTINGS_DIR));
 

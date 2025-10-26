@@ -18,6 +18,8 @@
 
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
+import { LockIcon } from "@components/Icons";
+import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { canonicalizeMatch, canonicalizeReplace } from "@utils/patches";
@@ -260,5 +262,7 @@ export default definePlugin({
     stop() {
         socket?.close(1000, "Plugin Stopped");
         socket = void 0;
-    }
+    },
+
+    renderBadge: () => <AddonBadge text="DEV" type={AddonBadgeTypes.BRAND} icon={LockIcon()()} />,
 });

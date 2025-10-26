@@ -17,7 +17,7 @@
 */
 
 import { Settings } from "@api/Settings";
-import { ClockIcon, CogWheel, WarningIcon } from "@components/Icons";
+import { ClockIcon, WarningIcon } from "@components/Icons";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings/AddonBadge";
 import { BackupAndRestoreTab, CloudTab, DeveloperTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VelocityTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
@@ -208,7 +208,7 @@ export default definePlugin({
             type: OptionType.SELECT,
             description: "Where to put the Velocity settings section",
             options: [
-                { label: "At the very top", value: "top", icon: CogWheel() },
+                { label: "At the very top", value: "top" },
                 { label: "Above the Nitro section", value: "aboveNitro", default: true },
                 { label: "Below the Nitro section", value: "belowNitro" },
                 { label: "Above Activity Settings", value: "aboveActivity" },
