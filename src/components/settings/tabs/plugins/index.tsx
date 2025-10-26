@@ -81,7 +81,7 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
                     messageType="info"
                     className="vc-reload-notice"
                 >
-                    View what plugins you contributed to{" "}
+                    See what plugins you've contributed to{" "}
                     <a
                         onClick={() => openContributorModal(user)}
                         style={{
