@@ -83,7 +83,7 @@ function CustomProfileButton({ user, currentUser }) {
 
 export default definePlugin({
     name: "DevPlugin",
-    description: "ok",
+    description: "okaga",
     authors: [Devs.Velocity],
     required: true,
 
