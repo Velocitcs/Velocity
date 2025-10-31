@@ -83,7 +83,7 @@ function CustomProfileButton({ user, currentUser }) {
 
 export default definePlugin({
     name: "DevPlugin",
-    description: "Overflow popout with Discord-style side animation",
+    description: "ok",
     authors: [Devs.Velocity],
     required: true,
 
