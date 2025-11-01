@@ -190,7 +190,7 @@ function AutoResponder({ title, rulesArray }: AutoResponderProps) {
                                         )
                                     }}
                                 >
-                                    {DeleteIcon()()}
+                                    <DeleteIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
                                 </Button>
                             </Flex>
                             {isRegexRules && renderTriggerError(rule.trigger)}

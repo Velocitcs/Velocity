@@ -48,7 +48,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
             key="unsuppress-embeds"
             label={isEmbedSuppressed ? "Unsuppress Embeds" : "Suppress Embeds"}
             color={isEmbedSuppressed ? undefined : "danger"}
-            icon={isEmbedSuppressed ? ImageVisible() : ImageInvisible()}
+            icon={isEmbedSuppressed ? () => <ImageVisible className="icon_c1e9c4" width={24} height={24} viewBox="0 0 24 24" /> : () => <ImageInvisible className="icon_c1e9c4" width={24} height={24} viewBox="0 0 24 24" />}
             action={() =>
                 RestAPI.patch({
                     url: Constants.Endpoints.MESSAGE(channel.id, messageId),

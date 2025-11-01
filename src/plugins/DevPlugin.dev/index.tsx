@@ -17,7 +17,7 @@
 */
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { LockIcon } from "@components/Icons";
+import { CogWheel, LockIcon } from "@components/Icons";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
@@ -25,7 +25,7 @@ import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy, findComponent
 import { Menu, React } from "@webpack/common";
 
 import { MyAccountTab } from "./components";
-const Button = findByPropsLazy("pt", "f6");
+const Button = findByPropsLazy("pt", "f6", "O1", "Q1");
 
 findByCodeLazy;
 findComponentByCodeLazy;
@@ -76,11 +76,12 @@ function CustomProfileButton({ user, currentUser }) {
             )}
         >
             {props => (
-                <Button.pt
+                <Button.O1
                     {...props}
                     buttonRef={buttonRef}
-                    tooltipText="Secret Popover"
-                    icon={() => "?"}
+                    variant="primary"
+                    text="Velocity"
+                    icon={() => <CogWheel width="16" height="16" viewBox="0 0 24 24" className="icon_a22cb0" />}
                     onClick={props.onClick}
                 />
             )}
@@ -106,6 +107,7 @@ export default definePlugin({
     patches: [
         {
             find: "user:n,guildId:f,viewProfileItem:b",
+            lazy: true,
             replacement: {
                 match: /\.wV,\{user:\i,guildId:\i,viewProfileItem:\i\}\)/,
                 replace: "$&,$self.CustomProfileButton(arguments[0])"
@@ -146,5 +148,5 @@ export default definePlugin({
 
     CustomProfileButton: ErrorBoundary.wrap(CustomProfileButton, { noop: true }),
 
-    renderBadge: () => (<AddonBadge text="DEV" type={AddonBadgeTypes.BRAND} icon={LockIcon()()} />)
+    renderBadge: () => (<AddonBadge text="DEV" type={AddonBadgeTypes.BRAND} icon={<LockIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />} />)
 });

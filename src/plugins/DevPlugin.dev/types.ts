@@ -15,24 +15,3 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-import { Flex } from "@components/Flex";
-import { classes } from "@utils/misc";
-import { Card, FormNotice } from "@webpack/common";
-
-export function GeneralTab() {
-    return (
-        <>
-            <Card className={classes("vc-card", "vc-warning-card")}>
-                <Flex flexDirection="column">
-                    <strong>Warning</strong>
-                    <span>DevTools are test components from discord. Some of them may not work or crash your discord client.</span>
-                </Flex>
-            </Card>
-
-            <FormNotice messageType="danger" textColor="text-feedback-danger">
-                Only use this page if you know what you're doing.
-            </FormNotice>
-        </>
-    );
-}

@@ -161,13 +161,13 @@ function VelocitySettings() {
 
                 <QuickActionCard>
                     <QuickAction
-                        Icon={LogIcon()}
+                        Icon={LogIcon}
                         text="Notification Log"
                         action={openNotificationLogModal}
                     />
 
                     <QuickAction
-                        Icon={PaintbrushIcon()}
+                        Icon={PaintbrushIcon}
                         text="Edit QuickCSS"
                         action={() => VelocityNative.quickCss.openEditor()}
                     />
@@ -175,17 +175,17 @@ function VelocitySettings() {
                     {!IS_WEB && (
                         <>
                             <QuickAction
-                                Icon={RestartIcon()}
+                                Icon={RestartIcon}
                                 text="Relaunch Discord"
                                 action={relaunch}
                             />
                             <QuickAction
-                                Icon={RestartIcon()}
+                                Icon={RestartIcon}
                                 text="Restart Discord"
                                 action={reload}
                             />
                             <QuickAction
-                                Icon={FolderIcon()}
+                                Icon={FolderIcon}
                                 text="Open Settings Folder"
                                 action={() => VelocityNative.settings.openFolder()}
                             />
@@ -193,13 +193,12 @@ function VelocitySettings() {
                     )}
 
                     <QuickAction
-                        Icon={GithubIcon()}
+                        Icon={GithubIcon}
                         text="View Source Code"
-                        action={() =>
-                            VelocityNative.native.openExternal("https://github.com/" + gitRemote)
-                        }
+                        action={() => VelocityNative.native.openExternal(`https://github.com/${gitRemote}`)}
                     />
                 </QuickActionCard>
+
             </section>
 
 

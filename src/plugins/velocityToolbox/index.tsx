@@ -21,9 +21,8 @@ import "./index.css";
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { Settings, useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { CogWheel, LogIcon, PencilIcon } from "@components/Icons";
+import { CogWheel, PencilIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
-import { Iconclasses, setIconClassName } from "@utils/icon";
 import definePlugin from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Menu, Popout, useRef, useState } from "@webpack/common";
@@ -68,7 +67,7 @@ function VelocityPopout(onClose: () => void) {
             <Menu.MenuItem
                 id="vc-toolbox-notifications"
                 label="Open Notification Log"
-                icon={setIconClassName(LogIcon, Iconclasses.discord)}
+                icon={() => <CogWheel className="icon_c1e9c4" width="24" height="24" fill="none" viewBox="0 0 24 24" aria-hidden="true" />}
                 action={openNotificationLogModal}
             />
             <Menu.MenuCheckboxItem
@@ -82,7 +81,7 @@ function VelocityPopout(onClose: () => void) {
             <Menu.MenuItem
                 id="vc-toolbox-quickcss"
                 label="Open QuickCSS"
-                icon={setIconClassName(PencilIcon, Iconclasses.discord)}
+                icon={() => <PencilIcon height="24" width="24" viewBox="0 0 24 24" className="icon_a22cb0" />}
                 action={() => VelocityNative.quickCss.openEditor()}
             />
             {...pluginEntries}
@@ -110,7 +109,7 @@ function VelocityPopoutButton({ buttonClass }: { buttonClass: string; }) {
                     className={`vc-toolbox-btn ${buttonClass}`}
                     onClick={() => setShow(v => !v)}
                     tooltip={isShown ? null : "Velocity Toolbox"}
-                    icon={setIconClassName(CogWheel, Iconclasses.discord)}
+                    icon={() => <CogWheel height="24" width="24" viewBox="0 0 24 24" className="icon__9293f" />}
                     selected={isShown}
                 />
             )}

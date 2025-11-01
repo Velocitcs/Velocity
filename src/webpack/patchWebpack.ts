@@ -288,8 +288,27 @@ function updateExistingOrProxyFactory(moduleFactories: AnyWebpackRequire["m"], m
 
     notifyFactoryListeners(moduleId, newFactory);
 
-    const proxiedFactory = new Proxy(Settings.eagerPatches ? patchFactory(moduleId, newFactory) : newFactory, moduleFactoryHandler);
+    // Always try to patch with lazy patches, even if eagerPatches is false
+    const shouldEagerPatch = Settings.eagerPatches || hasLazyPatchForFactory(newFactory);
+
+    const proxiedFactory = new Proxy(shouldEagerPatch ? patchFactory(moduleId, newFactory) : newFactory, moduleFactoryHandler);
     return Reflect.set(moduleFactories, moduleId, proxiedFactory, receiver);
+}
+
+function hasLazyPatchForFactory(factory: AnyModuleFactory): boolean {
+    const code = String(factory);
+
+    for (const patch of patches) {
+        if (!patch.lazy) continue;
+
+        const matches = typeof patch.find === "string"
+            ? code.includes(patch.find)
+            : (patch.find.global && (patch.find.lastIndex = 0), patch.find.test(code));
+
+        if (matches) return true;
+    }
+
+    return false;
 }
 
 /**
@@ -507,8 +526,9 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
  * @param originalFactory The original module factory
  * @returns The patched module factory
  */
+// patcher.ts - in the patchFactory function
+
 function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory): PatchedModuleFactory {
-    // 0, prefix to turn it into an expression: 0,function(){} would be invalid syntax without the 0,
     let code: string = "0," + String(originalFactory);
     let patchedSource = code;
     let patchedFactory = originalFactory;
@@ -550,7 +570,6 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
         const previousFactory = originalFactory;
         let markedAsPatched = false;
 
-        // We change all patch.replacement to array in plugins/index
         for (const replacement of patch.replacement as PatchReplacement[]) {
             if (
                 shouldCheckBuildNumber &&
@@ -560,7 +579,6 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 continue;
             }
 
-            // TODO: remove once Vesktop has been updated to use addPatch
             if (patch.plugin === "Vesktop") {
                 canonicalizeReplacement(replacement, "VCDP");
             }
@@ -634,7 +652,8 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             }
         }
 
-        if (!patch.all) {
+        // Keep lazy patches in the array, remove others only if not patch.all
+        if (!patch.all && !patch.lazy) {
             patches.splice(i--, 1);
         }
     }

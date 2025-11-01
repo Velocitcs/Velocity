@@ -21,11 +21,10 @@ import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { CodeIcon, CopyIcon, LogIcon } from "@components/Icons";
+import { CodeIcon, LogIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild, getIntlMessage } from "@utils/discord";
-import { Iconclasses, setIconClassName } from "@utils/icon";
 import { copyWithToast } from "@utils/misc";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
@@ -111,16 +110,16 @@ export function openViewRawModal(json: string, type: string, content?: string, o
                 </ModalContent >
                 <ModalFooter>
                     <Flex cellSpacing={10}>
-                        <Button icon={CodeIcon()} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
+                        <Button icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
                             Copy {type} JSON
                         </Button>
                         {!!content && (
-                            <Button icon={CopyIcon()} onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
+                            <Button icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
                                 Copy Raw Content
                             </Button>
                         )}
                         {originalMessage?.embeds?.length > 0 && Velocity.Plugins.isPluginEnabled("CopyEmbed") && (
-                            <Button icon={CodeIcon()} onClick={() => {
+                            <Button icon={() => <LogIcon width="24" height="24" />} onClick={() => {
                                 closeModal(key);
                                 openEmbedRawModal(originalMessage);
                             }}>
@@ -157,7 +156,7 @@ const messageContextCallback: NavContextMenuPatchCallback = (children, props) =>
             id="vc-view-message-raw"
             label="View Raw"
             action={() => openViewRawModalMessage(props.message)}
-            icon={setIconClassName(LogIcon, Iconclasses.discord)}
+            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className="icon_c1e9c4" />}
         />
     );
 };
@@ -188,7 +187,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
                         openViewRawModal(JSON.stringify(value, null, 4), name);
                     }
                 }}
-                icon={setIconClassName(LogIcon, Iconclasses.discord)}
+                icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className="icon_a22cb0" />}
             />
         );
     };
@@ -206,7 +205,7 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
             id={"vc-view-role-raw"}
             label="View Raw"
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
-            icon={setIconClassName(LogIcon, Iconclasses.discord)}
+            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className="icon_a22cb0" />}
         />
     );
 };
@@ -232,7 +231,7 @@ export default definePlugin({
 
         return {
             label: "View Raw",
-            icon: () => setIconClassName(LogIcon, Iconclasses.popover)(),
+            icon: () => <LogIcon height="24" width="24" viewBox="0 0 24 24" className="icon_f84418" />,
             message: msg,
             channel,
             onClick: () => openViewRawModalMessage(msg)

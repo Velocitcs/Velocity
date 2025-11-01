@@ -374,7 +374,7 @@ export function findModuleFactory(...code: CodeFilter) {
     return wreq.m[id];
 }
 
-export const lazyWebpackSearchHistory = [] as Array<["find" | "findByProps" | "findByCode" | "findStore" | "findComponent" | "findComponentByCode" | "findExportedComponent" | "waitFor" | "waitForComponent" | "waitForStore" | "proxyLazyWebpack" | "LazyComponentWebpack" | "extractAndLoadChunks" | "mapMangledModule", any[]]>;
+export const lazyWebpackSearchHistory = [] as Array<["find" | "findByProps" | "findByCode" | "findStore" | "findComponent" | "findComponentByCode" | "findExportedComponent" | "waitFor" | "waitForComponent" | "waitForStore" | "proxyLazyWebpack" | "LazyComponentWebpack" | "extractAndLoadChunks" | "mapMangledModule" | "findByExport" | "findByExports", any[]]>;
 
 /**
  * This is just a wrapper around {@link proxyLazy} to make our reporter test for your webpack finds.
@@ -566,6 +566,83 @@ export function findExportedComponentLazy<T extends object = any>(...props: Prop
             handleModuleNotFound("findExportedComponent", ...props);
         return res[props[0]];
     });
+}
+
+/**
+ * Find all modules that export a specific value (even nested)
+ * @param exportName The export name to search for
+ * @returns Array of modules that have this export
+ */
+export function findByExport(exportName: string) {
+    const results: Array<{ id: string; module: any; path: string[]; }> = [];
+
+    for (const id in cache) {
+        const mod = cache[id];
+        if (!mod?.loaded || mod.exports == null) continue;
+
+        if (mod.exports[exportName] !== undefined) {
+            results.push({ id, module: mod.exports, path: [exportName] });
+        }
+
+        if (typeof mod.exports === "object") {
+            for (const key in mod.exports) {
+                const nested = mod.exports[key];
+                if (typeof nested === "object" && nested?.[exportName] !== undefined) {
+                    results.push({ id, module: nested, path: [key, exportName] });
+                }
+            }
+        }
+    }
+
+    return results;
+}
+
+/**
+ * Find all modules that export a specific value (even nested), lazily
+ */
+export function findByExportLazy(exportName: string) {
+    if (IS_REPORTER) lazyWebpackSearchHistory.push(["findByExport", [exportName]]);
+
+    return proxyLazy(() => findByExport(exportName));
+}
+
+/**
+ * Find all modules that export multiple specific values
+ * @param exportNames Array of export names
+ * @returns Array of modules that have ALL these exports
+ */
+export function findByExports(...exportNames: string[]) {
+    const results: Array<{ id: string; module: any; direct?: boolean; nested?: string; }> = [];
+
+    for (const id in cache) {
+        const mod = cache[id];
+        if (!mod?.loaded || mod.exports == null) continue;
+
+        if (exportNames.every(name => mod.exports[name] !== undefined)) {
+            results.push({ id, module: mod.exports, direct: true });
+            continue;
+        }
+
+        if (typeof mod.exports === "object") {
+            for (const key in mod.exports) {
+                const nested = mod.exports[key];
+                if (typeof nested === "object" && exportNames.every(name => nested?.[name] !== undefined)) {
+                    results.push({ id, module: nested, nested: key });
+                }
+            }
+        }
+    }
+
+    return results;
+}
+
+/**
+ * Find all modules that export multiple specific values, lazily
+ */
+export function findByExportsLazy(...exportNames: string[]) {
+    if (IS_REPORTER) lazyWebpackSearchHistory.push(["findByExports", exportNames]);
+
+    return proxyLazy(() => findByExports(...exportNames));
 }
 
 function getAllPropertyNames(object: Record<PropertyKey, any>, includeNonEnumerable: boolean) {

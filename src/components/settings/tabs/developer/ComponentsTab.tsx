@@ -18,12 +18,14 @@
 
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
+import { CogWheel, ErrorIcon } from "@components/Icons";
 import {
     Button,
     CalendarPicker,
     Card,
     ColorPicker,
     Forms,
+    RadioGroup,
     Tooltip,
     useState
 } from "@webpack/common";
@@ -39,9 +41,10 @@ function Section({ title, children }) {
     );
 }
 
-export function PickersTab() {
+export function ComponentsTab() {
     const [showPicker, setShowPicker] = useState(false);
     const [color, setColor] = useState<number | null>(0xff9434);
+    const [selectedValue, setSelectedValue] = useState("option1");
 
     const positions = ["top", "bottom", "left", "right"] as const;
     const buttonColors = ["BRAND", "RED", "GREEN", "PRIMARY", "TRANSPARENT", "LINK"] as const;
@@ -49,16 +52,16 @@ export function PickersTab() {
     return (
         <>
             <Flex flexDirection="row" style={{ gap: 20, alignItems: "flex-start" }}>
-                <Section title="Developer Date Picker">
+                <Section title="Calendar Picker">
                     <Forms.FormText>
-                        Open a calendar for testing visuals or time-based features.
+                        Calendar date picker component
                     </Forms.FormText>
                     <Button
                         onClick={() => setShowPicker(!showPicker)}
                         size="medium"
                         color={showPicker ? "red" : "brand"}
                     >
-                        {showPicker ? "Close Picker" : "Open Picker"}
+                        {showPicker ? "Close" : "Open"}
                     </Button>
 
                     {showPicker && (
@@ -71,9 +74,9 @@ export function PickersTab() {
                     )}
                 </Section>
 
-                <Section title="Developer Color Picker">
+                <Section title="Color picker component">
                     <Forms.FormText>
-                        Choose a color for testing theme or highlight behavior.
+                        Color picker with some cool text effect
                     </Forms.FormText>
                     <Flex flexDirection="row" style={{ alignItems: "center", gap: 10 }}>
                         <ColorPicker
@@ -99,9 +102,9 @@ export function PickersTab() {
             <Divider style={{ margin: "24px 0" }} />
 
             <Flex flexDirection="column" style={{ gap: 12 }}>
-                <Forms.FormTitle tag="h5">Developer Tooltips Section</Forms.FormTitle>
+                <Forms.FormTitle tag="h5">Tooltip props section</Forms.FormTitle>
                 <Forms.FormText>
-                    Hover over the buttons to test all tooltip positions automatically.
+                    Custom tooltip position props for Tooltip component.
                 </Forms.FormText>
 
                 <Flex flexDirection="row" style={{ gap: 10, marginTop: 8, flexWrap: "wrap" }}>
@@ -142,6 +145,44 @@ export function PickersTab() {
                         </Button>
                     ))}
                 </Flex>
+            </Flex>
+
+            <Divider style={{ margin: "24px 0" }} />
+
+            <Flex flexDirection="column" style={{ gap: 12 }}>
+                <Forms.FormTitle tag="h5">Radio Groups</Forms.FormTitle>
+                <Forms.FormText>
+                    Test radio button props, open console for RADIO props
+                </Forms.FormText>
+
+                <RadioGroup.Gu
+                    value={selectedValue}
+                    options={[
+                        { name: "With Color", value: "option1", color: "#ff9434" },
+                        { name: "With Description", value: "option2", desc: "This is a description" },
+                        { name: "Disabled Option", value: "option3", disabled: true },
+                        {
+                            name: (
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span>Option With a Custom HTML!</span>
+                                    <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <span>Another text with an icon</span>
+                                        <CogWheel height="24" width="24" viewBox="0 0 24 24" className="vc-icon" />
+                                    </div>
+                                </div>
+                            ),
+                            value: "option4"
+                        },
+                        { name: "With Color and Desc", value: "option5", color: "#34ff94", desc: "Colored with description" },
+                        { name: "With an icon prop", value: "option6", icon: (props: any) => <ErrorIcon {...props} height={24} width={24} viewBox="0 0 24 24" /> },
+                        { name: "With Icon Class", desc: "(wrong class lol but you get it.)", value: "option7", radioItemIconClassName: "radioBar__88a69" },
+                        { name: "With Bar Class", value: "option8", radioBarClassName: "option_be1a1e" },
+                    ]}
+                    onChange={option => {
+                        console.log("onChange debug:", option);
+                        setSelectedValue(option.value);
+                    }}
+                />
             </Flex>
         </>
     );

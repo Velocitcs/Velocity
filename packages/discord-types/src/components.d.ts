@@ -1,4 +1,6 @@
 import type { ComponentClass, ComponentPropsWithRef, ComponentType, CSSProperties, FunctionComponent, HtmlHTMLAttributes, HTMLProps, JSX, KeyboardEvent, MouseEvent, PointerEvent, PropsWithChildren, ReactNode, Ref, RefObject } from "react";
+import React from "react";
+import { JsxElement } from "typescript";
 
 
 // #region Old compability
@@ -583,10 +585,11 @@ export type RadioGroup = React.ComponentType<any> & {
         errorMessage?: string;
         value?: any;
         options: Array<{
-            name: string;
+            name: string | React.ReactNode;
             value: any;
             desc?: string;
             color?: string;
+            icon?: ComponentType<JSX.IntrinsicElements>;
             disabled?: boolean;
             radioItemIconClassName?: string;
             radioBarClassName?: string;

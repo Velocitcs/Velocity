@@ -67,6 +67,8 @@ export interface Patch {
     find: string | RegExp;
     /** The replacement(s) for the module being patched */
     replacement: PatchReplacement | PatchReplacement[];
+    /** Only set this to true if the patch is lazy loaded */
+    lazy?: boolean;
     /** Whether this patch should apply to multiple modules */
     all?: boolean;
     /** Do not warn if this patch did no changes */

@@ -79,7 +79,7 @@ export const KeybindRecorder = waitForComponent<t.KeybindRecorder>("KeybindRecor
 
 export const UserSummaryItem = waitForComponent("UserSummaryItem", filters.componentByCode("defaultRenderUser", "showDefaultAvatarsForNullUsers"));
 
-export const RadioGroup = waitForComponent("RadioGroup", filters.byProps("DQ", "Gu", "Jb"));
+export const RadioGroup = waitForComponent<t.RadioGroup>("RadioGroup", filters.byProps("DQ", "Gu", "Jb"));
 
 export let createScroller: (scrollbarClassName: string, fadeClassName: string, customThemeClassName: string) => t.ScrollerThin;
 export let createListScroller: (scrollBarClassName: string, fadeClassName: string, someOtherClassIdkMan: string, resizeObserverClass: typeof ResizeObserver) => t.ListScrollerThin;

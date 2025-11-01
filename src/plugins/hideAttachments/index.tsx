@@ -60,7 +60,6 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
     if (!hasMedia(message) && !message.messageSnapshots.some(s => hasMedia(s.message))) return;
 
     const isHidden = hiddenMessages.has(message.id);
-
     const menuGroup = findGroupChildrenByChildId("delete", children);
     const deleteIndex = menuGroup?.findIndex(i => i?.props?.id === "delete");
     if (!deleteIndex || !menuGroup) return;
@@ -71,17 +70,22 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
             key="toggle-hide-media"
             label={isHidden ? "Show Media" : "Hide Media"}
             color={isHidden ? undefined : "danger"}
-            icon={isHidden ? ImageVisible() : ImageInvisible()}
+            icon={
+                isHidden
+                    ? () => <ImageVisible className="icon_c1e9c4" width="24" height="24" fill="none" viewBox="0 0 24 24" />
+                    : () => <ImageInvisible className="icon_c1e9c4" width="24" height="24" fill="none" viewBox="0 0 24 24" />
+            }
             action={async () => {
                 const ids = await getHiddenMessages();
-                if (!ids.delete(message.id))
-                    ids.add(message.id);
+                if (!ids.delete(message.id)) ids.add(message.id);
                 await saveHiddenMessages(ids);
                 updateMessage(channel.id, message.id);
             }}
         />
+
     ));
 };
+
 
 export default definePlugin({
     name: "HideMedia",
@@ -104,17 +108,17 @@ export default definePlugin({
 
     renderMessagePopoverButton(msg) {
         if (!hasMedia(msg) && !msg.messageSnapshots.some(s => hasMedia(s.message))) return null;
-
         const isHidden = hiddenMessages.has(msg.id);
-
         return {
             label: isHidden ? "Show Media" : "Hide Media",
-            icon: isHidden ? ImageVisible() : ImageInvisible(),
+            icon: isHidden ? () => <ImageVisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" /> : () => <ImageInvisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" />,
             message: msg,
             channel: ChannelStore.getChannel(msg.channel_id),
             onClick: () => this.toggleHide(msg.channel_id, msg.id)
         };
     },
+
+
 
     renderMessageAccessory({ message }) {
         if (!this.shouldHide(message.id)) return null;

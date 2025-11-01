@@ -99,7 +99,11 @@ export default definePlugin({
                 section: "VelocityPlugins",
                 label: "Plugins",
                 element: PluginsTab,
-                icon: <AddonBadge text="NEW" icon={StarIcon()()} type={AddonBadgeTypes.BRAND} />,
+                icon: <AddonBadge
+                    text="NEW"
+                    icon={<StarIcon width={24} height={24} viewBox="0 0 24 24" />}
+                    type={AddonBadgeTypes.BRAND}
+                />,
                 className: "vc-plugins"
             },
             {

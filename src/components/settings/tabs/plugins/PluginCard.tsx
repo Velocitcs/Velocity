@@ -20,7 +20,6 @@ import { showNotice } from "@api/Notices";
 import { Emoji } from "@components/Emoji";
 import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
-import { setIconClassName } from "@utils/icon";
 import { proxyLazy } from "@utils/lazy";
 import { isObjectEmpty } from "@utils/misc";
 import { Plugin } from "@utils/types";
@@ -170,8 +169,8 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
                     style={plugin.unavailable ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
                 >
                     {plugin.options && !isObjectEmpty(plugin.options)
-                        ? setIconClassName(CogWheel, cl("settings-button"))()
-                        : setIconClassName(InfoIcon, cl("info-icon"))()}
+                        ? <CogWheel className={cl("settings-button")} />
+                        : <InfoIcon className={cl("info-icon")} />}
                 </button>
             } />
     );

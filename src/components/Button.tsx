@@ -71,17 +71,22 @@ export function Button({
                     style={{
                         display: "inline-flex",
                         alignItems: "center",
+                        justifyContent: "center",
+                        width: "20px",
+                        height: "20px",
+                        flexShrink: 0,
                         marginRight: "6px",
                         marginLeft: "-4px",
                     }}
                 >
-                    <Icon />
+                    <Icon width={20} height={20} />
                 </span>
             )}
+
             {children}
             {variant === "link" && !Icon && (
                 <span className={btnCls("link-icon")}>
-                    {OpenExternalIcon()()}
+                    <OpenExternalIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
                 </span>
             )}
         </button>

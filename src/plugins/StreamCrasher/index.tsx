@@ -22,7 +22,6 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { CogWheel, WarningIcon } from "@components/Icons";
 import { AddonBadge, AddonBadgeTypes, openPluginModal } from "@components/settings";
 import { Devs } from "@utils/constants";
-import { Iconclasses, setIconClassName } from "@utils/icon";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import { FluxDispatcher, Menu, Popout, React, SelectedChannelStore, UserStore, useStateFromStores } from "@webpack/common";
@@ -149,7 +148,7 @@ function CrasherContextMenu({ closePopout, screens }) {
             <Menu.MenuItem
                 id="stream-crasher-context-settings"
                 label="Crasher Settings"
-                icon={setIconClassName(CogWheel, Iconclasses.discord)}
+                icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className="item_c1e9c4 " />)}
                 action={() => openPluginModal(Velocity.Plugins.plugins.StreamCrasher)}
             />
         </Menu.Menu>
@@ -329,7 +328,8 @@ export default definePlugin({
     ],
 
     updateStream,
-    renderBadge: () => <AddonBadge text="BETA" type={AddonBadgeTypes.PRIMARY} icon={WarningIcon()()} />,
+    renderBadge: () => <AddonBadge text="BETA" type={AddonBadgeTypes.PRIMARY} icon={<WarningIcon width="16" height="16" viewBox="0 0 24 24" className="vc-icon" />} />,
+
 
     CrashButton: ErrorBoundary.wrap(CrashButton, { noop: true })
 });

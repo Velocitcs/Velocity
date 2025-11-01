@@ -430,8 +430,9 @@ export function LocalThemesTab() {
                         <QuickAction
                             text="Create New Theme"
                             action={() => openCreateThemeModal(refreshLocalThemes)}
-                            Icon={PlusIcon()}
+                            Icon={PlusIcon}
                         />
+
                         {IS_WEB ? (
                             <QuickAction
                                 text={
@@ -442,44 +443,49 @@ export function LocalThemesTab() {
                                             onChange={async e => {
                                                 await onFileUpload(e, refreshLocalThemes);
                                             }}
-                                            multiple={true}
+                                            multiple
                                             filters={[{ extensions: ["css"] }]}
                                         />
                                     </span>
                                 }
-                                Icon={PlusIcon()}
+                                Icon={PlusIcon}
                             />
                         ) : (
                             <QuickAction
                                 text="Open Themes Folder"
                                 action={() => VelocityNative.themes.openFolder()}
-                                Icon={FolderIcon()}
+                                Icon={FolderIcon}
                             />
                         )}
+
                         <QuickAction
-                            text="Load missing Themes"
+                            text="Load Missing Themes"
                             action={refreshLocalThemes}
-                            Icon={RestartIcon()}
+                            Icon={RestartIcon}
                         />
+
                         <QuickAction
                             text="Edit QuickCSS"
                             action={() => VelocityNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon()}
+                            Icon={PaintbrushIcon}
                         />
+
                         <QuickAction
                             text="Edit Theme"
                             action={() => openEditThemeModal(refreshLocalThemes)}
-                            Icon={PencilIcon()}
+                            Icon={PencilIcon}
                         />
+
                         {Velocity.Plugins.isPluginEnabled(ClientThemePlugin.name) && (
                             <QuickAction
                                 text="Edit ClientTheme"
                                 action={() => openPluginModal(ClientThemePlugin)}
-                                Icon={PencilIcon()}
+                                Icon={PencilIcon}
                             />
                         )}
                     </>
                 </QuickActionCard>
+
 
                 <div className={cl("grid")}>
                     {normalThemes.map(theme => (
@@ -516,7 +522,7 @@ export function LocalThemesTab() {
                                                 });
                                             }}
                                         >
-                                            {DeleteIcon()()}
+                                            <DeleteIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
                                         </div>
                                     )}
                                 </Tooltip>

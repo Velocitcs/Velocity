@@ -130,8 +130,8 @@ export default definePlugin({
     }, { noop: true }),
     renderIcon: ErrorBoundary.wrap(({ session, DeviceIcon }: { session: Session, DeviceIcon: React.ComponentType<any>; }) => {
         const PlatformIcon = GetPlatformIcon(session.client_info.platform);
-        const iconResult = PlatformIcon();
-        const icon = typeof iconResult === "function" ? iconResult() : iconResult;
+        const iconResult = <PlatformIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />;
+        const icon = typeof iconResult === "function" ? iconResult : iconResult;
 
         return (
             <BlobMask
