@@ -65,9 +65,9 @@ importers:
       '@types/yazl':
         specifier: ^2.4.5
         version: 2.4.6
-      '@vencord/discord-types':
-        specifier: link:packages/discord-types
-        version: link:packages/discord-types
+      '@velocity-types':
+        specifier: link:node_modules/velocity-types
+        version: link:node_modules/velocity-types
       diff:
         specifier: ^7.0.0
         version: 7.0.0
