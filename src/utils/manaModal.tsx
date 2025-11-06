@@ -23,9 +23,12 @@ import { LazyComponent } from "./react";
 
 export const ManaModalStyles = findByPropsLazy("bodySpacerBottom", "bodySpacerBottomBorder", "actionBar");
 
+const enum ModalTransitionState { ENTERING, ENTERED, EXITING, EXITED, HIDDEN }
+
 export interface ManaModalProps {
-    transitionState: any;
+    transitionState?: ModalTransitionState | number;
     onClose(): void;
+
     size?: "sm" | "md" | "lg";
     paddingSize?: "sm" | "md" | "lg";
     fullScreenOnMobile?: boolean;
@@ -43,16 +46,37 @@ export interface ManaModalHeaderProps {
     gradientColor?: string;
 }
 
-export interface ManaModalFooterProps {
-    leading?: ReactNode;
+export interface ManaModalFooterProps extends React.HTMLAttributes<HTMLElement> {
+    leading?: React.ReactNode;
     actions?: Array<{
         text: string;
-        variant?: "primary" | "secondary" | "critical-primary" | "expressive";
+        icon?: React.ReactNode | (() => React.ReactNode);
+        variant?: "primary" | "secondary" | "critical-primary" | "expressive" | (string & {});
         onClick?: (e?: any) => void;
         disabled?: boolean;
         autoFocus?: boolean;
+        /** width control */
+        fullWidth?: boolean;
+        /** aria stuff */
+        ariaLabel?: string;
+        /** id/class for custom styling */
+        id?: string;
+        className?: string;
+        /** button type */
+        type?: "button" | "submit" | "reset" | (string);
+        /** custom style */
+        style?: React.CSSProperties;
+        /** any extra data attibute */
+        [key: string]: any;
     }>;
+    /** stretch buttons */
     actionsFullWidth?: boolean;
+    /** add your own id/class/style to footer */
+    id?: string;
+    className?: string;
+    style?: React.CSSProperties;
+    /** any other attrs u throw */
+    [key: string]: any;
 }
 
 // New Mana Modal Components

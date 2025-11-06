@@ -16,176 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings, Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { CogWheel, WarningIcon } from "@components/Icons";
-import { AddonBadge, AddonBadgeTypes, openPluginModal } from "@components/settings";
+import { WarningIcon } from "@components/Icons";
+import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin from "@utils/types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { FluxDispatcher, Menu, Popout, React, SelectedChannelStore, UserStore, useStateFromStores } from "@webpack/common";
+import { Popout, React, UserStore, useStateFromStores } from "@webpack/common";
 
+import { CrasherContextMenu } from "./components/crasherContextMenu";
+import { StreamCrasherPatch } from "./components/moreOptionsMenu";
+import settings from "./settings";
+import { setLastRealSourceId, updateStream } from "./utils";
 const Button = findComponentByCodeLazy(".NONE,disabled:", ".PANEL_BUTTON");
 const panelClasses = findByPropsLazy("micButtonParent", "buttonChevron");
 const StreamStore = findByPropsLazy("getActiveStreamForUser");
 
-const settings = definePluginSettings({
-    isEnabled: {
-        type: OptionType.BOOLEAN,
-        description: "Crashing state",
-        default: false,
-        onChange: () => updateStream()
-    },
-    buttonLocation: {
-        type: OptionType.RADIO,
-        description: "Where to place the crasher button",
-        options: [
-            { label: "Account Section", value: "account", default: true },
-            { label: "Voice Panel", value: "voice" },
-            { label: "Streaming Panel", value: "stream" }
-        ],
-        restartNeeded: true
-    },
-    showChevron: {
-        type: OptionType.BOOLEAN,
-        description: "Show dropdown chevron (options menu)",
-        default: true
-    },
-    keybindEnabled: {
-        type: OptionType.BOOLEAN,
-        description: "Having the ability to toggle the crasher with a keybind",
-        default: false
-    }
-});
 
-async function getSourceId() {
-    if (settings.store.isEnabled) return "FAKE_CRASH_SOURCE_ID";
-
-    const AutoJoinSettings = Settings.plugins.AutoJoinCall as any;
-    const AutoJoinEnabled = Velocity.Plugins.isPluginEnabled("AutoJoinCall");
-
-    if (AutoJoinEnabled && AutoJoinSettings?.autoStream && AutoJoinSettings?.streamSource) {
-        return AutoJoinSettings.streamSource;
-    }
-
-    const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-        types: ["screen"]
-    });
-    return sources[0]?.id ?? "default";
-}
-
-function updateStream() {
-    const channelId = SelectedChannelStore.getVoiceChannelId();
-    if (!channelId) return;
-
-    const id = UserStore.getCurrentUser()?.id;
-    const isStreaming = StreamStore.getActiveStreamForUser(id) != null;
-    if (!isStreaming) return;
-
-    (async () => {
-        const sourceId = await getSourceId();
-
-        try {
-            FluxDispatcher.dispatch({
-                type: "STREAM_START",
-                streamType: "call",
-                guildId: null,
-                channelId,
-                appContext: "APP",
-                sourceId: sourceId,
-                sourceName: settings.store.isEnabled ? "$1}),$self,tGs47 void" : "Screen 1", // scary message
-                sourceIcon: "",
-                sound: true,
-                previewDisabled: false,
-                goLiveModalDurationMs: 2000 + Math.random() * 300,
-                analyticsLocations: [ // other options, i'm not willing to risk tracing.
-                    "channel call",
-                    "voice control tray",
-                    "go live modal v2"
-                ],
-                quality: {
-                    resolution: 1080,
-                    frameRate: 60
-                }
-            });
-        } catch (err) {
-        }
-    })();
-}
-
-function CrasherContextMenu({ closePopout, screens }) {
-    const { isEnabled } = settings.use(["isEnabled"]);
-    const AutoJoinSettings = Settings.plugins.AutoJoinCall as any;
-    const screen1 = screens.find(screen => screen.name.toLowerCase().includes("screen 1"));
-    const [selectedScreen, setSelectedScreen] = React.useState(AutoJoinSettings?.streamSource || screen1?.id || "default");
-
-    const screenSources = screens.filter(screen =>
-        screen.name.toLowerCase().includes("screen") &&
-        !screen.name.toLowerCase().includes("screen 1")
-    );
-
-    const handleScreenSelect = (screenId: string) => {
-        setSelectedScreen(screenId);
-        if (AutoJoinSettings) {
-            AutoJoinSettings.streamSource = screenId;
-        }
-        updateStream();
-    };
-
-    return (
-        <Menu.Menu navId="stream-crasher-options" onClose={closePopout}>
-            <Menu.MenuCheckboxItem
-                id="stream-crasher-context-toggle"
-                label={isEnabled ? "Disable Crasher" : "Enable Crasher"}
-                checked={isEnabled}
-                action={() => settings.store.isEnabled = !settings.store.isEnabled}
-            />
-            <Menu.MenuSeparator />
-            <Menu.MenuGroup label="Select Screen">
-                {screen1 && (
-                    <Menu.MenuRadioItem
-                        id={screen1.id}
-                        group="screen-select"
-                        label="Screen 1 (Default)"
-                        checked={selectedScreen === screen1.id}
-                        action={() => handleScreenSelect(screen1.id)}
-                    />
-                )}
-                {screenSources.map(screen => (
-                    <Menu.MenuRadioItem
-                        key={screen.id}
-                        id={screen.id}
-                        group="screen-select"
-                        label={screen.name}
-                        checked={selectedScreen === screen.id}
-                        action={() => handleScreenSelect(screen.id)}
-                    />
-                ))}
-            </Menu.MenuGroup>
-            <Menu.MenuSeparator />
-            <Menu.MenuItem
-                id="stream-crasher-context-settings"
-                label="Crasher Settings"
-                icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className="item_c1e9c4 " />)}
-                action={() => openPluginModal(Velocity.Plugins.plugins.StreamCrasher)}
-            />
-        </Menu.Menu>
-    );
-}
-
-const StreamCrasherPatch: NavContextMenuPatchCallback = children => {
-    const { isEnabled } = settings.use(["isEnabled"]);
-
-    children.splice(3, 0,
-        <Menu.MenuCheckboxItem
-            id="manage-streams-crasher-settings-enable"
-            label={isEnabled ? "Disable Crasher" : "Enable Crasher"}
-            checked={isEnabled}
-            action={() => settings.store.isEnabled = !settings.store.isEnabled}
-        />
-    );
-};
 
 const CrashIcon = ({ isEnabled }) => (
     <svg width="24" height="24" viewBox="0 0 24 24">
@@ -212,18 +59,16 @@ function CrashButton(props?: { showChevron?: boolean; }) {
     const id = UserStore.getCurrentUser()?.id;
     const isStreaming = useStateFromStores([StreamStore], () => StreamStore.getActiveStreamForUser(id) != null);
 
-    // FIXED: auto crash if starting stream
     React.useEffect(() => {
         if (isStreaming && settings.store.isEnabled) {
-            updateStream();
+            updateStream(settings.store.isEnabled);
         }
     }, [isStreaming]);
-
 
     React.useEffect(() => {
         (async () => {
             const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-                types: ["screen", "window"]
+                types: ["screen"]
             });
             setScreens(sources);
         })();
@@ -253,7 +98,7 @@ function CrashButton(props?: { showChevron?: boolean; }) {
                 targetElementRef={buttonRef}
                 renderPopout={({ closePopout, nudge, setPopoutRef }) => (
                     <div ref={setPopoutRef} style={{ transform: `translateX(${nudge - 35}px)` }}>
-                        <CrasherContextMenu closePopout={closePopout} screens={screens} />
+                        <CrasherContextMenu closePopout={closePopout} settings={settings} />
                     </div>
                 )}
             >
@@ -291,6 +136,7 @@ function CrashButton(props?: { showChevron?: boolean; }) {
 
 
 
+
 export default definePlugin({
     name: "StreamCrasher",
     description: "Crashes your stream in Discord calls when you're streaming.",
@@ -298,15 +144,7 @@ export default definePlugin({
     settings,
 
     contextMenus: {
-        "manage-streams": StreamCrasherPatch
-    },
-
-
-    event(e) {
-        if (!settings.store.keybindEnabled) return;
-        if (e.code === "F7" && e.type === "keydown" && !e.repeat) {
-            settings.store.isEnabled = !settings.store.isEnabled;
-        }
+        "manage-streams": StreamCrasherPatch(settings)
     },
 
     start() {
@@ -314,6 +152,25 @@ export default definePlugin({
     },
     stop() {
         window.removeEventListener("keydown", this.event);
+    },
+
+    flux: {
+        STREAM_UPDATE(data) {
+            if (data.sourceId && data.sourceId !== "FAKE_CRASH_SOURCE_ID") {
+                setLastRealSourceId(data.sourceId);
+            }
+        },
+        STREAM_START(data) {
+            if (data.sourceId === "FAKE_CRASH_SOURCE_ID") return;
+
+            if (data.sourceId) {
+                setLastRealSourceId(data.sourceId);
+
+                if (settings.store.isEnabled) {
+                    setTimeout(() => updateStream(settings.store.isEnabled), 50);
+                }
+            }
+        }
     },
 
     patches: [
@@ -343,6 +200,14 @@ export default definePlugin({
             predicate: () => settings.store.buttonLocation === "stream"
         }
     ],
+
+    event(e) {
+        if (!settings.store.keybindEnabled) return;
+        if (e.code === "F7" && e.type === "keydown" && !e.repeat) {
+            settings.store.isEnabled = !settings.store.isEnabled;
+        }
+    },
+
 
     updateStream,
     renderBadge: () => <AddonBadge text="BETA" type={AddonBadgeTypes.PRIMARY} icon={<WarningIcon width="16" height="16" viewBox="0 0 24 24" className="vc-icon" />} />,

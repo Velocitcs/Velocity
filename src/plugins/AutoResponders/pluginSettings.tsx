@@ -18,12 +18,22 @@
 
 import { get, set } from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
+import { classNameFactory } from "@api/Styles";
 import { Flex } from "@components/Flex";
-import { DeleteIcon } from "@components/Icons";
+import { CogWheel, DeleteIcon } from "@components/Icons";
+import { openModal } from "@utils/modal";
 import { OptionType } from "@utils/types";
 import { Alerts, Button, Forms, React, TextInput, useState } from "@webpack/common";
 
-export type Rule = Record<"trigger" | "response" | "onlyIfIncludes", string>;
+import { RuleSettingsModal } from "./components/autoResponderModal";
+
+export const cl = classNameFactory("vc-autoresponder-");
+
+export type Rule = Record<"trigger" | "response" | "onlyIfIncludes", string> & {
+    caseSensitive?: boolean;
+    matchWholeWord?: boolean;
+    ruleCooldown?: number;
+};
 
 interface AutoResponderProps {
     title: string;
@@ -33,7 +43,9 @@ interface AutoResponderProps {
 const makeEmptyRule: () => Rule = () => ({
     trigger: "",
     response: "",
-    onlyIfIncludes: ""
+    onlyIfIncludes: "",
+    caseSensitive: false,
+    matchWholeWord: false
 });
 const makeEmptyRuleArray = () => [makeEmptyRule()];
 
@@ -134,22 +146,41 @@ function Input({ initialValue, onChange, placeholder }: {
 
 function AutoResponder({ title, rulesArray }: AutoResponderProps) {
     const isRegexRules = title === "Using Regex";
+    const [, forceUpdate] = useState({});
 
-    async function onClickRemove(index: number) {
+    function onClickRemove(index: number) {
         if (index === rulesArray.length - 1) return;
         rulesArray.splice(index, 1);
+        forceUpdate({});
     }
 
-    async function onChange(e: string, index: number, key: string) {
+    function onChange(e: string, index: number, key: string) {
         rulesArray[index][key] = e;
 
         if (index === rulesArray.length - 1 && rulesArray[index].trigger && rulesArray[index].response) {
             rulesArray.push(makeEmptyRule());
         }
 
-        if ((!rulesArray[index].trigger || !rulesArray[index].response) && !rulesArray[index].onlyIfIncludes && index !== rulesArray.length - 1) {
+        if ((!rulesArray[index].trigger || !rulesArray[index].response) && index !== rulesArray.length - 1) {
             rulesArray.splice(index, 1);
         }
+        forceUpdate({});
+    }
+
+    function onClickSettings(rule: Rule, index: number) {
+        if (!rule.trigger || !rule.response) return;
+
+        openModal(props => (
+            <RuleSettingsModal
+                rule={rule}
+                onSave={updatedRule => {
+                    rulesArray[index] = updatedRule;
+                    forceUpdate({});
+                }}
+                onClose={props.onClose}
+                transitionState={props.transitionState}
+            />
+        ));
     }
 
     return (
@@ -157,45 +188,53 @@ function AutoResponder({ title, rulesArray }: AutoResponderProps) {
             <Forms.FormTitle tag="h4">{title}</Forms.FormTitle>
             <Flex flexDirection="column" style={{ gap: "0.5em" }}>
                 {
-                    rulesArray.map((rule, index) =>
-                        <React.Fragment key={`${rule.trigger}-${index}`}>
-                            <Flex flexDirection="row" style={{ flexGrow: 1, gap: "0.5em" }}>
-                                <Input
-                                    placeholder="Trigger"
-                                    initialValue={rule.trigger}
-                                    onChange={e => onChange(e, index, "trigger")}
-                                />
-                                <Input
-                                    placeholder="Response"
-                                    initialValue={rule.response}
-                                    onChange={e => onChange(e, index, "response")}
-                                />
-                                <Input
-                                    placeholder="Only if includes"
-                                    initialValue={rule.onlyIfIncludes}
-                                    onChange={e => onChange(e, index, "onlyIfIncludes")}
-                                />
-                                <Button
-                                    size={Button.Sizes.MIN}
-                                    onClick={() => onClickRemove(index)}
-                                    style={{
-                                        background: "none",
-                                        color: "var(--status-danger)",
-                                        ...(index === rulesArray.length - 1
-                                            ? {
-                                                visibility: "hidden",
-                                                pointerEvents: "none"
-                                            }
-                                            : {}
-                                        )
-                                    }}
-                                >
-                                    <DeleteIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
-                                </Button>
-                            </Flex>
-                            {isRegexRules && renderTriggerError(rule.trigger)}
-                        </React.Fragment>
-                    )
+                    rulesArray.map((rule, index) => {
+                        const isEmptyRule = index === rulesArray.length - 1;
+
+                        return (
+                            <React.Fragment key={`${rule.trigger}-${index}`}>
+                                <Flex flexDirection="row" style={{ flexGrow: 1, gap: "0.5em" }}>
+                                    <Input
+                                        placeholder="Trigger"
+                                        initialValue={rule.trigger}
+                                        onChange={e => onChange(e, index, "trigger")}
+                                    />
+                                    <Input
+                                        placeholder="Response"
+                                        initialValue={rule.response}
+                                        onChange={e => onChange(e, index, "response")}
+                                    />
+                                    <Input
+                                        placeholder="Only if includes"
+                                        initialValue={rule.onlyIfIncludes}
+                                        onChange={e => onChange(e, index, "onlyIfIncludes")}
+                                    />
+                                    {!isEmptyRule && (
+                                        <>
+                                            <Button
+                                                size={Button.Sizes.MIN}
+                                                onClick={() => onClickSettings(rule, index)}
+                                                style={{ background: "none" }}
+                                            >
+                                                <CogWheel className={cl("cogwheel-button")} width="24" height="24" viewBox="0 0 24 24" />
+                                            </Button>
+                                            <Button
+                                                size={Button.Sizes.MIN}
+                                                onClick={() => onClickRemove(index)}
+                                                style={{
+                                                    background: "none",
+                                                    color: "var(--status-danger)"
+                                                }}
+                                            >
+                                                <DeleteIcon className={cl("delete-button")} width="24" height="24" viewBox="0 0 24 24" />
+                                            </Button>
+                                        </>
+                                    )}
+                                </Flex>
+                                {isRegexRules && renderTriggerError(rule.trigger)}
+                            </React.Fragment>
+                        );
+                    })
                 }
             </Flex>
         </>
@@ -204,16 +243,56 @@ function AutoResponder({ title, rulesArray }: AutoResponderProps) {
 
 function AutoResponderTesting() {
     const [value, setValue] = useState("");
+    const [lastTestTime, setLastTestTime] = useState(0);
+    const [testResult, setTestResult] = useState("");
 
-    function testRules(content: string): string {
-        if (content.length === 0) return "";
+    function testRules(content: string): void {
+        if (!content) {
+            setTestResult("");
+            return;
+        }
+
+        const now = Date.now();
+        const globalCooldownMs = settings.store.cooldown * 1000;
+
+        if (now - lastTestTime < globalCooldownMs) {
+            setTestResult(`[Cooldown active - ${Math.ceil((globalCooldownMs - (now - lastTestTime)) / 1000)}s remaining]`);
+            return;
+        }
 
         for (const rule of settings.store.stringRules) {
             if (!rule.trigger || !rule.response) continue;
             if (rule.onlyIfIncludes && !content.includes(rule.onlyIfIncludes)) continue;
 
-            if (content.includes(rule.trigger)) {
-                return rule.response.replaceAll("\\n", "\n");
+            let checkContent = content;
+            let checkTrigger = rule.trigger;
+
+            if (!rule.caseSensitive) {
+                checkContent = checkContent.toLowerCase();
+                checkTrigger = checkTrigger.toLowerCase();
+            }
+
+            let matches = false;
+            if (rule.matchWholeWord) {
+                const regex = new RegExp(`\\b${checkTrigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, rule.caseSensitive ? "" : "i");
+                matches = regex.test(content);
+            } else {
+                matches = checkContent.includes(checkTrigger);
+            }
+
+            if (matches) {
+                const ruleCooldownMs = (rule.ruleCooldown || 0) * 1000;
+                if (ruleCooldownMs > 0) {
+                    setTimeout(() => {
+                        setTestResult(rule.response.replaceAll("\\n", "\n"));
+                        setLastTestTime(Date.now());
+                    }, ruleCooldownMs);
+                    setTestResult(`[Waiting ${rule.ruleCooldown}s before responding...]`);
+                } else {
+                    setTestResult(rule.response.replaceAll("\\n", "\n"));
+                    setLastTestTime(now);
+                }
+                return;
             }
         }
 
@@ -224,24 +303,46 @@ function AutoResponderTesting() {
             try {
                 const regex = stringToRegex(rule.trigger);
                 if (regex.test(content)) {
-                    return rule.response.replaceAll("\\n", "\n");
+                    const ruleCooldownMs = (rule.ruleCooldown || 0) * 1000;
+                    if (ruleCooldownMs > 0) {
+                        setTimeout(() => {
+                            setTestResult(rule.response.replaceAll("\\n", "\n"));
+                            setLastTestTime(Date.now());
+                        }, ruleCooldownMs);
+                        setTestResult(`[Waiting ${rule.ruleCooldown}s before responding...]`);
+                    } else {
+                        setTestResult(rule.response.replaceAll("\\n", "\n"));
+                        setLastTestTime(now);
+                    }
+                    return;
                 }
-            } catch (e) {
-                return "";
+            } catch {
+                continue;
             }
         }
 
-        return "";
+        setTestResult("");
     }
 
     return (
         <>
             <Forms.FormTitle tag="h4">Test Rules</Forms.FormTitle>
-            <TextInput placeholder="Type a message" onChange={setValue} />
-            <TextInput placeholder="Response that would be sent" editable={false} value={testRules(value)} />
+            <TextInput
+                placeholder="Type a message"
+                onChange={v => {
+                    setValue(v);
+                    testRules(v);
+                }}
+            />
+            <TextInput
+                placeholder="Response that would be sent"
+                editable={false}
+                value={testResult}
+            />
         </>
     );
 }
+
 
 export const settings = definePluginSettings({
     responder: {

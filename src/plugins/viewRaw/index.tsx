@@ -20,22 +20,23 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
 import { CodeIcon, LogIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild, getIntlMessage } from "@utils/discord";
+import { ManaModalDivider, ManaModalFooter, ManaModalHeader, ManaModalRoot } from "@utils/manaModal";
 import { copyWithToast } from "@utils/misc";
-import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { closeModal, ModalContent, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { Message } from "@velocity-types";
-import { findByPropsLazy } from "@webpack";
-import { Button, ChannelStore, Forms, GuildRoleStore, Menu, React, Text } from "@webpack/common";
+import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
+import { ChannelStore, Forms, GuildRoleStore, Menu, React } from "@webpack/common";
 
 import { openEmbedRawModal } from "../CopyEmbed/index";
 
 const iconClass = findByPropsLazy("icon", "iconContainer", "label");
 const popoverClass = findByPropsLazy("icon", "hoverBarButton");
+const Spinner = findComponentByCodeLazy("wanderingCubes", "aria-label");
 
 function sortObject<T extends object>(obj: T): T {
     return Object.fromEntries(Object.entries(obj).sort(([k1], [k2]) => k1.localeCompare(k2))) as T;
@@ -71,71 +72,92 @@ function cleanUser(user: any) {
     return clone;
 }
 
-function makeNoteSpan(text: string, color: string) {
-    return (
-        <span style={{ color, fontSize: "12px", fontWeight: "600", marginLeft: "2px" }}>
-            ({text})
-        </span>
-    );
-}
 
 export function openViewRawModal(json: string, type: string, content?: string, originalMessage?: any) {
     const key = openModal(props => (
         <ErrorBoundary>
-            <ModalRoot {...props} size={ModalSize.LARGE}>
-                <ModalHeader>
-                    <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>View Raw</Text>
-                    <ModalCloseButton
-                        onClick={() => closeModal(key)}
-                        className="icon-only_a22cb0"
-                        variant="icon-only"
-                        size="xxs"
-                    />
-
-                </ModalHeader>
-                <ModalContent>
-                    <div style={{ padding: "16px" }}>
+            <ManaModalRoot {...props} size="lg" paddingSize="sm">
+                <ManaModalHeader title="View Raw" />
+                <ManaModalDivider />
+                {json ? (
+                    <ModalContent>
                         {!!content && (
                             <>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                                    <Forms.FormTitle tag="h5" style={{ margin: 0 }}>Content</Forms.FormTitle>
-                                    {/[^\u0000-\u007f]/.test(content) && makeNoteSpan("Unicode", "#ff5555")}
-                                    {/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u.test(content) && makeNoteSpan("Emoji", "#6fff00")}
-                                    {/[\u0000]/.test(content) && makeNoteSpan("Invisible Unicode", "#888888")}
-                                </div>
-                                <CodeBlock content={content} />
+                                <CodeBlock
+                                    content={content}
+                                    lang="txt"
+                                    className={Margins.bottom20}
+                                />
                                 <Divider className={Margins.bottom20} />
                             </>
                         )}
-
                         <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
-                        <CodeBlock content={json} lang="json" />
-                    </div>
-                </ModalContent >
-                <ModalFooter>
-                    <Flex cellSpacing={10}>
-                        <Button icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}>
-                            Copy {type} JSON
-                        </Button>
-                        {!!content && (
-                            <Button icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(content, "Content copied to clipboard!")}>
-                                Copy Raw Content
-                            </Button>
-                        )}
-                        {originalMessage?.embeds?.length > 0 && Velocity.Plugins.isPluginEnabled("CopyEmbed") && (
-                            <Button icon={() => <LogIcon width="24" height="24" />} onClick={() => {
-                                closeModal(key);
-                                openEmbedRawModal(originalMessage);
-                            }}>
-                                View Embed Data
-                            </Button>
-                        )}
-                    </Flex>
-                </ModalFooter>
-            </ModalRoot >
-        </ErrorBoundary >
+                        <CodeBlock
+                            content={json}
+                            lang="json"
+                            className={Margins.bottom20}
+                        />
+                    </ModalContent>
+                ) : (
+                    <ModalContent>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                height: "300px",
+                                gap: "1rem"
+                            }}
+                        >
+                            <Spinner type="wanderingCubes" />
+                            <Forms.FormText>Loading raw data...</Forms.FormText>
+                        </div>
+                    </ModalContent>
+                )}
+
+                <ManaModalDivider />
+                <ManaModalFooter
+                    actions={[
+                        {
+                            text: `Copy ${type} JSON`,
+                            variant: "primary",
+                            icon: () => <CodeIcon width="24" height="24" />,
+                            onClick: () => copyWithToast(json, `${type} data copied to clipboard!`)
+                        },
+                        ...(content
+                            ? [
+                                {
+                                    text: "Copy Raw Content",
+                                    variant: "secondary",
+                                    icon: () => <CodeIcon width="24" height="24" />,
+                                    onClick: () =>
+                                        copyWithToast(content, "Content copied to clipboard!")
+                                }
+                            ]
+                            : []),
+                        ...(originalMessage?.embeds?.length > 0 &&
+                            Velocity.Plugins.isPluginEnabled("CopyEmbed")
+                            ? [
+                                {
+                                    text: "View Embed Data",
+                                    type: "reset",
+                                    variant: "secondary",
+                                    icon: () => <LogIcon width="24" height="24" />,
+                                    onClick: () => {
+                                        closeModal(key);
+                                        openEmbedRawModal(originalMessage);
+                                    }
+                                }
+                            ]
+                            : [])
+                    ]}
+                />
+            </ManaModalRoot>
+        </ErrorBoundary>
     ));
 }
+
 
 function openViewRawModalMessage(msg: Message) {
     const originalMsg = msg;

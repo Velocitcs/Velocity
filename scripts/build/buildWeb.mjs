@@ -45,7 +45,7 @@ const commonOptions = {
         IS_EXTENSION: false,
         IS_USERSCRIPT: false,
         IS_STANDALONE: true,
-        IS_DEV,
+        IS_DEV: true,
         IS_REPORTER,
         IS_ANTI_CRASH_TEST,
         IS_DISCORD_DESKTOP: false,

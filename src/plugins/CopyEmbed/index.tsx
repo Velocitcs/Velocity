@@ -23,11 +23,12 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { CodeIcon, CopyIcon, LogIcon, NotesIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Devs } from "@utils/constants";
+import { ManaModalDivider, ManaModalFooter, ManaModalHeader, ManaModalRoot } from "@utils/manaModal";
 import { copyWithToast } from "@utils/misc";
-import { closeModal, ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { ModalContent, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { Forms, Menu, React, Text, Toasts } from "@webpack/common";
+import { Forms, Menu, React, Toasts } from "@webpack/common";
 
 const iconClass = findByPropsLazy("icon", "iconContainer", "label");
 
@@ -143,37 +144,77 @@ export function openEmbedRawModal(msg: any) {
     }
 
     const cleanEmbeds = msg.embeds.map(cleanEmbed);
-    const embedJson = JSON.stringify({ content: null, embeds: cleanEmbeds, attachments: [] }, null, 4);
+    const embedJson = JSON.stringify(
+        { content: null, embeds: cleanEmbeds, attachments: [] },
+        null,
+        4
+    );
 
     const key = openModal(props => (
         <ErrorBoundary>
-            <ModalRoot {...props} size={ModalSize.LARGE}>
-                <ModalHeader>
-                    <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>View Raw Embeds</Text>
-                    <ModalCloseButton withCircleBackground={false} onClick={() => closeModal(key)} />
-                </ModalHeader>
+            <ManaModalRoot {...props} size="lg" paddingSize="sm">
+                <ManaModalHeader title="View Raw Embeds" />
+                <ManaModalDivider />
+
                 <ModalContent>
-                    <div style={{ padding: "16px" }}>
-                        {cleanEmbeds.map((embed, index) => (
-                            <React.Fragment key={index}>
-                                {index > 0 && <Divider className={Margins.top16 + " " + Margins.bottom16} />}
-                                <Forms.FormTitle tag="h5">Embed {index + 1}</Forms.FormTitle>
-                                <CodeBlock content={JSON.stringify(embed, null, 4)} lang="json" />
-                            </React.Fragment>
-                        ))}
-                        {cleanEmbeds.length > 1 && (
-                            <>
-                                <Divider className={Margins.top16 + " " + Margins.bottom16} />
-                                <Forms.FormTitle tag="h5">All Embeds Combined</Forms.FormTitle>
-                                <CodeBlock content={embedJson} lang="json" />
-                            </>
-                        )}
-                    </div>
+                    {cleanEmbeds.map((embed, i) => (
+                        <React.Fragment key={i}>
+                            {i > 0 && (
+                                <Divider
+                                    className={`${Margins.top16} ${Margins.bottom20}`}
+                                />
+                            )}
+                            <Forms.FormTitle tag="h5">
+                                Embed {i + 1} Data
+                            </Forms.FormTitle>
+                            <CodeBlock
+                                content={JSON.stringify(embed, null, 4)}
+                                lang="json"
+                                className={Margins.bottom20}
+                            />
+                        </React.Fragment>
+                    ))}
+
+                    {cleanEmbeds.length > 1 && (
+                        <>
+                            <Divider
+                                className={`${Margins.top16} ${Margins.bottom20}`}
+                            />
+                            <Forms.FormTitle tag="h5">
+                                All Embeds Combined
+                            </Forms.FormTitle>
+                            <CodeBlock
+                                content={embedJson}
+                                lang="json"
+                                className={Margins.bottom20}
+                            />
+                        </>
+                    )}
                 </ModalContent>
-            </ModalRoot>
+
+                <ManaModalDivider />
+                <ManaModalFooter
+                    actions={[
+                        {
+                            text: "Copy All Embeds JSON",
+                            variant: "primary",
+                            title: "bom",
+                            icon: () => <CodeIcon width="24" height="24" />,
+                            onClick: () =>
+                                copyWithToast(
+                                    embedJson,
+                                    "All embed data copied to clipboard!"
+                                )
+                        }
+                    ]}
+                />
+            </ManaModalRoot>
         </ErrorBoundary>
     ));
 }
+
+
+
 
 function copyEmbedData(msg: any) {
     if (!msg?.embeds?.length) {

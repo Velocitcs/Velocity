@@ -16,27 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-export * from "../shared/debounce";
-export * from "../shared/onceDefined";
-export * from "./ChangeList";
-export * from "./clipboard";
-export * from "./constants";
-export * from "./cspViolations";
-export * from "./discord";
-export * from "./guards";
-export * from "./icon";
-export * from "./intlHash";
-export * from "./lazy";
-export * from "./lazyReact";
-export * from "./localStorage";
-export * from "./Logger";
-export * from "./manaModal";
-export * from "./margins";
-export * from "./mergeDefaults";
-export * from "./misc";
-export * from "./modal";
-export * from "./onlyOnce";
-export * from "./patches";
-export * from "./Queue";
-export * from "./react";
-export * from "./text";
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { Menu } from "@webpack/common";
+
+export const StreamCrasherPatch = (settings): NavContextMenuPatchCallback => (children, props) => {
+    const { isEnabled } = settings.use(["isEnabled"]);
+
+    children.splice(3, 0,
+        <Menu.MenuCheckboxItem
+            id="manage-streams-crasher-settings-enable"
+            label={isEnabled ? "Disable Crasher" : "Enable Crasher"}
+            checked={isEnabled}
+            action={() => settings.store.isEnabled = !settings.store.isEnabled}
+        />
+    );
+};

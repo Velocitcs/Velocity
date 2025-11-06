@@ -69,6 +69,13 @@ export default definePlugin({
                 match: /(?=let \i=window;)/,
                 replace: "return false;"
             }
+        },
+        {
+            find: "AnalyticsTrackImpressionContext function unimplemented",
+            replacement: {
+                match: /createContext\(\s*\(e,\s*t,\s*n\)\s*=>\s*\{[^}]+\}\s*\)/,
+                replace: "createContext(() => {})"
+            }
         }
     ],
 

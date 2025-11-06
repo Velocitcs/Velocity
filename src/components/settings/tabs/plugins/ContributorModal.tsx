@@ -28,7 +28,7 @@ import { classes, pluralise } from "@utils/misc";
 import { ModalContent, ModalRoot, openModal } from "@utils/modal";
 import { User } from "@velocity-types";
 import { findComponentByCodeLazy } from "@webpack";
-import { Forms, React, showToast, UserProfileStore, useStateFromStores } from "@webpack/common";
+import { FormNotice, Forms, React, showToast, UserProfileStore, useStateFromStores } from "@webpack/common";
 
 import Plugins from "~plugins";
 
@@ -135,10 +135,11 @@ function ContributorModal({ user }: { user: User; }) {
             </div>
 
             {fetchFailed && !isAnonymous && (
-                <Forms.FormText style={{ color: "var(--text-warning)", textAlign: "center", marginBottom: "1rem" }}>
-                    Failed to fetch user profile. This might be due to network issues.
-                </Forms.FormText>
-            )}
+                <FormNotice
+                    messageType="danger"
+                >
+                    Failed to fetch user profile. This might be due to network issues or user is banned.
+                </FormNotice>)}
 
             {plugins.length ? (
                 <Forms.FormText>

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import "./styles.css";
+
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
@@ -40,8 +42,9 @@ function stringToRegex(str: string) {
 
 const processedMessages = new Set<string>();
 let lastResponseTime = 0;
+const ruleLastResponseTimes = new Map<string, number>();
 
-function checkRules(content: string, messageId: string): string | null {
+function checkRules(content: string, messageId: string, channelId: string): { response: string; delay: number; } | null {
     if (content.length === 0) return null;
     if (processedMessages.has(messageId)) return null;
 
@@ -53,11 +56,36 @@ function checkRules(content: string, messageId: string): string | null {
         if (!rule.trigger || !rule.response) continue;
         if (rule.onlyIfIncludes && !content.includes(rule.onlyIfIncludes)) continue;
 
-        if (content.includes(rule.trigger)) {
+        const ruleKey = `string:${rule.trigger}`;
+        const ruleLastTime = ruleLastResponseTimes.get(ruleKey) || 0;
+
+        if (now - ruleLastTime < 5000) continue;
+
+        let checkContent = content;
+        let checkTrigger = rule.trigger;
+
+        if (!rule.caseSensitive) {
+            checkContent = content.toLowerCase();
+            checkTrigger = rule.trigger.toLowerCase();
+        }
+
+        let matches = false;
+        if (rule.matchWholeWord) {
+            const regex = new RegExp(`\\b${checkTrigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, rule.caseSensitive ? "" : "i");
+            matches = regex.test(content);
+        } else {
+            matches = checkContent.includes(checkTrigger);
+        }
+
+        if (matches) {
             processedMessages.add(messageId);
             lastResponseTime = now;
+            ruleLastResponseTimes.set(ruleKey, now);
             setTimeout(() => processedMessages.delete(messageId), 5000);
-            return rule.response.replaceAll("\\n", "\n");
+            return {
+                response: rule.response.replaceAll("\\n", "\n"),
+                delay: (rule.ruleCooldown || 0) * 1000
+            };
         }
     }
 
@@ -65,13 +93,22 @@ function checkRules(content: string, messageId: string): string | null {
         if (!rule.trigger || !rule.response) continue;
         if (rule.onlyIfIncludes && !content.includes(rule.onlyIfIncludes)) continue;
 
+        const ruleKey = `regex:${rule.trigger}`;
+        const ruleLastTime = ruleLastResponseTimes.get(ruleKey) || 0;
+
+        if (now - ruleLastTime < 5000) continue;
+
         try {
             const regex = stringToRegex(rule.trigger);
             if (regex.test(content)) {
                 processedMessages.add(messageId);
                 lastResponseTime = now;
+                ruleLastResponseTimes.set(ruleKey, now);
                 setTimeout(() => processedMessages.delete(messageId), 5000);
-                return rule.response.replaceAll("\\n", "\n");
+                return {
+                    response: rule.response.replaceAll("\\n", "\n"),
+                    delay: (rule.ruleCooldown || 0) * 1000
+                };
             }
         } catch (e) {
             new Logger("AutoResponder").error(`Invalid regex: ${rule.trigger}`);
@@ -98,9 +135,11 @@ export default definePlugin({
 
             if (settings.store.ignoreServers && message.guild_id) return;
 
-            const response = checkRules(message.content, message.id);
-            if (response) {
-                sendMessage(message.channel_id, { content: response });
+            const result = checkRules(message.content, message.id, message.channel_id);
+            if (result) {
+                setTimeout(() => {
+                    sendMessage(message.channel_id, { content: result.response });
+                }, result.delay);
             }
         }
     }

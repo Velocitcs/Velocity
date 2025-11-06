@@ -75,14 +75,6 @@ const settings = definePluginSettings({
                 return [{ label: "Screen 1", value: "screen:0:0", default: true }];
             }
         },
-        onChange() {
-            if (Velocity.Plugins.isPluginEnabled("StreamCrasher")) {
-                const StreamCrasher = Velocity.Plugins.plugins.StreamCrasher as any;
-                if (StreamCrasher?.updateStream) {
-                    StreamCrasher.updateStream();
-                }
-            }
-        }
     }
 });
 
