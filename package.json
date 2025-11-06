@@ -1,18 +1,18 @@
 {
     "name": "velocity",
-    "private": "true",
-    "version": "1.13.4",
-    "description": "The most racist Discord client mod",
-    "homepage": "https://github.com/ROBOXNOTHACKER/Velocity#readme",
+    "private": true,
+    "version": "1.10.4",
+    "description": "The most funniest Discord client mod",
+    "homepage": "https://github.com/Velocitcy/Velocity#readme",
     "bugs": {
-        "url": "https://github.com/ROBOXNOTHACKER/Velocity/issues"
+        "url": "https://github.com/Velocitcy/Velocity/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ROBOXNOTHACKER/Velocity.git"
+        "url": "git+https://github.com/Velocitcy/Velocity.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "Velocity",
+    "author": "Velocitcy",
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",

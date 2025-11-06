@@ -131,7 +131,7 @@ function VelocitySettings() {
     const user = UserStore?.getCurrentUser();
 
     return (
-        <SettingsTab title={"1EWnSO"}>
+        <SettingsTab title={"Velocity Settings"}>
             {isDonor(user?.id) && (
                 <SpecialCard
                     title="Donations"
