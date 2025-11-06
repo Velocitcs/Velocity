@@ -139,7 +139,8 @@ function CrashButton(props?: { showChevron?: boolean; }) {
 
 export default definePlugin({
     name: "StreamCrasher",
-    description: "Crashes your stream in Discord calls when you're streaming.",
+    description: "Crashes/Freezes your stream in Discord calls when you're screensharing",
+    tags: ["StreamFreezer", "ScreenshareCrasher"],
     authors: [Devs.Velocity],
     settings,
 
