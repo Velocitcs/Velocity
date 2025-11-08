@@ -174,7 +174,7 @@ function TextReplace({ title, rulesArray }: TextReplaceProps) {
                                         )
                                     }}
                                 >
-                                    <DeleteIcon />
+                                    <DeleteIcon height="24" width="24" viewBox="0 0 24 24" fill="currentColor" />
                                 </Button>
                             </Flex>
                             {isRegexRules && renderFindError(rule.find)}

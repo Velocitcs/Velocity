@@ -19,14 +19,16 @@
 import { useSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
+import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
 import { Margins } from "@components/margins";
+import { Paragraph } from "@components/Paragraph";
 import { handleSettingsTabError, SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { ModalCloseButton, ModalContent, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { useAwaiter } from "@utils/react";
 import { getRepo, isNewer, UpdateLogger } from "@utils/updater";
 import { findComponentByCodeLazy } from "@webpack";
-import { Forms, React } from "@webpack/common";
+import { React } from "@webpack/common";
 
 import gitHash from "~git-hash";
 
@@ -38,7 +40,7 @@ function Updater() {
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
     const [repo, err, repoPending] = useAwaiter(getRepo, {
         fallbackValue: "Loading...",
-        onError: e => UpdateLogger.error("Failed to retrieve repo", err)
+        onError: e => UpdateLogger.error("Failed to retrieve repo", e)
     });
     const [checkingUpdate, setCheckingUpdate] = React.useState(false);
 
@@ -46,25 +48,25 @@ function Updater() {
 
     return (
         <SettingsTab title="Velocity Updater">
-            <Forms.FormTitle tag="h5">Updater Settings</Forms.FormTitle>
+            <Heading tag="h5">Updater Settings</Heading>
 
             <FormSwitch
                 title="Automatically update"
                 description="Automatically update Velocity without confirmation prompt"
                 value={settings.autoUpdate}
-                onChange={(v: boolean) => settings.autoUpdate = v}
+                onChange={(v: boolean) => (settings.autoUpdate = v)}
             />
             <FormSwitch
                 title="Get notified when an automatic update completes"
                 description="Show a notification when Velocity automatically updates"
                 value={settings.autoUpdateNotification}
-                onChange={(v: boolean) => settings.autoUpdateNotification = v}
+                onChange={(v: boolean) => (settings.autoUpdateNotification = v)}
                 disabled={!settings.autoUpdate}
             />
 
-            <Forms.FormTitle tag="h5">Repo</Forms.FormTitle>
+            <Heading tag="h5">Repo</Heading>
 
-            <Forms.FormText>
+            <Paragraph>
                 {repoPending ? (
                     <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                         <Spinner type="wanderingCubes" />
@@ -78,16 +80,13 @@ function Updater() {
                         (<HashLink hash={gitHash} repo={repo} disabled={repoPending} />)
                     </>
                 )}
-            </Forms.FormText>
+            </Paragraph>
 
             <Divider className={Margins.top8 + " " + Margins.bottom8} />
 
-            <Forms.FormTitle tag="h5">Updates</Forms.FormTitle>
+            <Heading tag="h5">Updates</Heading>
 
-            {isNewer
-                ? <Newer {...commonProps} />
-                : <Updatable {...commonProps} />
-            }
+            {isNewer ? <Newer {...commonProps} /> : <Updatable {...commonProps} />}
         </SettingsTab>
     );
 }
@@ -99,14 +98,19 @@ export const openUpdaterModal = IS_UPDATER_DISABLED
     : function () {
         const UpdaterTab = wrapTab(Updater, "Updater");
         try {
-            openModal(wrapTab((modalProps: ModalProps) => (
-                <ModalRoot {...modalProps} size={ModalSize.MEDIUM}>
-                    <ModalContent className="vc-updater-modal">
-                        <ModalCloseButton onClick={modalProps.onClose} className="vc-updater-modal-close-button" />
-                        <UpdaterTab />
-                    </ModalContent>
-                </ModalRoot>
-            ), "UpdaterModal"));
+            openModal(
+                wrapTab((modalProps: ModalProps) => (
+                    <ModalRoot {...modalProps} size={ModalSize.MEDIUM}>
+                        <ModalContent className="vc-updater-modal">
+                            <ModalCloseButton
+                                onClick={modalProps.onClose}
+                                className="vc-updater-modal-close-button"
+                            />
+                            <UpdaterTab />
+                        </ModalContent>
+                    </ModalRoot>
+                ), "UpdaterModal")
+            );
         } catch {
             handleSettingsTabError();
         }

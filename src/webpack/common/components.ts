@@ -18,7 +18,6 @@
 
 import { TextCompat } from "@components/BaseText";
 import { ButtonCompat } from "@components/Button";
-import { Divider } from "@components/Divider";
 import { FormSwitchCompat } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -32,10 +31,6 @@ export const Forms = {
     // TODO: Stop using this and use Heading/Paragraph directly
     FormTitle: Heading,
     FormText: Paragraph,
-    /** @deprecated don't use this */
-    FormSection: "section" as never, // Backwards compat since Vesktop uses this
-    /** @deprecated use `@components/Divider` */
-    FormDivider: Divider as never, // Backwards compat since Vesktop uses this
 };
 
 // TODO: Stop using this and use Paragraph/Span directly

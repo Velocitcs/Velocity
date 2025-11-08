@@ -17,8 +17,7 @@
 */
 
 import { Settings } from "@api/Settings";
-import { StarIcon } from "@components/Icons";
-import { AddonBadge, AddonBadgeTypes } from "@components/settings/AddonBadge";
+import { CogWheel } from "@components/Icons";
 import { BackupAndRestoreTab, CloudTab, DeveloperTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VelocityTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
@@ -99,11 +98,7 @@ export default definePlugin({
                 section: "VelocityPlugins",
                 label: "Plugins",
                 element: PluginsTab,
-                icon: <AddonBadge
-                    text="NEW"
-                    icon={<StarIcon width={24} height={24} viewBox="0 0 24 24" />}
-                    type={AddonBadgeTypes.BRAND}
-                />,
+                icon: <CogWheel viewBox="0 0 24 24" height="20" width="20" />,
                 className: "vc-plugins"
             },
             {

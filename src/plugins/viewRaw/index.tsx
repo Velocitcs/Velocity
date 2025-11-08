@@ -140,9 +140,10 @@ export function openViewRawModal(json: string, type: string, content?: string, o
                             Velocity.Plugins.isPluginEnabled("CopyEmbed")
                             ? [
                                 {
-                                    text: "View Embed Data",
+                                    text: "View Embed",
                                     type: "reset",
                                     variant: "secondary",
+                                    fullWidth: true,
                                     icon: () => <LogIcon width="24" height="24" />,
                                     onClick: () => {
                                         closeModal(key);

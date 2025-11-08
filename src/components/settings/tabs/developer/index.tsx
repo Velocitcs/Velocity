@@ -22,12 +22,14 @@ import { LockIcon } from "@components/Icons";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { TabBar, useState } from "@webpack/common";
 
-import { ComponentsTab } from "./ComponentsTab";
-import { GeneralTab } from "./GeneralTab";
+import { ComponentsTab } from "./Components";
+import { GeneralTab } from "./General";
+import { IconsTab } from "./IconsPreview";
 
 const enum DevTab {
     GENERAL,
-    COMPONENTS
+    COMPONENTS,
+    ICONS
 }
 
 function DevelopersTab() {
@@ -48,11 +50,15 @@ function DevelopersTab() {
                 <TabBar.Item id={DevTab.COMPONENTS} className="vc-settings-tab-bar-item">
                     Components
                 </TabBar.Item>
+                <TabBar.Item id={DevTab.ICONS} className="vc-settings-tab-bar-item">
+                    Icons Preview
+                </TabBar.Item>
             </TabBar>
 
 
             {currentTab === DevTab.GENERAL && <GeneralTab />}
             {currentTab === DevTab.COMPONENTS && <ComponentsTab />}
+            {currentTab === DevTab.ICONS && <IconsTab />}
 
         </SettingsTab>
     );

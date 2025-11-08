@@ -20,3 +20,4 @@ import * as t from "@velocity-types";
 import { findByPropsLazy } from "@webpack";
 
 export const ButtonWrapperClasses: t.ButtonWrapperClasses = findByPropsLazy("buttonWrapper", "buttonContent");
+export const CMIconClasses: t.CMButtonClasses = findByPropsLazy("icon", "iconContainer", "label");
