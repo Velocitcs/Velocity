@@ -299,6 +299,27 @@ export const fileUrlPlugin = {
     }
 };
 
+/**
+ * @type {import("esbuild").Plugin}
+ */
+export const fontLoaderPlugin = {
+    name: "font-loader-plugin",
+    setup(build) {
+        build.onResolve({ filter: /\.(ttf|woff|woff2)$/ }, args => {
+            return {
+                path: join(args.resolveDir, args.path),
+                namespace: "font-file"
+            };
+        });
+        build.onLoad({ filter: /\.(ttf|woff|woff2)$/, namespace: "font-file" }, async (args) => {
+            return {
+                contents: "",
+                loader: "empty"
+            };
+        });
+    }
+};
+
 const styleModule = readFileSync("./scripts/build/module/style.js", "utf-8");
 /**
  * @type {import("esbuild").Plugin}
@@ -346,12 +367,17 @@ export const commonOpts = {
     sourcemap: watch ? "inline" : "external",
     legalComments: "linked",
     banner,
-    plugins: [fileUrlPlugin, gitHashPlugin, gitRemotePlugin, stylePlugin],
+    plugins: [fileUrlPlugin, gitHashPlugin, gitRemotePlugin, stylePlugin, fontLoaderPlugin],
     external: ["~plugins", "~git-hash", "~git-remote", "/assets/*"],
     inject: ["./scripts/build/inject/react.mjs"],
     jsx: "transform",
     jsxFactory: "VelocityCreateElement",
-    jsxFragment: "VelocityFragment"
+    jsxFragment: "VelocityFragment",
+    loader: {
+        '.ttf': 'file',
+        '.woff': 'file',
+        '.woff2': 'file'
+    }
 };
 
 const escapedBuiltinModules = builtinModules

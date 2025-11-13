@@ -28,7 +28,12 @@ const nodeCommonOpts = {
     format: "cjs",
     platform: "node",
     target: ["esnext"],
-    external: ["electron", "original-fs", "~pluginNatives", ...commonOpts.external]
+    external: ["electron", "original-fs", "~pluginNatives", ...commonOpts.external],
+    loader: {
+        '.ttf': 'file',
+        '.woff': 'file',
+        '.woff2': 'file'
+    }
 };
 
 const sourceMapFooter = s => watch ? "" : `//# sourceMappingURL=velocity://${s}.js.map`;

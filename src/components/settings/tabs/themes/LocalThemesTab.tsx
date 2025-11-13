@@ -27,11 +27,14 @@ import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { UserThemeHeader } from "@main/themes";
 import { classes } from "@utils/misc";
-import { closeModal, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { openModal } from "@utils/modal";
 import { findLazy } from "@webpack";
-import { Alerts, Button, Card, Forms, Select, showToast, TextInput, Toasts, Tooltip, useEffect, useRef, useState } from "@webpack/common";
+import { Card, Forms, showToast, Toasts, Tooltip, useEffect, useRef, useState } from "@webpack/common";
 import ClientThemePlugin from "plugins/clientTheme";
 import type { ComponentType, CSSProperties, Ref, SyntheticEvent } from "react";
+
+import { ThemeModal } from "./themeModal";
+
 
 const cl = classNameFactory("vc-settings-theme-");
 
@@ -79,308 +82,6 @@ async function onFileUpload(e: SyntheticEvent<HTMLInputElement>, callback: () =>
     showToast("Theme(s) uploaded successfully!", Toasts.Type.SUCCESS);
     callback();
 }
-function CreateThemeModal({ onSuccess, modalKey, transitionState, ...props }: {
-    onSuccess: () => void;
-    modalKey: string;
-    transitionState: any;
-    [key: string]: any;
-}) {
-    const [fileName, setFileName] = useState("");
-    const [cssCode, setCssCode] = useState("");
-    const editorRef = useRef<any>(null);
-    const editorInstanceRef = useRef<any>(null);
-
-    useEffect(() => {
-        if (!editorRef.current || editorInstanceRef.current) return;
-
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min/vs/loader.js";
-
-        script.onload = () => {
-            (window as any).require.config({
-                paths: {
-                    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min/vs",
-                },
-            });
-
-            (window as any).require(["vs/editor/editor.main"], () => {
-                const editor = (window as any).monaco.editor.create(editorRef.current, {
-                    value: "",
-                    language: "css",
-                    theme: "vs-dark",
-                    minimap: { enabled: false },
-                    automaticLayout: true,
-                });
-
-                editorInstanceRef.current = editor;
-                editor.onDidChangeModelContent(() => {
-                    setCssCode(editor.getValue());
-                });
-            });
-        };
-
-        document.head.appendChild(script);
-
-        return () => {
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.dispose();
-            }
-        };
-    }, []);
-
-    return (
-        <ModalRoot transitionState={transitionState} size={ModalSize.LARGE}>
-            <ModalHeader>
-                <Forms.FormTitle tag="h2" className={Margins.bottom16}>Create New Theme</Forms.FormTitle>
-            </ModalHeader>
-
-            <ModalContent>
-                <div style={{ marginBottom: "16px" }}>
-                    <Forms.FormTitle tag="h5">Theme Name</Forms.FormTitle>
-                    <TextInput
-                        placeholder="MyTheme.css"
-                        onChange={setFileName}
-                    />
-                </div>
-
-                <Divider className={Margins.bottom16} />
-
-                <div style={{
-                    height: "400px",
-                    border: "1px solid var(--background-modifier-accent)",
-                    borderRadius: "6px",
-                    overflow: "hidden"
-                }}>
-                    <div ref={editorRef} style={{ width: "100%", height: "100%" }} />
-                </div>
-            </ModalContent>
-
-            <ModalFooter>
-                <Button
-                    color={Button.Colors.BRAND}
-                    look={Button.Looks.FILLED}
-                    style={{ padding: "10px 20px" }}
-                    onClick={async () => {
-                        if (!fileName.trim() || !cssCode.trim()) {
-                            showToast("You must enter a file name and some CSS code.", Toasts.Type.FAILURE);
-                            return;
-                        }
-
-                        let finalFileName = fileName;
-                        if (!finalFileName.endsWith(".css"))
-                            finalFileName += ".css";
-
-                        const existing = await VelocityNative.themes.getThemesList();
-                        const conflictingTheme = existing.find(t => t.fileName.toLowerCase() === finalFileName.toLowerCase());
-                        if (conflictingTheme) {
-                            Alerts.show({
-                                title: "File Already Exists",
-                                body: `A theme named "${conflictingTheme.fileName}" already exists. Please choose a different name.`,
-                                confirmText: "OK",
-                                confirmColor: "vc-button-danger"
-                            });
-                            return;
-                        }
-
-                        try {
-                            await VelocityNative.themes.uploadTheme(finalFileName, cssCode);
-                            showToast(`Theme "${finalFileName}" created successfully!`, Toasts.Type.SUCCESS);
-                            onSuccess();
-                            closeModal(modalKey);
-                        } catch (err) {
-                            console.error("[Velocity] Failed to create theme:", err);
-                            showToast("Failed to create theme.", Toasts.Type.FAILURE);
-                        }
-                    }}
-                >
-                    Create
-                </Button>
-
-
-                <Button
-                    look={Button.Looks.LINK}
-                    color={Button.Colors.BRAND}
-                    style={{ padding: "10px 20px" }}
-                    onClick={() => closeModal(modalKey)}
-                >
-                    Cancel
-                </Button>
-            </ModalFooter>
-        </ModalRoot>
-    );
-}
-
-function EditThemeModal({ onSuccess, modalKey, transitionState, ...props }: {
-    onSuccess: () => void;
-    modalKey: string;
-    transitionState: any;
-    [key: string]: any;
-}) {
-    const [selectedTheme, setSelectedTheme] = useState("");
-    const [cssCode, setCssCode] = useState("");
-    const [themes, setThemes] = useState<UserThemeHeader[]>([]);
-    const editorRef = useRef<any>(null);
-    const editorInstanceRef = useRef<any>(null);
-
-    useEffect(() => {
-        VelocityNative.themes.getThemesList().then(setThemes);
-    }, []);
-
-    useEffect(() => {
-        if (!selectedTheme) return;
-        VelocityNative.themes.getThemeData(selectedTheme).then(data => {
-            setCssCode(data || "");
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.setValue(data || "");
-            }
-        });
-    }, [selectedTheme]);
-
-    useEffect(() => {
-        if (!editorRef.current || editorInstanceRef.current) return;
-
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min/vs/loader.js";
-
-        script.onload = () => {
-            (window as any).require.config({
-                paths: {
-                    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min/vs",
-                },
-            });
-
-            (window as any).require(["vs/editor/editor.main"], () => {
-                const editor = (window as any).monaco.editor.create(editorRef.current, {
-                    value: cssCode,
-                    language: "css",
-                    theme: "vs-dark",
-                    minimap: { enabled: false },
-                    automaticLayout: true,
-                });
-
-                editorInstanceRef.current = editor;
-                editor.onDidChangeModelContent(() => {
-                    setCssCode(editor.getValue());
-                });
-            });
-        };
-
-        document.head.appendChild(script);
-
-        return () => {
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.dispose();
-            }
-        };
-    }, []);
-
-    const selectedThemeData = themes.find(t => t.fileName === selectedTheme);
-
-    return (
-        <ModalRoot transitionState={transitionState} size={ModalSize.LARGE}>
-            <ModalHeader>
-                <Forms.FormTitle tag="h2" className={Margins.bottom16}>Edit Theme</Forms.FormTitle>
-            </ModalHeader>
-
-            <ModalContent>
-                <div style={{ marginBottom: "16px" }}>
-                    <Forms.FormTitle tag="h5">Select Theme</Forms.FormTitle>
-                    <Select
-                        options={themes.map(theme => ({
-                            label: theme.fileName,
-                            value: theme.fileName
-                        }))}
-                        isSelected={v => v === selectedTheme}
-                        select={setSelectedTheme}
-                        serialize={v => v}
-                    />
-                </div>
-
-                {selectedThemeData && (
-                    <div style={{ marginBottom: "16px" }}>
-                        <Forms.FormText>
-                            <strong>Name:</strong> {selectedThemeData.name}
-                        </Forms.FormText>
-                        <Forms.FormText>
-                            <strong>Author:</strong> {selectedThemeData.author}
-                        </Forms.FormText>
-                        {selectedThemeData.description && (
-                            <Forms.FormText>
-                                <strong>Description:</strong> {selectedThemeData.description}
-                            </Forms.FormText>
-                        )}
-                        {selectedThemeData.version && (
-                            <Forms.FormText>
-                                <strong>Version:</strong> {selectedThemeData.version}
-                            </Forms.FormText>
-                        )}
-                    </div>
-                )}
-
-                <Divider className={Margins.bottom16} />
-
-                <div style={{
-                    height: "400px",
-                    border: "1px solid var(--background-modifier-accent)",
-                    borderRadius: "6px",
-                    overflow: "hidden"
-                }}>
-                    <div ref={editorRef} style={{ width: "100%", height: "100%" }} />
-                </div>
-            </ModalContent>
-
-            <ModalFooter>
-                <Button
-                    color={Button.Colors.BRAND}
-                    look={Button.Looks.FILLED}
-                    disabled={!selectedTheme}
-                    style={{ padding: "10px 20px" }}
-                    onClick={async () => {
-                        if (!selectedTheme || !cssCode.trim()) {
-                            showToast("You must select a theme and provide CSS code.", Toasts.Type.FAILURE);
-                            return;
-                        }
-
-                        try {
-                            await VelocityNative.themes.uploadTheme(selectedTheme, cssCode);
-                            showToast(`Theme "${selectedTheme}" updated successfully!`, Toasts.Type.SUCCESS);
-                            onSuccess();
-                            closeModal(modalKey);
-                        } catch (err) {
-                            console.error("[Velocity] Failed to update theme:", err);
-                            showToast("Failed to update theme.", Toasts.Type.FAILURE);
-                        }
-                    }}
-                >
-                    Save
-                </Button>
-
-                <Button
-                    look={Button.Looks.LINK}
-                    color={Button.Colors.BRAND}
-                    style={{ padding: "10px 20px" }}
-                    onClick={() => closeModal(modalKey)}
-                >
-                    Cancel
-                </Button>
-            </ModalFooter>
-        </ModalRoot>
-    );
-}
-
-
-function openCreateThemeModal(onSuccess: () => void) {
-    const key = openModal(props => (
-        <CreateThemeModal onSuccess={onSuccess} modalKey={key} {...props} />
-    ));
-}
-
-
-function openEditThemeModal(onSuccess: () => void) {
-    const key = openModal(props => (
-        <EditThemeModal onSuccess={onSuccess} modalKey={key} {...props} />
-    ));
-}
 
 const linkContainerStyle: CSSProperties = { marginBottom: ".5em", display: "flex", flexDirection: "column" };
 const linkStyle: CSSProperties = { marginRight: ".5em" };
@@ -403,6 +104,19 @@ export function LocalThemesTab() {
 
     const normalThemes = userThemes?.filter(t => !(t as any).required) || [];
     const requiredThemes = userThemes?.filter(t => (t as any).required) || [];
+
+
+    function openCreateThemeModal(onSuccess: () => void) {
+        const key = openModal(props => (
+            <ThemeModal mode="create" onSuccess={onSuccess} modalKey={key} {...props} />
+        ));
+    }
+
+    function openEditThemeModal(onSuccess: () => void) {
+        const key = openModal(props => (
+            <ThemeModal mode="edit" onSuccess={onSuccess} modalKey={key} {...props} />
+        ));
+    }
 
     return (
         <>
