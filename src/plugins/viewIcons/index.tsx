@@ -232,14 +232,6 @@ export default definePlugin({
                 match: /(?=,src:(\i.getAvatarURL\(.+?[)]))/,
                 replace: (_, avatarUrl) => `,onClick:()=>$self.openAvatar(${avatarUrl})`
             }
-        },
-        // User Dms top large icon
-        {
-            find: 'experimentLocation:"empty_messages"',
-            replacement: {
-                match: /(?<=SIZE_80,)(?=src:(.+?\))[,}])/,
-                replace: (_, avatarUrl) => `onClick:()=>$self.openAvatar(${avatarUrl}),`
-            }
         }
     ]
 });

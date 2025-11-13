@@ -280,14 +280,14 @@ export default definePlugin({
 
                 // What's New (Changelog)
                 {
-                    match: /(\[.{1,10}\.CHANGELOG\]:\{[\s\S]*?label:\s*eD\.intl\.string\(eD\.t\.LRmNAl\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('InfoIcon')}"
+                    match: /(\[eN\.s6\.CHANGELOG\]:\{[\s\S]*?label:\s*ew\.intl\.string\(ew\.t\.LRmNAl\))/,
+                    replace: "$1,icon:$self.getIcon('InfoIcon')"
                 },
 
                 // Merchandise
                 {
-                    match: /(\[.{1,10}\.MERCHANDISE\]:\{[\s\S]*?ariaLabel:\s*eD\.intl\.string\(eD\.t\.sMEktT\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ShopIcon')}"
+                    match: /(\[eN\.s6\.MERCHANDISE\]:\{[\s\S]*?ariaLabel:\s*ew\.intl\.string\(ew\.t\.sMEktT\))/,
+                    replace: "$1,icon:$self.getIcon('ShopIcon')"
                 },
 
                 // Experiments

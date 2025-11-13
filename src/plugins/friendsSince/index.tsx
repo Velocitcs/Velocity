@@ -46,7 +46,7 @@ export default definePlugin({
         // User Profile Modal
         {
             find: ".connections,userId:",
-            noWarn: true,
+            lazy: true,
             replacement: {
                 match: /#{intl::USER_PROFILE_MEMBER_SINCE}\),.{0,100}userId:(\i\.id),.{0,100}}\)}\),/,
                 replace: "$&,$self.FriendsSinceComponent({userId:$1,isSidebar:false}),"

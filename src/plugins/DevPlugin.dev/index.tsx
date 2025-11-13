@@ -35,7 +35,6 @@ findByCodeLazy;
 findComponentByCodeLazy;
 findComponentLazy;
 
-const modalModule = findByPropsLazy("Cg", "Y0", "YA", "fM", "hz", "mz", "ol", "xB");
 const Overflow = findByPropsLazy("yRy", "v2r");
 
 function ButtonPopover({ user, closePopout }: { user: any; closePopout: () => void; }) {
