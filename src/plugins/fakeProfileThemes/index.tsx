@@ -98,7 +98,7 @@ interface ProfileModalProps {
     isTryItOutFlow: boolean;
 }
 
-const ProfileModal = findComponentByCodeLazy<ProfileModalProps>("isTryItOutFlow:", "pendingThemeColors:", "pendingAvatarDecoration:", "EDIT_PROFILE_BANNER");
+const ProfileModal = findComponentByCodeLazy<ProfileModalProps>("pendingThemeColors", "pendingAvatarDecoration", "EDIT_PROFILE_BANNER");
 
 function SettingsAboutComponentWrapper() {
     const [, , userProfileLoading] = useAwaiter(() => fetchUserProfile(UserStore.getCurrentUser().id));
