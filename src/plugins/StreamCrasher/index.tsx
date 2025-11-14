@@ -16,23 +16,48 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { WarningIcon } from "@components/Icons";
-import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
-import definePlugin from "@utils/types";
-import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { Popout, React, UserStore, useStateFromStores } from "@webpack/common";
+import definePlugin, { OptionType } from "@utils/types";
+import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
+import { Popout, React, useEffect, useRef, UserStore, useStateFromStores } from "@webpack/common";
 
-import { CrasherContextMenu } from "./components/crasherContextMenu";
-import { StreamCrasherPatch } from "./components/moreOptionsMenu";
-import settings from "./settings";
-import { setLastRealSourceId, updateStream } from "./utils";
+import { CrasherContextMenu, StreamCrasherPatch } from "./contextMenu";
+import { setLastSourceId, updateStream } from "./utils";
+
+const settings = definePluginSettings({
+    isEnabled: {
+        type: OptionType.BOOLEAN,
+        description: "Crashing state",
+        default: false,
+        onChange: () => updateStream(settings.store.isEnabled)
+    },
+    showChevron: {
+        type: OptionType.BOOLEAN,
+        description: "Show dropdown chevron (options menu)",
+        default: true
+    },
+    keybindEnabled: {
+        type: OptionType.BOOLEAN,
+        description: "Having the ability to toggle the crasher with a keybind",
+        default: false
+    },
+    buttonLocation: {
+        type: OptionType.SELECT,
+        description: "Where to place the crasher button",
+        options: [
+            { label: "Account Section", value: "account", default: true },
+            { label: "Voice Panel", value: "voice" },
+            { label: "Streaming Panel", value: "stream" }
+        ],
+        restartNeeded: true
+    },
+});
+
 const Button = findComponentByCodeLazy(".NONE,disabled:", ".PANEL_BUTTON");
 const panelClasses = findByPropsLazy("micButtonParent", "buttonChevron");
-const StreamStore = findByPropsLazy("getActiveStreamForUser");
-
-
+const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
 
 const CrashIcon = ({ isEnabled }) => (
     <svg width="24" height="24" viewBox="0 0 24 24">
@@ -49,30 +74,16 @@ const ChevronIcon = ({ isEnabled, isShown }) => (
     </svg>
 );
 
-function CrashButton(props?: { showChevron?: boolean; }) {
-    const buttonRef = React.useRef(null);
-    const [screens, setScreens] = React.useState<any[]>([]);
-    const { isEnabled, showChevron: showChevronSetting } = settings.use(["isEnabled", "showChevron"]);
+function CrashButton(...props) {
+    const buttonRef = useRef(props) as any;
+    const { isEnabled, showChevron } = settings.use(["isEnabled", "showChevron"]);
+    const isStreaming = useStateFromStores([ApplicationStreamingStore], () => ApplicationStreamingStore.getActiveStreamForUser(UserStore.getCurrentUser()?.id) != null);
 
-    const showChevron = showChevronSetting;
-
-    const id = UserStore.getCurrentUser()?.id;
-    const isStreaming = useStateFromStores([StreamStore], () => StreamStore.getActiveStreamForUser(id) != null);
-
-    React.useEffect(() => {
-        if (isStreaming && settings.store.isEnabled) {
-            updateStream(settings.store.isEnabled);
+    useEffect(() => {
+        if (isStreaming && isEnabled) {
+            updateStream(isEnabled);
         }
-    }, [isStreaming]);
-
-    React.useEffect(() => {
-        (async () => {
-            const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-                types: ["screen"]
-            });
-            setScreens(sources);
-        })();
-    }, []);
+    }, [isStreaming, isEnabled]);
 
     if (!isStreaming) return null;
 
@@ -106,7 +117,6 @@ function CrashButton(props?: { showChevron?: boolean; }) {
                     <>
                         <Button
                             tooltipText={isEnabled ? "Disable Crasher" : "Enable Crasher"}
-                            tooltipColor="red"
                             icon={() => <CrashIcon isEnabled={isEnabled} />}
                             className={panelClasses.micButtonWithMenu}
                             role="switch"
@@ -134,9 +144,6 @@ function CrashButton(props?: { showChevron?: boolean; }) {
     );
 }
 
-
-
-
 export default definePlugin({
     name: "StreamCrasher",
     description: "Crashes/Freezes your stream in Discord calls when you're screensharing",
@@ -151,36 +158,30 @@ export default definePlugin({
     start() {
         window.addEventListener("keydown", this.event);
     },
+
     stop() {
         window.removeEventListener("keydown", this.event);
     },
 
     flux: {
-        STREAM_UPDATE(data) {
-            if (data.sourceId && data.sourceId !== "FAKE_CRASH_SOURCE_ID") {
-                setLastRealSourceId(data.sourceId);
-            }
-        },
-        STREAM_START(data) {
-            if (data.sourceId === "FAKE_CRASH_SOURCE_ID") return;
-
-            if (data.sourceId) {
-                setLastRealSourceId(data.sourceId);
+        MEDIA_ENGINE_SET_GO_LIVE_SOURCE(data) {
+            const sourceId = data.settings?.desktopSettings?.sourceId;
+            if (sourceId && sourceId !== "") {
+                setLastSourceId(sourceId);
 
                 if (settings.store.isEnabled) {
-                    setTimeout(() => updateStream(settings.store.isEnabled), 50);
+                    updateStream(true);
                 }
             }
         }
     },
 
     patches: [
-        // whoever touches those buttons will be fucking BOMBED.
         {
             find: "#{intl::ACCOUNT_SPEAKING_WHILE_MUTED}",
             replacement: {
                 match: /className:\i\.buttons,.{0,50}children:\[/,
-                replace: "$&$self.CrashButton({ showChevron: $self.settings.store.showChevron }),"
+                replace: "$&$self.CrashButton(),"
             },
             predicate: () => settings.store.buttonLocation === "account"
         },
@@ -188,7 +189,7 @@ export default definePlugin({
             find: ".voiceButtonsContainer",
             replacement: {
                 match: /(channel:\i)\}\)\]/,
-                replace: "$1}),$self.CrashButton({ showChevron: $self.settings.store.showChevron })]"
+                replace: "$1}),$self.CrashButton()]"
             },
             predicate: () => settings.store.buttonLocation === "voice"
         },
@@ -196,7 +197,7 @@ export default definePlugin({
             find: 'action_type:"link_account"',
             replacement: {
                 match: /className:(\i)\.actions,children:\[/,
-                replace: "className:$1.actions,children:[$self.CrashButton({ showChevron: $self.settings.store.showChevron }),"
+                replace: "className:$1.actions,children:[$self.CrashButton(),"
             },
             predicate: () => settings.store.buttonLocation === "stream"
         }
@@ -208,10 +209,6 @@ export default definePlugin({
             settings.store.isEnabled = !settings.store.isEnabled;
         }
     },
-
-
-    updateStream,
-    renderBadge: () => <AddonBadge text="BETA" type={AddonBadgeTypes.PRIMARY} icon={<WarningIcon width="16" height="16" viewBox="0 0 24 24" className="vc-icon" />} />,
 
     CrashButton: ErrorBoundary.wrap(CrashButton, { noop: true })
 });

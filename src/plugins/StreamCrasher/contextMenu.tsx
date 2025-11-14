@@ -16,37 +16,48 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { CogWheel } from "@components/Icons";
 import { openPluginModal } from "@components/settings";
-import { findByPropsLazy } from "@webpack";
-import { Menu } from "@webpack/common";
-
-const iconClass = findByPropsLazy("icon", "iconContainer", "label");
+import { CMIconClasses, Menu } from "@webpack/common";
 
 export function CrasherContextMenu({ closePopout, settings }) {
     const { isEnabled, keybindEnabled } = settings.use(["isEnabled", "keybindEnabled"]);
 
     return (
-        <Menu.Menu navId="stream-crasher-options" onClose={closePopout}>
+        <Menu.Menu navId="stream-crasher-context" onClose={closePopout}>
             <Menu.MenuCheckboxItem
-                id="stream-crasher-context-toggle"
+                id="context-toggle"
                 label={isEnabled ? "Disable Crasher" : "Enable Crasher"}
                 checked={isEnabled}
                 action={() => settings.store.isEnabled = !settings.store.isEnabled}
             />
             <Menu.MenuCheckboxItem
-                id="stream-crasher-keybind-toggle"
+                id="keybind-toggle"
                 label={keybindEnabled ? "Disable Keybind" : "Enable Keybind"}
                 checked={keybindEnabled}
                 action={() => settings.store.keybindEnabled = !settings.store.keybindEnabled}
             />
             <Menu.MenuSeparator />
             <Menu.MenuItem
-                id="stream-crasher-context-settings"
+                id="settings"
                 label="Crasher Settings"
-                icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className={iconClass.icon} />)}
+                icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className={CMIconClasses.icon} />)}
                 action={() => openPluginModal(Velocity.Plugins.plugins.StreamCrasher)}
             />
         </Menu.Menu>
     );
 }
+
+export const StreamCrasherPatch = (settings): NavContextMenuPatchCallback => (children, props) => {
+    const { isEnabled } = settings.use(["isEnabled"]);
+
+    children.splice(3, 0,
+        <Menu.MenuCheckboxItem
+            id="stream-crasher-enable"
+            label={isEnabled ? "Disable Crasher" : "Enable Crasher"}
+            checked={isEnabled}
+            action={() => settings.store.isEnabled = !settings.store.isEnabled}
+        />
+    );
+};

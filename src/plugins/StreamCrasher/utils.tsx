@@ -16,22 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { findByPropsLazy } from "@webpack";
-import { FluxDispatcher, SelectedChannelStore, UserStore } from "@webpack/common";
+import { findByPropsLazy, findStoreLazy } from "@webpack";
 
-export let lastRealSourceId: string | null = null;
+export let lastSourceId: string | null = null;
 
-const StreamStore = findByPropsLazy("getActiveStreamForUser");
+const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
+const MediaEngineActions = findByPropsLazy("setGoLiveSource");
+const RTCConnectionStore = findStoreLazy("OverlayRTCConnectionStore");
 
-export function setLastRealSourceId(sourceId: string | null) {
-    lastRealSourceId = sourceId;
+export function setLastSourceId(sourceId: string | null) {
+    lastSourceId = sourceId;
 }
 
 export async function getSourceId(isEnabled: boolean) {
-    if (isEnabled) return "FAKE_CRASH_SOURCE_ID";
+    if (isEnabled) return "";
 
-    if (lastRealSourceId) {
-        return lastRealSourceId;
+    if (lastSourceId) {
+        return lastSourceId;
     }
 
     const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
@@ -40,41 +41,30 @@ export async function getSourceId(isEnabled: boolean) {
     return sources[0]?.id ?? "default";
 }
 
-export function updateStream(isEnabled: boolean) {
-    const channelId = SelectedChannelStore.getVoiceChannelId();
-    if (!channelId) return;
-
-    const id = UserStore.getCurrentUser()?.id;
-    const isStreaming = StreamStore.getActiveStreamForUser(id) != null;
+export async function updateStream(isEnabled: boolean) {
+    const isStreaming = ApplicationStreamingStore.getCurrentUserActiveStream() != null;
     if (!isStreaming) return;
 
-    (async () => {
-        const sourceId = await getSourceId(isEnabled);
 
-        try {
-            FluxDispatcher.dispatch({
-                type: "STREAM_START",
-                streamType: "call",
-                guildId: null,
-                channelId,
-                appContext: "APP",
-                sourceId: sourceId,
-                sourceName: isEnabled ? "$1}),$self,tGs47 void" : "Screen 1",
-                sourceIcon: "",
-                sound: true,
-                previewDisabled: false,
-                goLiveModalDurationMs: 2000 + Math.random() * 300,
-                analyticsLocations: [
-                    "channel call",
-                    "voice control tray",
-                    "go live modal v2"
-                ],
-                quality: {
-                    resolution: 1080,
-                    frameRate: 60
-                }
-            });
-        } catch (err) {
-        }
-    })();
+    const sourceId = await getSourceId(isEnabled);
+
+    // TODO: get a stable state of the user call so it doesnt jerk with the screenshare
+    while (RTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+
+    MediaEngineActions.setGoLiveSource({
+        desktopSettings: {
+            sourceId: sourceId,
+            sound: false
+        },
+
+        qualityOptions: {
+            preset: 0,
+            resolution: 1080,
+            frameRate: 60
+        },
+
+        context: "stream"
+    });
 }
