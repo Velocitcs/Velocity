@@ -16,29 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { CogWheel } from "@components/Icons";
-import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findByPropsLazy } from "@webpack";
-import { FluxDispatcher, Menu, React } from "@webpack/common";
+import { findByCodeLazy, findByPropsLazy, findStoreLazy } from "@webpack";
+import { ChannelStore, VoiceStateStore } from "@webpack/common";
 
-const VoiceActions = findByPropsLazy("selectVoiceChannel", "disconnect");
-const ChannelStore = findByPropsLazy("getChannel", "getDMFromUserId");
-const VoiceStateStore = findByPropsLazy("getVoiceStatesForChannel", "getVoiceStateForUser");
+import { streamContextMenuPatch, streamEnablingPatch } from "./contextMenu";
+
+const RTCConnectionStore = findStoreLazy("OverlayRTCConnectionStore");
 const MediaEngineStore = findByPropsLazy("isSelfMute", "isSelfDeaf");
-const ToggleMute = findByPropsLazy("toggleSelfMute");
-const ToggleDeafen = findByPropsLazy("toggleSelfDeaf");
+const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
+const VoiceActions = findByPropsLazy("selectVoiceChannel");
+const MediaEngineActions = findByPropsLazy("toggleSelfMute", "toggleSelfDeaf");
+const StreamActions = findByCodeLazy("startStreamWithSource");
 
 const settings = definePluginSettings({
     channelId: {
         type: OptionType.STRING,
-        description: "Channel IDs (comma separated for multiple channels)",
+        description: "Check for channel ids",
         default: ""
     },
-    muteOption: {
+    voiceSetting: {
         type: OptionType.RADIO,
         description: "Audio state on join",
         options: [
@@ -59,80 +58,82 @@ const settings = definePluginSettings({
     },
     streamSource: {
         type: OptionType.SELECT,
-        isSearchable: true,
         description: "Stream source",
+        default: JSON.stringify({
+            id: "screen:0:0",
+            name: "Screen 1",
+            icon: ""
+        }),
         options: async () => {
-            try {
-                const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-                    types: ["screen"]
-                });
-                return sources.map((s: any, index: number) => ({
-                    label: `Screen ${index + 1}`,
-                    value: s.id,
-                    default: index === 0
-                }));
-            } catch (err) {
-                return [{ label: "Screen 1", value: "screen:0:0", default: true }];
-            }
-        },
+            const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
+                types: ["screen"]
+            });
+            return sources.map((s: any, index: number) => ({
+                label: `Screen ${index + 1}`,
+                value: JSON.stringify({
+                    id: s.id,
+                    name: `Screen ${index + 1}`,
+                    icon: s.icon
+                }),
+                default: index === 0
+            }));
+        }
     }
 });
 
-async function startStream(channelId: string) {
-    await new Promise(r => setTimeout(r, 500));
+async function startStream() {
+    if (ApplicationStreamingStore.getCurrentUserActiveStream() != null) return;
 
-    const sourceId = settings.store.streamSource;
+    const sourceData = JSON.parse(settings.store.streamSource!);
 
-    console.log("Streaming with sourceId:", sourceId);
-
-    FluxDispatcher.dispatch({
-        type: "STREAM_START",
-        streamType: "call",
-        guildId: null,
-        channelId: channelId,
-        appContext: "APP",
-        sourceId: sourceId,
-        sourceName: "Screen 1",
-        sourceIcon: "",
-        sound: settings.store.streamSound,
-        previewDisabled: false,
-        goLiveModalDurationMs: 2000 + Math.random() * 300,
-        analyticsLocations: [
-            "channel call",
-            "voice control tray",
-            "go live modal v2"
-        ]
-    });
+    await StreamActions(
+        {
+            id: sourceData.id,
+            name: sourceData.name,
+            icon: sourceData.icon
+        },
+        {
+            preset: 0,
+            resolution: 1080,
+            fps: 60,
+            soundshareEnabled: settings.store.streamSound,
+            previewDisabled: true,
+            analyticsLocations: ["voice control tray"]
+        }
+    );
 }
 
-function joinCall(channelId: string) {
-    const channel = ChannelStore?.getChannel(channelId);
+async function joinCall(channelId: string) {
+    const channel = ChannelStore.getChannel(channelId);
     if (!channel) return;
 
-    const voiceStates = VoiceStateStore?.getVoiceStatesForChannel(channel);
-    if (!voiceStates || Object.keys(voiceStates).length === 0) return;
+    const voiceStates = VoiceStateStore.getVoiceStatesForChannel(channelId);
+    // empty array = call doesnt exist
+    if (Object.keys(voiceStates).length === 0) return;
 
-    try {
-        VoiceActions.selectVoiceChannel(channelId);
+    VoiceActions.selectVoiceChannel(channelId);
 
-        try {
-            const { muteOption } = settings.store;
+    // Waiting here until RTC is connected so discord doesnt freak out
+    while (RTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
 
-            if (muteOption === "deafen" && ToggleDeafen?.toggleSelfDeaf) {
-                ToggleDeafen.toggleSelfDeaf();
-            } else if (muteOption === "mute") {
-                if (ToggleMute?.toggleSelfMute) {
-                    ToggleMute.toggleSelfMute();
-                } else if (MediaEngineStore?.setLocalMute) {
-                    MediaEngineStore.setLocalMute(true);
-                }
-            }
+    const { voiceSetting } = settings.store;
 
-            if (settings.store.autoStream) {
-                startStream(channelId);
-            }
-        } catch (err) { }
-    } catch (e) { }
+    /* TODO: Switch to patching for auto mute setting */
+    if (voiceSetting === "deafen") {
+        if (!MediaEngineStore.isSelfDeaf()) {
+            MediaEngineActions.toggleSelfDeaf();
+        }
+    } else if (voiceSetting === "mute") {
+        if (!MediaEngineStore.isSelfMute()) {
+            MediaEngineActions.toggleSelfMute();
+        }
+    }
+
+    if (settings.store.autoStream) {
+        startStream();
+    }
 }
 
 function getChannelIds(): string[] {
@@ -140,36 +141,6 @@ function getChannelIds(): string[] {
     if (!channelId) return [];
     return channelId.split(",").map(id => id.trim()).filter(id => id.length > 0);
 }
-
-const streamContextMenuPatch: NavContextMenuPatchCallback = children => {
-    const menuItem = (
-        <Menu.MenuItem
-            id="vc-autojoin-settings"
-            label="Auto Join Settings"
-            icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className="icon_f84418 " />)}
-            action={() => openPluginModal(Velocity.Plugins.plugins.AutoJoinCall)}
-        />
-    );
-
-    children.splice(4, 0, menuItem);
-};
-
-const streamEnablingPatch: NavContextMenuPatchCallback = children => {
-    const { autoStream } = settings.use(["autoStream"]);
-
-    children.splice(2, 0,
-        <Menu.MenuSeparator />,
-        <Menu.MenuCheckboxItem
-            id="vc-stream-checkbox"
-            label="Auto Stream"
-            subtext="Whether to automaticly start a stream thru AutoJoinCall plugin"
-            checked={autoStream}
-            action={() => {
-                settings.store.autoStream = !settings.store.autoStream;
-            }}
-        />
-    );
-};
 
 export default definePlugin({
     name: "AutoJoinCall",
@@ -179,10 +150,11 @@ export default definePlugin({
 
     contextMenus: {
         "more-settings-context": streamContextMenuPatch,
-        "manage-streams": streamEnablingPatch
+        "manage-streams": streamEnablingPatch(settings)
     },
 
     flux: {
+        // this will trigger whenever a call gets created by someone
         CALL_CREATE(data: { channelId: string; }) {
             const channelIds = getChannelIds();
             if (channelIds.length === 0) return;
@@ -192,6 +164,7 @@ export default definePlugin({
             }
         }
     },
+
 
     start() {
         const channelIds = getChannelIds();
