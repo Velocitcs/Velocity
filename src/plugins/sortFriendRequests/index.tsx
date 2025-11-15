@@ -23,7 +23,7 @@ import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@vencord/discord-types";
+import { User } from "@velocity-types";
 import { DateUtils, RelationshipStore, Text, TooltipContainer } from "@webpack/common";
 import { PropsWithChildren } from "react";
 
