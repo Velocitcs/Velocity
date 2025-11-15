@@ -20,7 +20,6 @@ import { get, set } from "@api/DataStore";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
-import { FormSwitch } from "@components/FormSwitch";
 import { HeadingTertiary } from "@components/Heading";
 import { DeleteIcon, ErrorIcon, InfoIcon, LogIcon, PlusIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
@@ -28,7 +27,7 @@ import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { debounce } from "@shared/debounce";
 import { copyWithToast } from "@utils/misc";
 import { filters, search } from "@webpack";
-import { Button, Forms, React, Select, TextInput, useState } from "@webpack/common";
+import { Button, Forms, React, Select, TextInput, useEffect, useState } from "@webpack/common";
 
 const searchTypes = [
     { label: "findByCode", value: "code" },
@@ -40,13 +39,11 @@ const searchTypes = [
 const findModule = debounce(function ({
     queries,
     searchType,
-    useLazy,
     setModule,
     setError
 }: {
     queries: string[];
     searchType: string;
-    useLazy: boolean;
     setModule: (value: [string, Function] | null) => void;
     setError: (value: string | undefined) => void;
 }) {
@@ -124,13 +121,12 @@ const findModule = debounce(function ({
 function SearchHelper() {
     const [queries, setQueries] = useState<string[]>([]);
     const [searchType, setSearchType] = useState("code");
-    const [useLazy, setUseLazy] = useState(false);
     const [error, setError] = useState<string>();
     const [module, setModule] = useState<[string, Function] | null>(null);
     const [loaded, setLoaded] = useState(false);
 
     // Load filters before rendering
-    React.useEffect(() => {
+    useEffect(() => {
         (async () => {
             const saved = (await get("SearchHelper")) ?? { filters: [""] };
             setQueries(saved.filters ?? [""]);
@@ -139,7 +135,7 @@ function SearchHelper() {
     }, []);
 
     // Save filters automatically
-    React.useEffect(() => {
+    useEffect(() => {
         if (loaded) set("SearchHelper", { filters: queries });
     }, [queries, loaded]);
 
@@ -147,24 +143,24 @@ function SearchHelper() {
         const newQueries = [...queries];
         newQueries[index] = value;
         setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, useLazy, setModule, setError });
+        findModule({ queries: newQueries, searchType, setModule, setError });
     }
 
     function addFilter() {
         const newQueries = [...queries, ""];
         setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, useLazy, setModule, setError });
+        findModule({ queries: newQueries, searchType, setModule, setError });
     }
 
     function removeFilter(index: number) {
         const newQueries = queries.filter((_, i) => i !== index);
         setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, useLazy, setModule, setError });
+        findModule({ queries: newQueries, searchType, setModule, setError });
     }
 
     function onSearchTypeChange(v: string) {
         setSearchType(v);
-        findModule({ queries, searchType: v, useLazy, setModule, setError });
+        findModule({ queries, searchType: v, setModule, setError });
     }
 
     function printModules() {
@@ -223,15 +219,6 @@ function SearchHelper() {
             />
 
             <Divider style={{ margin: "20px 0" }} />
-
-            <FormSwitch
-                className={Margins.top16}
-                value={useLazy}
-                onChange={setUseLazy}
-                title="Is Lazy"
-                description="Is the module lazy loaded?"
-                hideBorder={false}
-            />
 
             <HeadingTertiary className={Margins.top8}>Filters</HeadingTertiary>
             <Forms.FormText className={Margins.bottom8}>
