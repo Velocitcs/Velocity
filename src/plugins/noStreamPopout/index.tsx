@@ -16,35 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { CopyIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
-import { copyWithToast } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { Menu } from "@webpack/common";
-
-const UserInfoPatch: NavContextMenuPatchCallback = (children, { user }) => {
-    if (!user) return;
-
-    children.push(
-        <Menu.MenuItem
-            id="vc-copy-user-data"
-            label="Copy User Data"
-            icon={() => <CopyIcon height="24" width="24" viewBox="0 0 24 24" className="icon_c1e9c4" />}
-            action={() => {
-                const json = JSON.stringify(user, null, 2);
-                copyWithToast(json, "User data copied to clipboard!");
-            }}
-        />
-    );
-};
 
 export default definePlugin({
-    name: "ViewUserRaw",
-    description: "Copy the raw data of a user",
+    name: "NoStreamPopout",
+    description: "Removes the annoying small stream window when not in DMs",
     authors: [Devs.Velocity],
 
-    contextMenus: {
-        "user-profile-overflow-menu": UserInfoPatch
-    }
+    patches: [
+        {
+            find: "pictureInPictureVideo,{[",
+            replacement: {
+                match: /return\(0,\i\.jsxs\)\("div",\{onMouseMove/,
+                replace: "return null;return(0,i.jsxs)(\"div\",{onMouseMove"
+            }
+        }
+
+    ]
 });
