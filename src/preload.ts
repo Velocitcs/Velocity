@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld("VelocityNative", VelocityNative);
 // Discord
 if (location.protocol !== "data:") {
     // #region cssInsert
-    const rendererCss = join(__dirname, IS_VESKTOP ? "velocityDesktopRenderer.css" : "renderer.css");
+    const rendererCss = join(__dirname, "velocityDesktopRenderer.css");
 
     const style = document.createElement("style");
     style.id = "velocity-css-core";

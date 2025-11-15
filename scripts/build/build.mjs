@@ -100,7 +100,6 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
         }
     },
     {
@@ -119,7 +118,6 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
         }
     },
     {
@@ -131,7 +129,6 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
         }
     },
     {
@@ -147,7 +144,6 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
         }
     },
     {
@@ -160,13 +156,11 @@ const buildConfigs = ([
         globalName: "Velocity",
         sourcemap,
         plugins: [
-            globPlugins("vesktop"),
             ...commonRendererPlugins
         ],
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
         }
     },
     {
@@ -178,7 +172,6 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
         }
     }
 ]);

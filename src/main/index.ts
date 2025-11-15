@@ -26,7 +26,7 @@ import { RendererSettings } from "./settings";
 import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { installExt } from "./utils/extensions";
 
-if (IS_VESKTOP || !IS_VANILLA) {
+if (!IS_VANILLA) {
     app.whenReady().then(() => {
         protocol.handle("velocity", ({ url: unsafeUrl }) => {
             let url = decodeURI(unsafeUrl).slice("velocity://".length).replace(/\?v=\d+$/, "");

@@ -184,13 +184,12 @@ function ExcludedPluginsList({ search }: { search: string; }) {
         name.toLowerCase().includes(search)
     );
     const ExcludedReasons: Record<
-        "web" | "discordDesktop" | "vesktop" | "desktop" | "dev",
+        "web" | "discordDesktop" | "desktop" | "dev",
         string
     > = {
-        desktop: "Discord Desktop app or Vesktop",
+        desktop: "Discord Desktop app",
         discordDesktop: "Discord Desktop app",
-        vesktop: "Vesktop app",
-        web: "Vesktop app and the Web version of Discord",
+        web: "Web version of Discord",
         dev: "Developer version of Velocity",
     };
 
