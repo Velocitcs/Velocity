@@ -160,11 +160,14 @@ export default definePlugin({
                     replace: "$1,icon:$self.getIcon('ClipsIcon')}"
                 },
 
-                // Premium
-                // {
-                //  match: /(\[.{1,10}\.PREMIUM\]:\{[\s\S]*?element:\s*z\.Z[\s\S]*?)\}/,
-                //   replace: "$1,icon:$self.getIcon()}"
-                //  },
+                // Velocity settings here at default, so we're moving on to the section below it
+
+                /* Premium (this section already has an icon)
+                 {
+                     match: /(\[.{1,10}\.PREMIUM\]:\{[\s\S]*?element:\s*z\.Z[\s\S]*?)\}/,
+                     replace: "$1,icon:$self.getIcon()}"
+                 },
+                 */
 
                 // Server Boost (Guild Boosting)
                 {
@@ -387,12 +390,10 @@ export default definePlugin({
             return props.children;
         }
 
-        return <Layer {...props
-        } />;
+        return <Layer {...props} />;
     },
 
     transformSettingsEntries(list: SettingsEntry[]) {
-        if (IS_DEV) { console.log("Debug list:", list); }
         const items = [{ label: null as string | null, items: [] as SettingsEntry[] }];
         let addedOtherOptions = false;
 
@@ -417,13 +418,13 @@ export default definePlugin({
         toWrap.map = function (render: (item: SettingsEntry) => ReactElement<any>) {
             const allItems = this.filter(a => a.items.length > 0);
             const result: any[] = [];
-            const specialItems: ReactElement<any>[] = [];
+            let logoutItem: ReactElement<any> | null = null;
 
             allItems.forEach(({ label, items }) => {
                 const children = items.map((item: SettingsEntry) => {
                     const rendered = render(item);
-                    if (item.section === "LOGOUT" || item.label?.toLowerCase().includes("admin backend") || item.label?.toLowerCase().includes("log out")) {
-                        specialItems.push(rendered);
+                    if (item.section === "LOGOUT" || item.label?.toLowerCase().includes("log out")) {
+                        logoutItem = rendered;
                         return null;
                     }
                     return rendered;
@@ -444,31 +445,12 @@ export default definePlugin({
                 }
             });
 
-            if (specialItems.length > 0) {
-                result.push(<Menu.MenuSeparator key="logout-sep" />);
-                for (const item of specialItems) {
-                    const label = item?.props?.label?.toLowerCase() ?? "";
-                    let icon;
-
-                    if (label.includes("log out")) {
-                        icon = <LeaveIcon width="20" height="20" viewBox="0 0 24 24" className="icon_f84418" />;
-                    } else if (label.includes("admin backend")) {
-                        icon = <Icons.DevOptionsIcon width="20" height="20" viewBox="0 0 24 24" className="icon_f84418" />;
-                    } else {
-                        icon = item.props.icon;
-                    }
-
-                    result.push({
-                        ...item,
-                        props: {
-                            ...item.props,
-                            color: "danger",
-                            icon
-                        }
-                    });
-                }
+            if (logoutItem) {
+                result.push(
+                    <Menu.MenuSeparator key="logout-sep" />,
+                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: <LeaveIcon width="20" height="20" viewBox="0 0 24 24" className="icon_f84418" /> } },
+                );
             }
-
 
             return result;
         };
