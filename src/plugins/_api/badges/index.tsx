@@ -20,24 +20,19 @@ import "./fixDiscordBadgePadding.css";
 
 import { _getBadges, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Badges";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
-import { Heart } from "@components/Heart";
-import DonateButton from "@components/settings/DonateButton";
 import { openContributorModal } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { Margins } from "@utils/margins";
 import { copyWithToast, shouldShowContributorBadge } from "@utils/misc";
-import { closeModal, ModalContent, ModalFooter, ModalHeader, ModalRoot, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { User } from "@velocity-types";
-import { ContextMenuApi, Forms, Menu, Toasts, UserStore } from "@webpack/common";
+import { ContextMenuApi, Menu, Toasts, UserStore } from "@webpack/common";
 
 const CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1092089799109775453.png?size=64";
 
 const ContributorBadge: ProfileBadge = {
     description: "Velocity Contributor",
-    image: CONTRIBUTOR_BADGE,
+    iconSrc: CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowContributorBadge(userId),
     onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId))
@@ -50,7 +45,7 @@ async function loadBadges(noCache = false) {
     if (noCache)
         init.cache = "no-cache";
 
-    DonorBadges = await fetch("https://badges.vencord.dev/badges.json", init)
+    DonorBadges = await fetch("https://raw.githubusercontent.com/Velocitcy/Data/refs/heads/main/src/badges.json", init)
         .then(r => r.json());
 }
 
@@ -70,11 +65,11 @@ function BadgeContextMenu({ badge }: { badge: ProfileBadge & BadgeUserArgs; }) {
                     action={() => copyWithToast(badge.description!)}
                 />
             )}
-            {badge.image && (
+            {badge.iconSrc && (
                 <Menu.MenuItem
                     id="vc-badge-copy-link"
                     label="Copy Badge Image Link"
-                    action={() => copyWithToast(badge.image!)}
+                    action={() => copyWithToast(badge.iconSrc!)}
                 />
             )}
         </Menu.Menu>
@@ -98,14 +93,13 @@ export default definePlugin({
             find: "#{intl::PROFILE_USER_BADGES}",
             replacement: [
                 {
-                    match: /(alt:" ","aria-hidden":!0,src:)(.+?)(?=,)(?<=href:(\i)\.link.+?)/,
-                    replace: (_, rest, originalSrc, badge) => `...${badge}.props,${rest}${badge}.image??(${originalSrc})`
+                    match: /alt:" ","aria-hidden":!0,src:.{0,50}(\i).iconSrc/,
+                    replace: "...$1.props,$&"
                 },
                 {
                     match: /(?<="aria-label":(\i)\.description,.{0,200})children:/,
                     replace: "children:$1.component?$self.renderBadgeComponent({...$1}) :"
                 },
-                // handle onClick and onContextMenu
                 {
                     match: /href:(\i)\.link/,
                     replace: "...$self.getBadgeMouseEventHandlers($1),$&"
@@ -121,7 +115,6 @@ export default definePlugin({
         }
     ],
 
-    // for access from the console or other plugins
     get DonorBadges() {
         return DonorBadges;
     },
@@ -141,9 +134,8 @@ export default definePlugin({
 
     async start() {
         await loadBadges();
-
         clearInterval(intervalId);
-        intervalId = setInterval(loadBadges, 1000 * 60 * 30); // 30 minutes
+        intervalId = setInterval(loadBadges, 1000 * 60 * 30);
     },
 
     async stop() {
@@ -155,7 +147,6 @@ export default definePlugin({
 
         try {
             props.userId ??= props.user?.id!;
-
             return _getBadges(props);
         } catch (e) {
             new Logger("BadgeAPI#hasBadges").error(e);
@@ -168,14 +159,11 @@ export default definePlugin({
         return <Component {...badge} />;
     }, { noop: true }),
 
-
     getBadgeMouseEventHandlers(badge: ProfileBadge & BadgeUserArgs) {
         const handlers = {} as Record<string, (e: React.MouseEvent) => void>;
-
-        if (!badge) return handlers; // sanity check
+        if (!badge) return handlers;
 
         const { onClick, onContextMenu } = badge;
-
         if (onClick) handlers.onClick = e => onClick(e, badge);
         if (onContextMenu) handlers.onContextMenu = e => onContextMenu(e, badge);
 
@@ -184,73 +172,21 @@ export default definePlugin({
 
     getDonorBadges(userId: string) {
         return DonorBadges[userId]?.map(badge => ({
-            image: badge.badge,
+            iconSrc: badge.badge,
             description: badge.tooltip,
             position: BadgePosition.START,
             props: {
                 style: {
                     borderRadius: "50%",
-                    transform: "scale(0.9)" // The image is a bit too big compared to default badges
+                    transform: "scale(0.9)"
                 }
             },
             onContextMenu(event, badge) {
                 ContextMenuApi.openContextMenu(event, () => <BadgeContextMenu badge={badge} />);
             },
             onClick() {
-                const modalKey = openModal(props => (
-                    <ErrorBoundary noop onError={() => {
-                        closeModal(modalKey);
-                        VelocityNative.native.openExternal("https://github.com/sponsors/Vendicated");
-                    }}>
-                        <ModalRoot {...props}>
-                            <ModalHeader>
-                                <Forms.FormTitle
-                                    tag="h2"
-                                    style={{
-                                        width: "100%",
-                                        textAlign: "center",
-                                        margin: 0
-                                    }}
-                                >
-                                    <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.5em" }}>
-                                        <Heart />
-                                        Velocity Donor
-                                    </Flex>
-                                </Forms.FormTitle>
-                            </ModalHeader>
-                            <ModalContent>
-                                <Flex>
-                                    <img
-                                        role="presentation"
-                                        src="https://cdn.discordapp.com/emojis/1026533070955872337.png"
-                                        alt=""
-                                        style={{ margin: "auto" }}
-                                    />
-                                    <img
-                                        role="presentation"
-                                        src="https://cdn.discordapp.com/emojis/1026533090627174460.png"
-                                        alt=""
-                                        style={{ margin: "auto" }}
-                                    />
-                                </Flex>
-                                <div style={{ padding: "1em" }}>
-                                    <Forms.FormText>
-                                        This Badge is a special perk for Velocity Donors
-                                    </Forms.FormText>
-                                    <Forms.FormText className={Margins.top20}>
-                                        Please consider supporting the development of Velocity by becoming a donor. It would mean a lot!!
-                                    </Forms.FormText>
-                                </div>
-                            </ModalContent>
-                            <ModalFooter>
-                                <Flex style={{ width: "100%", justifyContent: "center" }}>
-                                    <DonateButton />
-                                </Flex>
-                            </ModalFooter>
-                        </ModalRoot>
-                    </ErrorBoundary>
-                ));
-            },
+                VelocityNative.native.openExternal("https://github.com/sponsors/Velocitcy");
+            }
         } satisfies ProfileBadge));
     }
 });
