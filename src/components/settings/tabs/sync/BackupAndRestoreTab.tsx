@@ -20,12 +20,49 @@ import { Flex } from "@components/Flex";
 import { Margins } from "@components/margins";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { classes } from "@utils/misc";
-import { downloadSettingsBackup, uploadSettingsBackup } from "@utils/settingsSync";
-import { Button, Card, Text } from "@webpack/common";
+import { downloadSettingsBackup, importSettings, uploadSettingsBackup } from "@utils/settingsSync";
+import { Button, Card, React, TabBar, Text, TextArea, useState } from "@webpack/common";
+
+const enum Tabs {
+    LoadByFile,
+    LoadByJson
+}
 
 function BackupAndRestoreTab() {
+    const [currentTab, setCurrentTab] = useState(Tabs.LoadByFile);
+
     return (
         <SettingsTab title="Backup & Restore">
+            <TabBar
+                type="top"
+                look="brand"
+                className="vc-settings-tab-bar"
+                selectedItem={currentTab}
+                onItemSelect={setCurrentTab}
+            >
+                <TabBar.Item
+                    className="vc-settings-tab-bar-item"
+                    id={Tabs.LoadByFile}
+                >
+                    Load By File
+                </TabBar.Item>
+                <TabBar.Item
+                    className="vc-settings-tab-bar-item"
+                    id={Tabs.LoadByJson}
+                >
+                    Load By JSON
+                </TabBar.Item>
+            </TabBar>
+
+            {currentTab === Tabs.LoadByFile && <LoadByFileTab />}
+            {currentTab === Tabs.LoadByJson && <LoadByJsonTab />}
+        </SettingsTab>
+    );
+}
+
+function LoadByFileTab() {
+    return (
+        <>
             <Card className={classes("vc-settings-card", "vc-warning-card")}>
                 <Flex flexDirection="column">
                     <strong>Warning</strong>
@@ -40,7 +77,7 @@ function BackupAndRestoreTab() {
             <Text variant="text-md/normal" className={Margins.bottom8}>
                 Settings Export contains:
                 <ul>
-                    <li>&mdash; Custom QuickCSS</li>
+                    <li>&mddash; Custom QuickCSS</li>
                     <li>&mdash; Theme Links</li>
                     <li>&mdash; Plugin Settings</li>
                 </ul>
@@ -59,8 +96,41 @@ function BackupAndRestoreTab() {
                     Export Settings
                 </Button>
             </Flex>
-        </SettingsTab>
+        </>
     );
 }
+
+function LoadByJsonTab() {
+    const [value, setValue] = useState("");
+
+    async function handleBlur() {
+        await importSettings(value, true);
+    }
+
+    return (
+        <>
+            <Card className={classes("vc-settings-card", "  vc-warning-card")}>
+                <Flex flexDirection="column">
+                    <strong>Warning</strong>
+                    <span>Importing a settings file will overwrite your current settings.</span>
+                </Flex>
+            </Card>
+
+            <Text variant="text-md/normal" className={Margins.bottom8}>
+                Paste your settings JSON in the field to import them
+            </Text>
+
+            <TextArea
+                value={value}
+                onChange={setValue}
+                onBlur={handleBlur}
+                rows={14}
+                className="vc-json-textarea"
+                placeholder="Paste JSON here"
+            />
+        </>
+    );
+}
+
 
 export default wrapTab(BackupAndRestoreTab, "Backup & Restore");
