@@ -1,6 +1,5 @@
 .vc-gp-root {
     height: 100%;
-    user-select: text;
 }
 
 .vc-gp-banner {
@@ -10,7 +9,6 @@
     width: 100%;
     object-fit: cover;
     overflow: clip;
-    overflow-clip-margin: content-box;
 }
 
 .vc-gp-header {
