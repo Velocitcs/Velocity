@@ -26,7 +26,7 @@ import { Logger } from "./Logger";
 import { relaunch } from "./native";
 import { chooseFile, saveFile } from "./web";
 
-export async function importSettings(data: string) {
+export async function importSettings(data: string, showToast: boolean = false) {
     try {
         var parsed = JSON.parse(data);
     } catch (err) {
@@ -38,6 +38,7 @@ export async function importSettings(data: string) {
         Object.assign(PlainSettings, parsed.settings);
         await VelocityNative.settings.set(parsed.settings);
         await VelocityNative.quickCss.set(parsed.quickCss);
+        if (showToast) toastSuccess();
     } else
         throw new Error("Invalid Settings. Is this even a Velocity Settings file?");
 }
