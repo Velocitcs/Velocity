@@ -86,7 +86,7 @@ function Layer({ mode, baseLayer = false, ...props }: LayerProps) {
                 [Classes.baseLayer]: baseLayer,
                 "stop-animations": hidden
             })}
-            style={{ opacity: hidden ? 0 : undefined }}
+            {...(hidden && { style: { opacity: 0 } })}
             {...props}
         />
     );
@@ -114,13 +114,13 @@ export default definePlugin({
 
                 // Profile Customization
                 {
-                    match: /(\[.{1,10}\.PROFILE_CUSTOMIZATION\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("profile-customization"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.PROFILE_CUSTOMIZATION\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("profile-customization"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('BikeIcon')}"
                 },
 
                 // Content & Social
                 {
-                    match: /(\[.{1,10}\.CONTENT_SOCIAL\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("content-and-social"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.CONTENT_SOCIAL\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("content-and-social"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('SocialIcon')}"
                 },
 
@@ -132,13 +132,13 @@ export default definePlugin({
 
                 // Family Center
                 {
-                    match: /(\[.{1,10}\.PRIVACY_FAMILY_CENTER\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("family-center"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.PRIVACY_FAMILY_CENTER\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("family-center"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('FamilyIcon')}"
                 },
 
                 // Authorized Apps
                 {
-                    match: /(\[.{1,10}\.AUTHORIZED_APPS\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("authorized-apps"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.AUTHORIZED_APPS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("authorized-apps"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('AppsIcon')}"
                 },
 
@@ -150,52 +150,43 @@ export default definePlugin({
 
                 // Connections
                 {
-                    match: /(\[.{1,10}\.CONNECTIONS\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("connections"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.CONNECTIONS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("connections"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('ConnectionsIcon')}"
                 },
 
                 // Clips
                 {
-                    match: /(\[.{1,10}\.CLIPS\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("clips"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.CLIPS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("clips"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('ClipsIcon')}"
                 },
 
-                // Velocity settings here at default, so we're moving on to the section below it
-
-                /* Premium (this section already has an icon)
-                 {
-                     match: /(\[.{1,10}\.PREMIUM\]:\{[\s\S]*?element:\s*z\.Z[\s\S]*?)\}/,
-                     replace: "$1,icon:$self.getIcon()}"
-                 },
-                 */
-
                 // Server Boost (Guild Boosting)
                 {
-                    match: /(\[.{1,10}\.GUILD_BOOSTING\]:\{[\s\S]*?element:\s*ep\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.GUILD_BOOSTING\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('BoostIcon')}"
                 },
 
                 // Subscriptions
                 {
-                    match: /(\[.{1,10}\.SUBSCRIPTIONS\]:\{[\s\S]*?element:\s*P\.Z[\s\S]*?icon:\s*h\s*\?[\s\S]*?null[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.SUBSCRIPTIONS\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?icon:\s*.{1,10}\s*\?[\s\S]*?null[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('SubscriptionsIcon')}"
                 },
 
                 // Gift Inventory
                 {
-                    match: /(\[.{1,10}\.GIFT_INVENTORY\]:\{[\s\S]*?element:\s*ec\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.GIFT_INVENTORY\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('GiftIcon')}"
                 },
 
                 // Billing
                 {
-                    match: /(\[.{1,10}\.BILLING\]:\{[\s\S]*?element:\s*en\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.BILLING\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('BillingIcon')}"
                 },
 
                 // Appearance
                 {
-                    match: /(\[.{1,10}\.APPEARANCE\]:\{section:[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("appearance"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.APPEARANCE\]:\{section:[\s\S]*?url:\s*.{1,20}\.SETTINGS\("appearance"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('AppearanceIcon')}"
                 },
 
@@ -237,18 +228,14 @@ export default definePlugin({
 
                 // Windows Settings
                 {
-                    match: /(\[.{1,10}\.WINDOW_SETTINGS\]:\{[\s\S]*?element:\s*ey\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.WINDOW_SETTINGS\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('ScreenshareIcon')}"
                 },
 
                 // Linux Settings
                 {
-                    match: /(\[.{1,10}\.LINUX_SETTINGS\]:\{[\s\S]*?element:\s*eH[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.LINUX_SETTINGS\]:\{[\s\S]*?element:\s*.{1,10}[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('ScreenshareIcon')}"
-                },
-                {
-                    match: /(predicate:\s*\(\)\s*=>\s*V\.isPlatformEmbedded\s*&&\s*\(0,\s*V\.isLinux\)\(\))/,
-                    replace: "predicate: () => V.isPlatformEmbedded && (0, V.isWindows)()"
                 },
 
                 // Streamer Mode
@@ -259,43 +246,43 @@ export default definePlugin({
 
                 // Advanced
                 {
-                    match: /(\[.{1,10}\.SETTINGS_ADVANCED\]:\{[\s\S]*?element:\s*\$\.ZP[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.SETTINGS_ADVANCED\]:\{[\s\S]*?element:\s*.{1,10}\.ZP[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('MoreIcon')}"
                 },
 
                 // Activity Privacy
                 {
-                    match: /(\[.{1,10}\.ACTIVITY_PRIVACY\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("activity-privacy"\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.ACTIVITY_PRIVACY\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("activity-privacy"\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('UserGameIcon')}"
                 },
 
                 // Registered Games
                 {
-                    match: /(\[.{1,10}\.REGISTERED_GAMES\]:\{[\s\S]*?element:\s*el\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.REGISTERED_GAMES\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('ControlerIcon')}"
                 },
 
                 // Overlay
                 {
-                    match: /(\[.{1,10}\.OVERLAY\]:\{[\s\S]*?element:\s*e_\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.OVERLAY\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('GameOverlayIcon')}"
                 },
 
                 // What's New (Changelog)
                 {
-                    match: /(\[eN\.s6\.CHANGELOG\]:\{[\s\S]*?label:\s*ew\.intl\.string\(ew\.t\.LRmNAl\))/,
+                    match: /(\[.{1,10}\.s6\.CHANGELOG\]:\{[\s\S]*?label:\s*.{1,20}\.intl\.string\(.{1,20}\.t\.\w+\))/,
                     replace: "$1,icon:$self.getIcon('InfoIcon')"
                 },
 
                 // Merchandise
                 {
-                    match: /(\[eN\.s6\.MERCHANDISE\]:\{[\s\S]*?ariaLabel:\s*ew\.intl\.string\(ew\.t\.sMEktT\))/,
+                    match: /(\[.{1,10}\.s6\.MERCHANDISE\]:\{[\s\S]*?ariaLabel:\s*.{1,20}\.intl\.string\(.{1,20}\.t\.\w+\))/,
                     replace: "$1,icon:$self.getIcon('ShopIcon')"
                 },
 
                 // Experiments
                 {
-                    match: /(\[.{1,10}\.EXPERIMENTS\]:\{[\s\S]*?url:\s*eP\.Z5c\.SETTINGS\("experiments"\)[\s\S]*?)\}(,?)/,
+                    match: /(\[.{1,10}\.EXPERIMENTS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("experiments"\)[\s\S]*?)\}(,?)/,
                     replace: "$1,icon:$self.getIcon('PotionIcon')}$2"
                 },
 
@@ -306,7 +293,6 @@ export default definePlugin({
                 }
             ],
             predicate: () => settings.store.settingsIcons
-
         },
         {
             find: "this.renderArtisanalHack()",
