@@ -2,7 +2,7 @@ dist
 node_modules
 
 *.exe
-vencord_installer
+velocity_installer
 
 .idea
 .DS_Store
@@ -20,6 +20,7 @@ lerna-debug.log*
 *.tsbuildinfo
 
 src/userplugins
+src/plugins/devPlugin.dev
 
 ExtensionCache/
 /settings
