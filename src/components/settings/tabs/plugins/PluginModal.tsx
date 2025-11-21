@@ -226,7 +226,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         <ModalRoot transitionState={transitionState} size={ModalSize.MEDIUM}>
             <ModalHeader separator={false} className={Margins.bottom8}>
                 <Text variant="heading-xl/bold" style={{ flexGrow: 1 }}>{plugin.name}</Text>
-                <ModalCloseButton className="icon-only_a22cb0" variant="icon-only" onClick={onClose} />
+                <ModalCloseButton onClick={onClose} />
             </ModalHeader>
 
             <ModalContent className={Margins.bottom16}>
