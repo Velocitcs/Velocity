@@ -25,11 +25,13 @@ import { TabBar, useState } from "@webpack/common";
 import { ComponentsTab } from "./Components";
 import IconCreator from "./IconCreator";
 import { IconsTab } from "./IconsPreview";
+import VebotControler from "./VebotControler";
 
 const enum DevTab {
     COMPONENTS,
     ICONS,
-    CREATOR
+    CREATOR,
+    VEBOT
 }
 
 function DevelopersTab() {
@@ -53,12 +55,16 @@ function DevelopersTab() {
                 <TabBar.Item id={DevTab.CREATOR} className="vc-settings-tab-bar-item">
                     Icon Creator
                 </TabBar.Item>
+                <TabBar.Item id={DevTab.VEBOT} className="vc-settings-tab-bar-item">
+                    Vebot
+                </TabBar.Item>
             </TabBar>
 
 
             {currentTab === DevTab.COMPONENTS && <ComponentsTab />}
             {currentTab === DevTab.ICONS && <IconsTab />}
             {currentTab === DevTab.CREATOR && <IconCreator />}
+            {currentTab === DevTab.VEBOT && <VebotControler />}
 
         </SettingsTab>
     );
