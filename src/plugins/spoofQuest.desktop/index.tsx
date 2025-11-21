@@ -17,117 +17,130 @@
 */
 
 import { Devs } from "@utils/constants";
+import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { findByCodeLazy, findStoreLazy } from "@webpack";
-import { FluxDispatcher } from "@webpack/common";
 
-import type { HeartbeatData, Quest, TaskType } from "./types";
-import { isValidQuest, TASK_HANDLERS } from "./utils";
+import type { Quest, TaskType } from "./types";
+import { cleanup, isValidQuest, state, TASK_HANDLERS } from "./utils";
 
 const QuestsStore = findStoreLazy("QuestsStore");
-const RunningGameStore = findStoreLazy("RunningGameStore");
-const api = findByCodeLazy('t.Request("GET",e)');
+const enrollQuest = findByCodeLazy("QUESTS_ENROLL_BEGIN");
+const claimReward = findByCodeLazy("QUESTS_CLAIM_REWARD_BEGIN");
+
+const failedQuests = new Set<string>();
+
+async function tryAcceptAndRun() {
+
+    const { quests } = QuestsStore;
+    if (!quests?.size) return;
+
+    const unenrolledQuests = [...quests.values()].filter(q =>
+        !q.userStatus?.enrolledAt &&
+        !q.userStatus?.completedAt &&
+        !q.userStatus?.claimedAt &&
+        !QuestsStore.isQuestExpired(q.id) &&
+        !failedQuests.has(q.id)
+    );
+
+    if (unenrolledQuests.length === 0) {
+        tryRun();
+        return;
+    }
+
+
+    for (const quest of unenrolledQuests) {
+        const result = await enrollQuest(quest.id, { questContent: "QUESTS_BAR" });
+        if (result.type !== "success") failedQuests.add(quest.id);
+        await sleep(2000);
+    }
+
+    await sleep(1000);
+    tryRun();
+}
+
+function tryRun() {
+    const { quests } = QuestsStore;
+    if (!quests?.size) return;
+
+    const quest = [...quests.values()].find(isValidQuest);
+    if (!quest || quest.id === state.currentQuestId) return;
+
+    state.currentQuestId = quest.id;
+    const cfg = quest.config.taskConfig ?? quest.config.taskConfigV2;
+    const task = Object.keys(cfg.tasks).find(t => cfg.tasks[t]) as TaskType;
+    if (!task || !TASK_HANDLERS[task]) return;
+
+    const { target } = cfg.tasks[task];
+    const progress = quest.userStatus?.progress?.[task]?.value ?? 0;
+
+    TASK_HANDLERS[task](quest, target, progress);
+}
+
+async function checkAndContinue() {
+    cleanup();
+    await sleep(2000);
+
+    const { quests } = QuestsStore;
+    for (const quest of quests.values()) {
+        if (quest.userStatus?.completedAt && !quest.userStatus?.claimedAt) {
+            const platform = quest.config.rewardsConfig.platforms[0];
+            if (platform) {
+                await claimReward(quest.id, platform, "QUESTS_BAR");
+                await sleep(500);
+            }
+        }
+    }
+
+    tryAcceptAndRun();
+}
 
 export default definePlugin({
     name: "SpoofQuest",
     description: "Spoof quest progress",
     authors: [Devs.Velocity],
-
-    onBeat: null as ((data: HeartbeatData) => void) | null,
-    interval: null as number | null,
-    unsubscribe: null as (() => void) | null,
-    fakeGame: null as any,
-    origGetRunningGames: null as any,
-    origGetGameForPID: null as any,
-    currentQuestId: null as string | null,
-
     patches: [
         {
-            find: "poster:null==ns",
+            find: "e5.current=e",
             lazy: true,
             replacement: {
-                match: /ref:\s*e=>\{([^}]*)e5\.current\s*=\s*e([^}]*)\}/,
-                replace: "ref:e=>{ e5.current=e; if(e) e.playbackRate=16; }"
+                match: /(e5\.current=e[^}]*)(})/,
+                replace: "$1;if(e)e.playbackRate=16$2"
+            }
+        },
+        {
+            find: "seekForwardEnabled:nc",
+            lazy: true,
+            replacement: {
+                match: /seekForwardEnabled:(\i\i)/,
+                replace: "seekForwardEnabled:true"
             }
         }
     ],
 
     start() {
-        this.tryRun();
+        failedQuests.clear();
+        tryAcceptAndRun();
     },
 
     stop() {
-        this.cleanup();
-    },
-
-    cleanup() {
-        this.onBeat = null;
-        this.currentQuestId = null;
-        if (this.interval !== null) {
-            clearInterval(this.interval);
-            this.interval = null;
-        }
-        if (this.unsubscribe !== null) {
-            this.unsubscribe();
-            this.unsubscribe = null;
-        }
-        if (this.fakeGame && this.origGetRunningGames) {
-            RunningGameStore.getRunningGames = this.origGetRunningGames;
-            RunningGameStore.getGameForPID = this.origGetGameForPID;
-            FluxDispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", removed: [this.fakeGame], added: [], games: [] });
-            this.fakeGame = null;
-            this.origGetRunningGames = null;
-            this.origGetGameForPID = null;
-        }
+        cleanup();
+        failedQuests.clear();
     },
 
     flux: {
-        QUESTS_SEND_HEARTBEAT_SUCCESS: ((function (this: any, e: any) {
-            this.onBeat?.(e);
-        }) as any),
-        QUESTS_ENROLL_SUCCESS: ((function (this: any, e: any) {
-            this.cleanup();
-            if (e.quest) {
-                const cfg = e.quest.config.taskConfig ?? e.quest.config.taskConfigV2;
-                const task = Object.keys(cfg.tasks).find(t => cfg.tasks[t]) as TaskType;
-
-                const platformMap: Record<TaskType, number> = {
-                    WATCH_VIDEO: 1,
-                    WATCH_VIDEO_ON_MOBILE: 2,
-                    PLAY_ON_DESKTOP: 0,
-                    STREAM_ON_DESKTOP: 0,
-                    PLAY_ACTIVITY: 0
-                };
-
-                if (task && platformMap[task] !== undefined) {
-                    api.post(`/quests/${e.quest.id}/select-platform`, { body: { platform: platformMap[task] } });
-                }
-            }
-            setTimeout(() => this.tryRun(), 100);
-        }) as any),
-        QUESTS_FETCH_CURRENT_QUESTS_SUCCESS: ((function (this: any) {
-            this.tryRun();
-        }) as any)
-    },
-
-    tryRun() {
-        const { quests } = QuestsStore;
-        if (!quests?.size) return;
-
-        const quest = [...quests.values()].find(isValidQuest) as Quest | undefined;
-        if (!quest || quest.id === this.currentQuestId) return;
-
-        this.currentQuestId = quest.id;
-
-        const cfg = quest.config.taskConfig ?? quest.config.taskConfigV2;
-        const task = Object.keys(cfg.tasks).find(t => cfg.tasks[t]) as TaskType;
-        if (!task || !TASK_HANDLERS[task]) return;
-
-        const { target } = cfg.tasks[task];
-        const progress = quest.userStatus?.progress?.[task]?.value ?? 0;
-
-        if (QuestsStore.isQuestExpired(quest.id)) return;
-
-        TASK_HANDLERS[task](quest, target, progress, this);
+        QUESTS_SEND_HEARTBEAT_SUCCESS(e: any) {
+            state.onBeat?.(e);
+            const quest = [...QuestsStore.quests.values()].find((q: Quest) => q.id === state.currentQuestId);
+            if (quest?.userStatus?.completedAt) checkAndContinue();
+        },
+        async QUESTS_ENROLL_SUCCESS() {
+            cleanup();
+            await sleep(100);
+            tryRun();
+        },
+        QUESTS_FETCH_CURRENT_QUESTS_SUCCESS() {
+            tryAcceptAndRun();
+        }
     }
 });
