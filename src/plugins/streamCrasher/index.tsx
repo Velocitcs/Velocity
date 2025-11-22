@@ -20,8 +20,8 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
-import { Popout, React, useEffect, useRef, UserStore, useStateFromStores } from "@webpack/common";
+import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
+import { ApplicationStreamingStore, Popout, React, useEffect, useRef, UserStore, useStateFromStores } from "@webpack/common";
 
 import { CrasherContextMenu, StreamCrasherPatch } from "./contextMenu";
 import { setLastSourceId, updateStream } from "./utils";
@@ -57,7 +57,6 @@ const settings = definePluginSettings({
 
 const Button = findComponentByCodeLazy(".NONE,disabled:", ".PANEL_BUTTON");
 const panelClasses = findByPropsLazy("micButtonParent", "buttonChevron");
-const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
 
 const CrashIcon = ({ isEnabled }) => (
     <svg width="24" height="24" viewBox="0 0 24 24">

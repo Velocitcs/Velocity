@@ -16,13 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { findByPropsLazy, findStoreLazy } from "@webpack";
+import { findByPropsLazy } from "@webpack";
+import { ApplicationStreamingStore, OverlayRTCConnectionStore } from "@webpack/common";
 
 export let lastSourceId: string | null = null;
 
-const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
 const MediaEngineActions = findByPropsLazy("setGoLiveSource");
-const RTCConnectionStore = findStoreLazy("OverlayRTCConnectionStore");
 
 export function setLastSourceId(sourceId: string | null) {
     lastSourceId = sourceId;
@@ -49,7 +48,7 @@ export async function updateStream(isEnabled: boolean) {
     const sourceId = await getSourceId(isEnabled);
 
     // TODO: get a stable state of the user call so it doesnt jerk with the screenshare
-    while (RTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
+    while (OverlayRTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
         await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
