@@ -19,15 +19,14 @@
 import { classNameFactory } from "@api/Styles";
 import { ErrorCard } from "@components/ErrorCard";
 import { Margins } from "@utils/margins";
-import { findByCodeLazy, findStoreLazy } from "@webpack";
-import { Button, ColorPicker, Forms, ThemeStore, useStateFromStores } from "@webpack/common";
+import { findByCodeLazy } from "@webpack";
+import { Button, ClientThemesBackgroundStore, ColorPicker, Forms, ThemeStore, useStateFromStores } from "@webpack/common";
 
 import { settings } from "..";
 import { relativeLuminance } from "../utils/colorUtils";
 import { createOrUpdateThemeColorVars } from "../utils/styleUtils";
 
 const saveClientTheme = findByCodeLazy('type:"UNSYNCED_USER_SETTINGS_UPDATE', '"system"===');
-const NitroThemeStore = findStoreLazy("ClientThemesBackgroundStore");
 
 const cl = classNameFactory("vc-clientTheme-");
 
@@ -54,7 +53,7 @@ export function ThemeSettingsComponent() {
     const isLightTheme = currentTheme === "light";
     const oppositeTheme = isLightTheme ? "Dark" : "Light";
 
-    const nitroThemeEnabled = useStateFromStores([NitroThemeStore], () => NitroThemeStore.gradientPreset != null);
+    const nitroThemeEnabled = useStateFromStores([ClientThemesBackgroundStore], () => ClientThemesBackgroundStore.gradientPreset != null);
 
     const selectedLuminance = relativeLuminance(settings.store.color);
 
