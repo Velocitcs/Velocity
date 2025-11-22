@@ -18,15 +18,12 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { sleep } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { findByCodeLazy, findByPropsLazy, findStoreLazy } from "@webpack";
-import { ChannelStore, VoiceStateStore } from "@webpack/common";
+import { findByCodeLazy, findByPropsLazy } from "@webpack";
+import { ApplicationStreamingStore, ChannelStore, MediaEngineStore, OverlayRTCConnectionStore, VoiceStateStore } from "@webpack/common";
 
 import { streamContextMenuPatch, streamEnablingPatch } from "./contextMenu";
-
-const RTCConnectionStore = findStoreLazy("OverlayRTCConnectionStore");
-const MediaEngineStore = findByPropsLazy("isSelfMute", "isSelfDeaf");
-const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
 const VoiceActions = findByPropsLazy("selectVoiceChannel");
 const MediaEngineActions = findByPropsLazy("toggleSelfMute", "toggleSelfDeaf");
 const StreamActions = findByCodeLazy("startStreamWithSource");
@@ -38,7 +35,7 @@ const settings = definePluginSettings({
         default: ""
     },
     voiceSetting: {
-        type: OptionType.RADIO,
+        type: OptionType.SELECT,
         description: "Audio state on join",
         restartNeeded: true,
         options: [
@@ -87,6 +84,8 @@ async function startStream() {
 
     const sourceData = JSON.parse(settings.store.streamSource!);
 
+    // WARNING: This will always throw an error "Options `sourceId` and `type` are required."
+    // because of how the crasher is designed, this will not be fixed or changed
     await StreamActions(
         {
             id: sourceData.id,
@@ -115,13 +114,12 @@ async function joinCall(channelId: string) {
     VoiceActions.selectVoiceChannel(channelId);
 
     // Waiting here until RTC is connected so discord doesnt freak out
-    while (RTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
-        await new Promise(resolve => setTimeout(resolve, 500));
+    while (OverlayRTCConnectionStore.getConnectionState() !== "RTC_CONNECTED") {
+        await sleep(500);
     }
 
     const { voiceSetting } = settings.store;
 
-    /* TODO: Switch to patching for auto mute setting */
     if (voiceSetting === "deafen") {
         if (!MediaEngineStore.isSelfDeaf()) {
             MediaEngineActions.toggleSelfDeaf();
@@ -151,23 +149,28 @@ export default definePlugin({
 
     patches: [
         {
-            find: "t8({mute:!1",
+            find: "t8({deaf:!1,mute:!1})",
             replacement: {
-                match: /\(a\.mute\|\|a\.deaf\)\s*&&/g,
-                replace: "false&&",
-            },
-            predicate: () => settings.store.voiceSetting === "mute"
-
+                match: /\(a\.mute\|\|a\.deaf\)&&/g,
+                replace: "false&&"
+            }
         },
         {
-            find: "t8({deaf:!1",
+            find: "t8({deaf:!1,mute:!1})",
             replacement: {
-                match: /\(a\.mute\|\|a\.deaf\)\s*&&/g,
-                replace: "false&&",
+                match: /\(a\.mute\|\|a\.deaf\)&&/g,
+                replace: "false&&"
             },
             predicate: () => settings.store.voiceSetting === "deafen"
         }
     ],
+
+    start() {
+        const channelIds = getChannelIds();
+        if (channelIds.length === 0) return;
+
+        channelIds.forEach(id => joinCall(id));
+    },
 
     contextMenus: {
         "more-settings-context": streamContextMenuPatch,
@@ -194,14 +197,5 @@ export default definePlugin({
                 setTimeout(() => joinCall(data.channelId), 100);
             }
         }
-    },
-
-
-
-    start() {
-        const channelIds = getChannelIds();
-        if (channelIds.length === 0) return;
-
-        channelIds.forEach(id => joinCall(id));
     }
 });
