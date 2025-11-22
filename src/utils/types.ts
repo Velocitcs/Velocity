@@ -168,7 +168,7 @@ export interface PluginDef {
      * Allows you to add custom actions to the Velocity Toolbox.
      * The key will be used as text for the button
      */
-    toolboxActions?: Record<string, () => void>;
+    toolboxActions?: Record<string, () => void> | (() => ReactNode);
 
     renderBadge?: () => React.ReactNode;
 
