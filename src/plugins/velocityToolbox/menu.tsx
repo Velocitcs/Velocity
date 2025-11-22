@@ -23,7 +23,7 @@ import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab } from "@c
 import { ModalSize } from "@utils/modal";
 import { useAwaiter } from "@utils/react";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
-import { OptionType, Plugin, PluginSettingSelectOption } from "@utils/types";
+import { OptionType, Plugin } from "@utils/types";
 import { CMIconClasses, Menu, showToast, useMemo, useState } from "@webpack/common";
 import type { ReactNode } from "react";
 
@@ -37,7 +37,10 @@ function buildPluginMenu() {
     // has to be here due to hooks
     const pluginEntries = buildPluginMenuEntries();
 
-    if (!showPluginMenu) return null;
+    // FIX: always call buildPluginMenuEntries to keep hook order stable
+    if (!showPluginMenu) {
+        return null;
+    }
 
     return (
         <Menu.MenuItem
@@ -48,15 +51,6 @@ function buildPluginMenu() {
             {pluginEntries}
         </Menu.MenuItem>
     );
-}
-
-function useSelectOptions(option: any) {
-    if (Array.isArray(option.options)) {
-        return option.options as readonly PluginSettingSelectOption[];
-    }
-
-    const [value] = useAwaiter(option.options);
-    return value as readonly PluginSettingSelectOption[] | null;
 }
 
 export function buildPluginMenuEntries(includeEmpty = false) {
@@ -132,10 +126,13 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                     />
                                 );
                                 break;
-                            case OptionType.SELECT: {
-                                const resolved = useSelectOptions(option);
 
-                                if (!resolved) {
+                            case OptionType.SELECT: {
+                                const opts = Array.isArray(option.options)
+                                    ? option.options
+                                    : [];
+
+                                if (opts.length === 0) {
                                     options.push(
                                         <Menu.MenuItem
                                             {...baseProps}
@@ -147,7 +144,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
                                 options.push(
                                     <Menu.MenuItem {...baseProps}>
-                                        {resolved.map(opt => (
+                                        {opts.map(opt => (
                                             <Menu.MenuRadioItem
                                                 group={`${p.name}-${key}`}
                                                 id={`${p.name}-${key}-${opt.value}`}
@@ -156,7 +153,9 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                                 checked={s[key] === opt.value}
                                                 action={() => {
                                                     s[key] = opt.value;
-                                                    if (option.restartNeeded) showToast("Restart to apply the change");
+                                                    if (option.restartNeeded) {
+                                                        showToast("Restart to apply the change");
+                                                    }
                                                 }}
                                             />
                                         ))}
@@ -164,8 +163,8 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                 );
                                 break;
                             }
+
                             case OptionType.SLIDER:
-                                // The menu slider doesn't support these options. Skip to avoid confusion
                                 if (option.stickToMarkers || option.componentProps) continue;
 
                                 options.push(
@@ -211,7 +210,6 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                         icon={() => <CogWheel width="20" height="20" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
                                         action={() => openPluginModal(p)}
                                     />
-
                                 </>
                             )}
                         </Menu.MenuItem>
@@ -290,7 +288,6 @@ function buildCustomPluginEntries() {
                 ? plugin.toolboxActions()
                 : Object.entries(plugin.toolboxActions).map(([text, action]) => {
                     const key = `${plugin.name}-${text}`;
-
                     return (
                         <Menu.MenuItem
                             id={key}
@@ -301,22 +298,19 @@ function buildCustomPluginEntries() {
                     );
                 });
 
-            if (!entries || Array.isArray(entries) && entries.length === 0) continue;
+            if (!entries || (Array.isArray(entries) && entries.length === 0)) continue;
 
             pluginEntries.push({
                 plugin,
-                node:
+                node: (
                     <Menu.MenuGroup label={plugin.name} key={`${plugin.name}-group`}>
                         {entries}
                     </Menu.MenuGroup>
+                )
             });
         }
     }
 
-    // If there aren't too many entries, just put them all in the main menu.
-    // Otherwise, add submenus for each plugin
-    // FIXME: the Slider component has broken styles that overlap with higher context menus
-    // https://discord.com/channels/1015060230222131221/1015063227299811479/1440489344631705693
     if (pluginEntries.length <= 5)
         return pluginEntries.map(e => e.node);
 
@@ -350,6 +344,6 @@ export function renderPopout(onClose: () => void) {
             {buildPluginMenu()}
 
             {buildCustomPluginEntries()}
-        </Menu.Menu >
+        </Menu.Menu>
     );
 }
