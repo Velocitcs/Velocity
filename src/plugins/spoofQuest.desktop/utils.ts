@@ -16,13 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { findStoreLazy } from "@webpack";
-import { ChannelStore, FluxDispatcher, GuildChannelStore, RestAPI } from "@webpack/common";
+import { ApplicationStreamingStore, ChannelStore, FluxDispatcher, GuildChannelStore, RestAPI, RunningGameStore } from "@webpack/common";
 
 import type { HeartbeatData, Quest, TaskType } from "./types";
-
-const RunningGameStore = findStoreLazy("RunningGameStore");
-const ApplicationStreamingStore = findStoreLazy("ApplicationStreamingStore");
 
 export const state = {
     onBeat: null as ((data: HeartbeatData) => void) | null,
@@ -34,91 +30,211 @@ export const state = {
     currentQuestId: null as string | null
 };
 
+// support number or { value }
+const getProgress = (x: any) => typeof x === "number" ? x : x?.value ?? 0;
+
 export const cleanup = () => {
     state.onBeat = null;
     state.currentQuestId = null;
+
     if (state.interval) clearInterval(state.interval), state.interval = null;
     if (state.unsubscribe) state.unsubscribe(), state.unsubscribe = null;
+
     if (state.fakeGame && state.origGetRunningGames) {
         RunningGameStore.getRunningGames = state.origGetRunningGames;
         RunningGameStore.getGameForPID = state.origGetGameForPID;
-        FluxDispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", removed: [state.fakeGame], added: [], games: [] });
+        FluxDispatcher.dispatch({
+            type: "RUNNING_GAMES_CHANGE",
+            removed: [state.fakeGame],
+            added: [],
+            games: []
+        });
         state.fakeGame = null;
         state.origGetRunningGames = null;
         state.origGetGameForPID = null;
     }
 };
 
-export const isValidQuest = (q: Quest) => !!q.userStatus?.enrolledAt && !q.userStatus.completedAt && !!q.config.expiresAt && new Date(q.config.expiresAt).getTime() > Date.now();
+export const isValidQuest = (q: Quest) =>
+    !!q.userStatus?.enrolledAt &&
+    !q.userStatus.completedAt &&
+    !!q.config.expiresAt &&
+    new Date(q.config.expiresAt).getTime() > Date.now();
 
 export const handleVideo = async (quest: Quest, target: number, progress: number) => {
-    const enrolled = new Date(quest.userStatus!.enrolledAt!).getTime();
-    let current = progress, done = false;
+    const enrolled = new Date(quest.userStatus!.enrolledAt as any).getTime();
+    let current = progress;
+    let done = false;
 
     const tick = async () => {
         if (done) return;
-        const allowed = Math.floor((Date.now() - enrolled) / 1000) + 10, diff = allowed - current, timestamp = current + 7;
+
+        const allowed = Math.floor((Date.now() - enrolled) / 1000) + 10;
+        const diff = allowed - current;
+        const timestamp = current + 7;
+
         if (diff >= 7) {
-            const res = await RestAPI.post({ url: `/quests/${quest.id}/video-progress`, body: { timestamp: Math.min(target, timestamp + Math.random()) } });
+            const res = await RestAPI.post({
+                url: `/quests/${quest.id}/video-progress`,
+                body: { timestamp: Math.min(target, timestamp + Math.random()) }
+            });
+
             done = res.body?.completed_at != null;
             current = Math.min(target, timestamp);
         }
-        if (timestamp >= target && !done) await RestAPI.post({ url: `/quests/${quest.id}/video-progress`, body: { timestamp: target } }), done = true;
+
+        if (timestamp >= target && !done) {
+            await RestAPI.post({
+                url: `/quests/${quest.id}/video-progress`,
+                body: { timestamp: target }
+            });
+            done = true;
+        }
     };
 
-    state.interval = setInterval(async () => { if (done) return state.interval && clearInterval(state.interval), void (state.interval = null); await tick(); }, 1000);
+    state.interval = setInterval(async () => {
+        if (done) {
+            if (state.interval) clearInterval(state.interval);
+            state.interval = null;
+            return;
+        }
+        await tick();
+    }, 1000);
 };
 
-export const handleDesktopTask = (quest: Quest, target: number, progress: number, isStream: boolean) => {
-    const { id: appId, name: appName } = quest.config.application, pid = Math.floor(Math.random() * 30000) + 1000;
+export const handleDesktopTask = (quest: Quest, target: number, _progress: number, isStream: boolean) => {
+    const { id: appId, name: appName } = quest.config.application;
+    const pid = Math.floor(Math.random() * 30000) + 1000;
 
     if (isStream) {
         const orig = ApplicationStreamingStore.getStreamerActiveStreamMetadata;
-        ApplicationStreamingStore.getStreamerActiveStreamMetadata = () => ({ id: appId, pid, sourceName: null });
+
+        ApplicationStreamingStore.getStreamerActiveStreamMetadata = () => ({
+            id: appId,
+            pid,
+            sourceName: null
+        });
+
         state.onBeat = (data: HeartbeatData) => {
-            const val = Math.floor(quest.config.configVersion === 1 ? data.userStatus.streamProgressSeconds ?? 0 : data.userStatus.progress.STREAM_ON_DESKTOP?.value ?? 0);
+            const raw = data.userStatus.progress.STREAM_ON_DESKTOP;
+            const val = Math.floor(
+                quest.config.configVersion === 1
+                    ? data.userStatus.streamProgressSeconds ?? 0
+                    : getProgress(raw)
+            );
+
             console.log(`Quest progress: ${val}/${target}`);
-            if (val >= target) console.log("Quest completed!"), ApplicationStreamingStore.getStreamerActiveStreamMetadata = orig, state.onBeat = null;
+
+            if (val >= target) {
+                console.log("Quest completed!");
+                ApplicationStreamingStore.getStreamerActiveStreamMetadata = orig;
+                state.onBeat = null;
+            }
         };
-        console.log(`Spoofed stream to ${appName}. Stream any window in VC for ${Math.ceil((target - progress) / 60)} more minutes.`);
+
+        console.log(`Spoofed stream to ${appName}.`);
     } else {
-        const fake = { cmdLine: `C:\\Program Files\\${appName}\\${appName}.exe`, exeName: `${appName}.exe`, exePath: `c:/program files/${appName.toLowerCase()}/${appName}.exe`, hidden: false, isLauncher: false, id: appId, name: appName, pid, pidPath: [pid], processName: appName, start: Date.now() };
+        const fake = {
+            cmdLine: `C:\\Program Files\\${appName}\\${appName}.exe`,
+            exeName: `${appName}.exe`,
+            exePath: `c:/program files/${appName.toLowerCase()}/${appName}.exe`,
+            hidden: false,
+            isLauncher: false,
+            id: appId,
+            name: appName,
+            pid,
+            pidPath: [pid],
+            processName: appName,
+            start: Date.now(),
+            lastFocused: Math.floor(Date.now() / 1000)
+        };
+
         state.origGetRunningGames = RunningGameStore.getRunningGames;
         state.origGetGameForPID = RunningGameStore.getGameForPID;
         state.fakeGame = fake;
+
         RunningGameStore.getRunningGames = () => [fake];
-        RunningGameStore.getGameForPID = (p: number) => p === pid ? fake : null;
-        FluxDispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", removed: state.origGetRunningGames(), added: [fake], games: [fake] });
+        RunningGameStore.getGameForPID = (p: number) => (p === pid ? fake : null);
+
+        FluxDispatcher.dispatch({
+            type: "RUNNING_GAMES_CHANGE",
+            removed: state.origGetRunningGames(),
+            added: [fake],
+            games: [fake]
+        });
+
         state.onBeat = (data: HeartbeatData) => {
-            const val = Math.floor(quest.config.configVersion === 1 ? data.userStatus.streamProgressSeconds ?? 0 : data.userStatus.progress.PLAY_ON_DESKTOP?.value ?? 0);
+            const raw = data.userStatus.progress.PLAY_ON_DESKTOP;
+            const val = Math.floor(
+                quest.config.configVersion === 1
+                    ? data.userStatus.streamProgressSeconds ?? 0
+                    : getProgress(raw)
+            );
+
             console.log(`Quest progress: ${val}/${target}`);
-            if (val >= target) console.log("Quest completed!"), RunningGameStore.getRunningGames = state.origGetRunningGames, RunningGameStore.getGameForPID = state.origGetGameForPID, FluxDispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", removed: [fake], added: [], games: [] }), state.onBeat = null;
+
+            if (val >= target) {
+                console.log("Quest completed!");
+                RunningGameStore.getRunningGames = state.origGetRunningGames;
+                RunningGameStore.getGameForPID = state.origGetGameForPID;
+
+                FluxDispatcher.dispatch({
+                    type: "RUNNING_GAMES_CHANGE",
+                    removed: [fake],
+                    added: [],
+                    games: []
+                });
+
+                state.onBeat = null;
+            }
         };
-        console.log(`Spoofed game to ${appName}. Wait for ${Math.ceil((target - progress) / 60)} more minutes.`);
+
+        console.log(`Spoofed game to ${appName}.`);
     }
 };
 
 export const handleActivityTask = (quest: Quest, target: number) => {
     let channelId = ChannelStore.getSortedPrivateChannels()?.[0]?.id;
+
     if (!channelId) {
-        const guildWithVoice = Object.values(GuildChannelStore.getAllGuilds()).find((x: any) => x?.VOCAL?.length > 0);
-        if (guildWithVoice) channelId = (guildWithVoice as any).VOCAL[0].channel.id;
+        const guildWithVoice = Object.values(GuildChannelStore.getAllGuilds())
+            .find((x: any) => x?.VOCAL?.length > 0);
+
+        if (guildWithVoice)
+            channelId = (guildWithVoice as any).VOCAL[0].channel.id;
     }
-    if (!channelId) return console.log("No voice channel found!");
+
+    if (!channelId) return console.log("No voice channel found.");
 
     let running = true;
-    const sendBeat = async (terminal = false) => running ? (await RestAPI.post({ url: `/quests/${quest.id}/heartbeat`, body: { stream_key: `call:${channelId}:1`, terminal } })).body?.progress?.PLAY_ACTIVITY?.value ?? 0 : 0;
+
+    const sendBeat = async (terminal = false) => {
+        if (!running) return 0;
+
+        const res = await RestAPI.post({
+            url: `/quests/${quest.id}/heartbeat`,
+            body: { stream_key: `call:${channelId}:1`, terminal }
+        });
+
+        return getProgress(res.body?.progress?.PLAY_ACTIVITY);
+    };
 
     (async () => {
         while (running) {
             const prog = await sendBeat();
             console.log(`Quest progress: ${prog}/${target}`);
-            if (prog >= target) return await sendBeat(true), void console.log("Quest completed!");
+
+            if (prog >= target) {
+                await sendBeat(true);
+                console.log("Quest completed.");
+                return;
+            }
+
             await new Promise(r => setTimeout(r, 20000));
         }
     })();
 
-    state.unsubscribe = () => running = false;
+    state.unsubscribe = () => (running = false);
 };
 
 export const TASK_HANDLERS: Record<TaskType, (quest: Quest, target: number, progress: number) => void> = {

@@ -19,12 +19,12 @@
 import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { findByCodeLazy, findStoreLazy } from "@webpack";
+import { findByCodeLazy } from "@webpack";
+import { QuestsStore } from "@webpack/common";
 
 import type { Quest, TaskType } from "./types";
 import { cleanup, isValidQuest, state, TASK_HANDLERS } from "./utils";
 
-const QuestsStore = findStoreLazy("QuestsStore");
 const enrollQuest = findByCodeLazy("QUESTS_ENROLL_BEGIN");
 const claimReward = findByCodeLazy("QUESTS_CLAIM_REWARD_BEGIN");
 
@@ -72,9 +72,11 @@ function tryRun() {
     if (!task || !TASK_HANDLERS[task]) return;
 
     const { target } = cfg.tasks[task];
-    const progress = quest.userStatus?.progress?.[task]?.value ?? 0;
+    const raw = quest.userStatus?.progress?.[task];
+    const progress = typeof raw === "number" ? raw : raw?.value ?? 0;
 
     TASK_HANDLERS[task](quest, target, progress);
+
 }
 
 async function checkAndContinue() {

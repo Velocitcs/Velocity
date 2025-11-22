@@ -16,33 +16,45 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+export interface QuestProgress {
+    [task: string]: number;
+}
+
+export interface QuestUserStatus {
+    enrolledAt?: Date | null;
+    completedAt?: Date | null;
+    claimedAt?: Date | null;
+    progress?: QuestProgress;
+    streamProgressSeconds?: number;
+}
+
 export interface Quest {
     id: string;
     userStatus?: {
-        enrolledAt?: string;
-        completedAt?: string;
+        enrolledAt?: string | Date | null;
+        completedAt?: string | Date | null;
+        claimedAt?: string | Date | null;
         progress?: Record<string, { value: number; }>;
         streamProgressSeconds?: number;
     };
     config: {
-        expiresAt?: string;
+        expiresAt?: string | Date | null;
         application: { id: string; name: string; };
         taskConfig?: any;
         taskConfigV2?: any;
         configVersion?: number;
-        messages?: {
-            questName?: string;
-        };
+        messages?: { questName?: string; };
+        rewardsConfig?: { platforms?: string[]; };
     };
 }
 
-export type TaskType = "WATCH_VIDEO" | "WATCH_VIDEO_ON_MOBILE" | "PLAY_ON_DESKTOP" | "STREAM_ON_DESKTOP" | "PLAY_ACTIVITY";
+export type TaskType = | "WATCH_VIDEO" | "WATCH_VIDEO_ON_MOBILE" | "PLAY_ON_DESKTOP" | "STREAM_ON_DESKTOP" | "PLAY_ACTIVITY";
 
 export interface HeartbeatData {
     questId: string;
     streamKey?: string;
     userStatus: {
         streamProgressSeconds?: number;
-        progress: Record<string, { value: number; }>;
+        progress: QuestProgress;
     };
 }
