@@ -20,7 +20,7 @@ import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { getIntlMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
-import { Message } from "@vencord/discord-types";
+import { Message } from "@velocity-types";
 import { findByPropsLazy } from "@webpack";
 import { Tooltip, UserStore } from "@webpack/common";
 
