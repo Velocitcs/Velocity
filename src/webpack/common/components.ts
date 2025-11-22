@@ -19,7 +19,6 @@
 import { TextCompat } from "@components/BaseText";
 import { ButtonCompat } from "@components/Button";
 import { FormSwitchCompat } from "@components/FormSwitch";
-import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { LazyComponent } from "@utils/lazyReact";
 import * as t from "@velocity-types";
@@ -27,10 +26,13 @@ import { filters, mapMangledModuleLazy, waitFor } from "@webpack";
 
 import { waitForComponent } from "./internal";
 
+const FormTitle = waitForComponent<t.FormTitle>("FormTitle", filters.componentByCode('["defaultMargin".concat', '="h5"'));
+const FormDivider = waitForComponent<t.FormDivider>("FormDivider", filters.componentByCode(".divider,", ",style:", '"div"', /\.divider,.*\),style:/i));
+
 export const Forms = {
-    // TODO: Stop using this and use Heading/Paragraph directly
-    FormTitle: Heading,
+    FormTitle,
     FormText: Paragraph,
+    FormDivider
 };
 
 // TODO: Stop using this and use Paragraph/Span directly
