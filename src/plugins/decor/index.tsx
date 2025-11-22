@@ -45,8 +45,8 @@ export default definePlugin({
         {
             find: "getAvatarDecorationURL:",
             replacement: {
-                match: /(?<=function \i\(\i\){)(?=let{avatarDecoration)/,
-                replace: "const vcDecorDecoration=$self.getDecorAvatarDecorationURL(arguments[0]);if(vcDecorDecoration)return vcDecorDecoration;"
+                match: /(?<=function \i\((\i)\){)(?=let{avatarDecoration)/,
+                replace: "const vcDecorDecoration=$self.getDecorAvatarDecorationURL($1);if(vcDecorDecoration)return vcDecorDecoration;"
             }
         },
         // Patch profile customization settings to include Decor section
@@ -60,7 +60,6 @@ export default definePlugin({
         // Decoration modal module
         {
             find: ".decorationGridItem,",
-            lazy: true,
             replacement: [
                 {
                     match: /(?<==)\i=>{var{children.{20,200}decorationGridItem/,
@@ -83,8 +82,8 @@ export default definePlugin({
             replacement: [
                 // Add Decor avatar decoration hook to avatar decoration hook
                 {
-                    match: /(isAvatarDecorationAnimating:\s*\i,)/,
-                    replace: "$1 vcDecorAvatarDecoration:$self.useUserDecorAvatarDecoration(t),"
+                    match: /(?<=\.avatarDecoration,guildId:\i\}\)\),)(?<=user:(\i).+?)/,
+                    replace: "vcDecorAvatarDecoration=$self.useUserDecorAvatarDecoration($1),"
                 },
                 // Use added hook
                 {
@@ -108,7 +107,17 @@ export default definePlugin({
                     replace: "$self.useUserDecorAvatarDecoration($1)??$&"
                 }
             ]
-        }
+        },
+        // Messages
+        {
+            find: '"Message Username"',
+            replacement: [
+                {
+                    match: /(?<=userValue.{0,25}void 0:)((\i)\.avatarDecoration)/,
+                    replace: "$self.useUserDecorAvatarDecoration($2)??$1"
+                }
+            ]
+        },
     ],
     settings,
 
