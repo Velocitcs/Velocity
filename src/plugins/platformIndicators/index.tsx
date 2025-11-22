@@ -25,8 +25,8 @@ import { Settings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { User } from "@velocity-types";
-import { filters, findStoreLazy, mapMangledModuleLazy } from "@webpack";
-import { AuthenticationStore, PresenceStore, Tooltip, UserStore, useStateFromStores } from "@webpack/common";
+import { filters, mapMangledModuleLazy } from "@webpack";
+import { AuthenticationStore, PresenceStore, SessionsStore, Tooltip, UserStore, useStateFromStores } from "@webpack/common";
 
 export interface Session {
     sessionId: string;
@@ -38,10 +38,6 @@ export interface Session {
         client: string;
     };
 }
-
-const SessionsStore = findStoreLazy("SessionsStore") as {
-    getSessions(): Record<string, Session>;
-};
 
 function Icon(path: string, opts?: { viewBox?: string; width?: number; height?: number; }) {
     return ({ color, tooltip, small }: { color: string; tooltip: string; small: boolean; }) => (

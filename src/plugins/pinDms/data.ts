@@ -17,9 +17,9 @@
 */
 
 import { useForceUpdater } from "@utils/react";
-import { UserStore } from "@webpack/common";
+import { PrivateChannelSortStore, UserStore } from "@webpack/common";
 
-import { PinOrder, PrivateChannelSortStore, settings } from "./index";
+import { PinOrder, settings } from "./index";
 
 export interface Category {
     id: string;

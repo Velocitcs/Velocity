@@ -25,8 +25,8 @@ import { Devs } from "@utils/constants";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { Channel } from "@velocity-types";
-import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Clickable, ContextMenuApi, FluxDispatcher, Menu, React } from "@webpack/common";
+import { findByPropsLazy } from "@webpack";
+import { Clickable, ContextMenuApi, FluxDispatcher, Menu, PrivateChannelSortStore, React } from "@webpack/common";
 
 import { contextMenus } from "./components/contextMenu";
 import { openCategoryModal, requireSettingsMenu } from "./components/CreateCategoryModal";
@@ -40,8 +40,6 @@ interface ChannelComponentProps {
 }
 
 const headerClasses = findByPropsLazy("privateChannelsHeaderContainer");
-
-export const PrivateChannelSortStore = findStoreLazy("PrivateChannelSortStore") as { getPrivateChannelIds: () => string[]; };
 
 export let instance: any;
 

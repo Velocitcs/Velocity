@@ -18,11 +18,11 @@
 
 import { getUniqueUsername, openUserProfile } from "@utils/discord";
 import { ChannelType } from "@velocity-types/enums";
-import { UserUtils } from "@webpack/common";
+import { GuildAvailabilityStore, UserUtils } from "@webpack/common";
 
 import settings from "./settings";
 import { ChannelDelete, GuildDelete, RelationshipRemove, RelationshipType } from "./types";
-import { deleteGroup, deleteGuild, getGroup, getGuild, GuildAvailabilityStore, notify } from "./utils";
+import { deleteGroup, deleteGuild, getGroup, getGuild, notify } from "./utils";
 
 let manuallyRemovedFriend: string | undefined;
 let manuallyRemovedGuild: string | undefined;
@@ -81,7 +81,7 @@ export function onGuildDelete({ guild: { id, unavailable } }: GuildDelete) {
 
 export function onChannelDelete({ channel: { id, type } }: ChannelDelete) {
     if (!settings.store.groups) return;
-    if (type !== ChannelType.GROUP_DM) return;
+    if (type !== ChannelType.GroupDM) return;
 
     if (manuallyRemovedGroup === id) {
         deleteGroup(id);

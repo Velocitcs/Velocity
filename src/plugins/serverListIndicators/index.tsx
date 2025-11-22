@@ -21,16 +21,13 @@ import { Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findStoreLazy } from "@webpack";
-import { GuildStore, PresenceStore, RelationshipStore, useStateFromStores } from "@webpack/common";
+import { GuildStore, PresenceStore, RelationshipStore, UserGuildJoinRequestStore, useStateFromStores } from "@webpack/common";
 
 const enum IndicatorType {
     SERVER = 1 << 0,
     FRIEND = 1 << 1,
     BOTH = SERVER | FRIEND,
 }
-
-const UserGuildJoinRequestStore = findStoreLazy("UserGuildJoinRequestStore");
 
 function FriendsIndicator() {
     const onlineFriendsCount = useStateFromStores([RelationshipStore, PresenceStore], () => {

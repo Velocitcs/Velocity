@@ -20,11 +20,8 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import { findStoreLazy } from "@webpack";
-import { Constants, FluxDispatcher, GuildStore, RelationshipStore, SnowflakeUtils, UserStore } from "@webpack/common";
+import { Constants, FluxDispatcher, GuildStore, RelationshipStore, SnowflakeUtils, UserAffinitiesV2Store, UserStore } from "@webpack/common";
 import { Settings } from "Velocity";
-
-const UserAffinitiesStore = findStoreLazy("UserAffinitiesV2Store");
 
 export default definePlugin({
     name: "ImplicitRelationships",
@@ -118,7 +115,7 @@ export default definePlugin({
 
     wrapSort(comparator: Function, row: any) {
         return row.type === 5
-            ? (UserAffinitiesStore.getUserAffinity(row.user.id)?.communicationRank ?? 0)
+            ? (UserAffinitiesV2Store.getUserAffinity(row.user.id)?.communicationRank ?? 0)
             : comparator(row);
     },
 
@@ -126,7 +123,7 @@ export default definePlugin({
         // Implicit relationships are defined as users that you:
         // 1. Have an affinity for
         // 2. Do not have a relationship with
-        const userAffinities: Record<string, any>[] = UserAffinitiesStore.getUserAffinities();
+        const userAffinities: Record<string, any>[] = UserAffinitiesV2Store.getUserAffinities();
         const relationships = RelationshipStore.getMutableRelationships();
         const nonFriendAffinities = userAffinities.filter(a => !RelationshipStore.getRelationshipType(a.otherUserId));
         nonFriendAffinities.forEach(a => {

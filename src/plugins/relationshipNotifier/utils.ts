@@ -19,20 +19,11 @@
 import { DataStore, Notices } from "@api/index";
 import { showNotification } from "@api/Notifications";
 import { getUniqueUsername, openUserProfile } from "@utils/discord";
-import { FluxStore } from "@velocity-types";
 import { ChannelType } from "@velocity-types/enums";
-import { findStoreLazy } from "@webpack";
-import { ChannelStore, GuildMemberStore, GuildStore, RelationshipStore, UserStore, UserUtils } from "@webpack/common";
+import { ChannelStore, GuildAvailabilityStore, GuildMemberStore, GuildStore, RelationshipStore, UserStore, UserUtils } from "@webpack/common";
 
 import settings from "./settings";
 import { RelationshipType, SimpleGroupChannel, SimpleGuild } from "./types";
-
-export const GuildAvailabilityStore = findStoreLazy("GuildAvailabilityStore") as FluxStore & {
-    totalGuilds: number;
-    totalUnavailableGuilds: number;
-    unavailableGuilds: string[];
-    isUnavailable(guildId: string): boolean;
-};
 
 const guilds = new Map<string, SimpleGuild>();
 const groups = new Map<string, SimpleGroupChannel>();
@@ -164,7 +155,7 @@ export async function syncGroups() {
     groups.clear();
 
     for (const { type, id, name, rawRecipients, icon } of ChannelStore.getSortedPrivateChannels()) {
-        if (type === ChannelType.GROUP_DM)
+        if (type === ChannelType.GroupDM)
             groups.set(id, {
                 id,
                 name: name || rawRecipients.map(r => r.username).join(", "),
