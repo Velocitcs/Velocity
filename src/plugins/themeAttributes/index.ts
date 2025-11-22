@@ -22,7 +22,6 @@ import definePlugin from "@utils/types";
 import { Message } from "@velocity-types";
 import { UserStore } from "@webpack/common";
 
-
 export default definePlugin({
     name: "ThemeAttributes",
     description: "Adds data attributes to various elements for theming purposes",
