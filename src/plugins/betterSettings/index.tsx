@@ -138,7 +138,7 @@ export default definePlugin({
 
                 // Third-Party Access - experiment: 2024-11_third_party_access_settings_redesign
                 {
-                    match: /(\[.{1,10}\.THIRD_PARTY_ACCESS\]:\{[\s\S]*?element:\s*eb\.Z[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.THIRD_PARTY_ACCESS\]:\{[\s\S]*?element:\s*e\w+\.Z[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('DiscoverIcon')}"
                 },
 
@@ -249,10 +249,9 @@ export default definePlugin({
                     match: /(\[.{1,10}\.STREAMER_MODE\]:\{section:.{1,50}\.STREAMER_MODE,[^}]+url:(.+?\("streamer-mode"\)))\}/,
                     replace: "$1,icon:$self.getIcon('StreamerModeIcon')}"
                 },
-
                 // Advanced
                 {
-                    match: /(\[.{1,10}\.SETTINGS_ADVANCED\]:\{[\s\S]*?newIndicator:\(0,r\.jsx\)\(eW,\{\}\)[\s\S]*?)\}/,
+                    match: /(\[.{1,10}\.SETTINGS_ADVANCED\]:\{[\s\S]*?newIndicator:\(0,r\.jsx\)\(e\w,\{\}\)[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('MoreIcon')}"
                 },
 
@@ -329,11 +328,20 @@ export default definePlugin({
             ],
             predicate: () => settings.store.disableFade
         },
+        {
+            // New settings redesign UI
+            find: ".buildLayout().map",
+            replacement: {
+                match: /(\i)\.buildLayout\(\)(?=\.map)/,
+                replace: "$self.wrapLayout($1)"
+            },
+            predicate: () => settings.store.organizeMenu
+        },
         { // Load menu TOC eagerly
             find: "#{intl::USER_SETTINGS_WITH_BUILD_OVERRIDE}",
             replacement: {
                 match: /(\i)\(this,"handleOpenSettingsContextMenu",.{0,100}?null!=\i&&.{0,100}?(await [^};]*?\)\)).*?,(?=\1\(this)/,
-                replace: "$&(async ()=>$2)(),"
+                replace: "$&(async ()=>await $2)(),"
             },
             predicate: () => settings.store.eagerLoad
         },
@@ -342,8 +350,8 @@ export default definePlugin({
             find: "#{intl::USER_SETTINGS_ACTIONS_MENU_LABEL}",
             replacement: [
                 {
-                    match: /=\[\];return (\i)(?=\.forEach)/,
-                    replace: "=$self.wrapMap([]);return $self.transformSettingsEntries($1)",
+                    match: /=\[\];if\((\i)(?=\.forEach)/,
+                    replace: "=$self.wrapMap([]);if($self.transformSettingsEntries($1)",
                     predicate: () => settings.store.organizeMenu
                 },
                 {
