@@ -37,6 +37,7 @@ export const CspPolicies: PolicyMap = {
     "127.0.0.1:*": ImageAndCssSrc,
 
     "*.github.io": ImageAndCssSrc, // GitHub pages, used by most themes
+    "gist.githubusercontent.com": ConnectSrc, // GitHub gist content
     "github.com": ImageAndCssSrc, // GitHub content (stuff uploaded to markdown forms), used by most themes
     "raw.githubusercontent.com": ImageAndCssSrc, // GitHub raw, used by some themes
     "*.gitlab.io": ImageAndCssSrc, // GitLab pages, used by some themes
