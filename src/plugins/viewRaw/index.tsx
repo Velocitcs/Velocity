@@ -32,7 +32,7 @@ import { Message } from "@velocity-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import { ChannelStore, Forms, GuildRoleStore, Menu, React } from "@webpack/common";
 
-import { openEmbedRawModal } from "../CopyEmbed/index";
+import { openEmbedRawModal } from "../copyEmbed/index";
 
 const iconClass = findByPropsLazy("icon", "iconContainer", "label");
 const popoverClass = findByPropsLazy("icon", "hoverBarButton");
