@@ -20,7 +20,7 @@ import { createSocket, Socket } from "dgram";
 
 let xsoSocket: Socket;
 
-export function sendToOverlay(_, data: any) {
+export function sendToOverlay(_: any, data: any) {
     data.messageType = data.type;
     const json = JSON.stringify(data);
     xsoSocket ??= createSocket("udp4");
