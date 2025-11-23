@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ export const TranslateChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
         settings.store.autoTranslate = newState;
         if (newState && settings.store.showAutoTranslateAlert !== false)
             Alerts.show({
-                title: "Vencord Auto-Translate Enabled",
+                title: "Velocity Auto-Translate Enabled",
                 body: <>
                     <Forms.FormText>
                         You just enabled Auto Translate! Any message <b>will automatically be translated</b> before being sent.

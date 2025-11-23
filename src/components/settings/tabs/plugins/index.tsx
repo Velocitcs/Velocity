@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,13 @@ import { PluginCard } from "./PluginCard";
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
+
+const enum SearchStatus {
+    ALL,
+    ENABLED,
+    DISABLED,
+    NEW
+}
 
 function ReloadRequiredCard({ required }: { required: boolean; }) {
     const user = UserStore?.getCurrentUser();
@@ -96,15 +103,6 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
             )}
         </>
     );
-}
-
-
-
-const enum SearchStatus {
-    ALL,
-    ENABLED,
-    DISABLED,
-    NEW
 }
 
 function ExcludedPluginsList({ search }: { search: string; }) {
@@ -213,8 +211,7 @@ function ExcludedPluginsList({ search }: { search: string; }) {
     );
 }
 
-
-function PluginSettings() {
+function PluginSettings({ isRedesign = false }) {
     const settings = useSettings();
     const changes = useMemo(() => new ChangeList<string>(), []);
 
@@ -408,13 +405,6 @@ function PluginSettings() {
         }
     };
 
-
-
-
-
-
-
-
     const [newPlugins] = useAwaiter(() => DataStore.get("Velocity_existingPlugins").then((cachedPlugins: Record<string, number> | undefined) => {
         const now = Date.now() / 1000;
         const existingTimestamps: Record<string, number> = {};
@@ -494,7 +484,7 @@ function PluginSettings() {
     }
 
     return (
-        <SettingsTab title="Plugins">
+        <SettingsTab showTitle={!isRedesign} title={"Plugins"}>
             <ReloadRequiredCard required={changes.hasChanges} />
 
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>

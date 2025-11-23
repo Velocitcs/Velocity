@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -232,7 +232,7 @@ const TEXT_REPLACE_RULES_CHANNEL_ID = "1102784112584040479";
 
 export default definePlugin({
     name: "TextReplace",
-    description: "Replace text in your messages. You can find pre-made rules in the #textreplace-rules channel in Vencord's Server",
+    description: "Replace text in your messages. You can find pre-made rules in the #textreplace-rules channel in Velocity's Server",
     authors: [Devs.AutumnVN, Devs.TheKodeToad],
 
     settings,

@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
 const Spinner = findComponentByCodeLazy("wanderingCubes", "aria-label");
 
-export function SettingsTab({ title, icon, children }: PropsWithChildren<{ title?: string; icon?: ReactNode; }>) {
+export function SettingsTab({ title, icon, children, showTitle = true }: PropsWithChildren<{ title?: string; showTitle?: boolean; icon?: ReactNode; }>) {
     if (!children) {
         return (
             <div style={{
@@ -43,7 +43,7 @@ export function SettingsTab({ title, icon, children }: PropsWithChildren<{ title
 
     return (
         <section>
-            {title && (
+            {showTitle && title && (
                 <BaseText tag="h2" size="xl" weight="semibold" className={Margins.bottom16}>
                     <div className="vc-settings-tab-title">
                         {icon && <span className="vc-settings-tab-icon">{icon}</span>}

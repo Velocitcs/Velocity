@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ async function generateDebugInfoMessage() {
 
     const info = {
         Velocity:
-            `v${VERSION} • [${gitHash}](<https://github.com/Velocitcy/Velocity/commit/${gitHash}>)` +
+            `v${VERSION} • [${gitHash}](<https://github.com/Velocitcs/Velocity/commit/${gitHash}>)` +
             `${SettingsPlugin.additionalInfo} - ${Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${client}`,
         Platform: navigator.platform

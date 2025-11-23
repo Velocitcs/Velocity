@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ import { CommonProps, HashLink, Newer, Updatable } from "./Components";
 
 const Spinner = findComponentByCodeLazy("wanderingCubes", "aria-label");
 
-function Updater() {
+function Updater({ isRedesign = false }) {
     const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
     const [repo, err, repoPending] = useAwaiter(getRepo, {
         fallbackValue: "Loading...",
@@ -46,7 +46,7 @@ function Updater() {
     const commonProps: CommonProps = { repo, repoPending, checkingUpdate, setCheckingUpdate };
 
     return (
-        <SettingsTab title="Velocity Updater">
+        <SettingsTab showTitle={!isRedesign} title={"Velocity Updater"}>
             <Heading tag="h5">Updater Settings</Heading>
 
             <FormSwitch

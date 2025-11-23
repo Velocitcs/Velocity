@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ export const useAuthorizationStore = proxyLazy(() => zustandCreate(
                         callback={async (response: any) => {
                             try {
                                 const url = new URL(response.location);
-                                url.searchParams.append("client", "vencord");
+                                url.searchParams.append("client", "velocity");
 
                                 const req = await fetch(url);
 

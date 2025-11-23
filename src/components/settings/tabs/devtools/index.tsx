@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,18 +25,20 @@ import { TabBar, useState } from "@webpack/common";
 import { ComponentsTab } from "./Components";
 import IconCreator from "./IconCreator";
 import { IconsTab } from "./IconsPreview";
+import VebotControler from "./VebotControler";
 
 const enum DevTab {
     COMPONENTS,
     ICONS,
-    CREATOR
+    CREATOR,
+    VEBOT
 }
 
-function DevelopersTab() {
+function DevelopersTab({ isRedesign = false }) {
     const [currentTab, setCurrentTab] = useState(DevTab.COMPONENTS);
 
     return (
-        <SettingsTab title="Developer Visuals" icon={LockIcon({ viewBox: "0 0 24 24", height: 20, width: 20 })}>
+        <SettingsTab showTitle={!isRedesign} title={"Developer Visuals"} icon={<LockIcon viewBox="0 0 24 24" width="20" height="20" />}>
             <TabBar
                 type="top"
                 look="brand"
@@ -53,12 +55,15 @@ function DevelopersTab() {
                 <TabBar.Item id={DevTab.CREATOR} className="vc-settings-tab-bar-item">
                     Icon Creator
                 </TabBar.Item>
+                <TabBar.Item id={DevTab.VEBOT} className="vc-settings-tab-bar-item">
+                    Vebot Websocket
+                </TabBar.Item>
             </TabBar>
-
 
             {currentTab === DevTab.COMPONENTS && <ComponentsTab />}
             {currentTab === DevTab.ICONS && <IconsTab />}
             {currentTab === DevTab.CREATOR && <IconCreator />}
+            {currentTab === DevTab.VEBOT && <VebotControler />}
 
         </SettingsTab>
     );

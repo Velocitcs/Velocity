@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,11 +121,11 @@ function SettingsSyncSection() {
     );
 }
 
-function CloudTab() {
+function CloudTab({ isRedesign = false }) {
     const settings = useSettings(["cloud.authenticated", "cloud.url"]);
 
     return (
-        <SettingsTab title="Velocity Cloud">
+        <SettingsTab showTitle={!isRedesign} title={"Velocity Cloud"}>
             <section className={Margins.top16}>
                 <Forms.FormTitle tag="h5">Cloud Settings</Forms.FormTitle>
 

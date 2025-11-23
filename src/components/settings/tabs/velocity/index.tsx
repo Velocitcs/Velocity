@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,13 +131,13 @@ function Switches() {
         );
     });
 }
-function VelocitySettings() {
+function VelocitySettings({ isRedesign = false }) {
     const needsVibrancySettings = IS_DISCORD_DESKTOP && IS_MAC;
 
     const user = UserStore?.getCurrentUser();
 
     return (
-        <SettingsTab title={"Velocity Settings"}>
+        <SettingsTab showTitle={!isRedesign} title={"Velocity Settings"}>
             {isDonor(user?.id) && (
                 <SpecialCard
                     title="Donations"

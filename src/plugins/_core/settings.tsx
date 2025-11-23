@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ export default definePlugin({
                 className: "vc-developer"
             },
             IS_DEV && {
-                section: "VelocitHelpers",
+                section: "VelocityHelpers",
                 label: "Helpers",
                 element: PatchHelperTab,
                 icon: showIcons ? <AccessibilityIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
@@ -185,12 +185,12 @@ export default definePlugin({
                     {
                         key: `${category.section}_panel`,
                         type: 3,
-                        useTitle: () => null,
+                        useTitle: () => category.label,
                         buildLayout: () => [{
                             key: `${category.section}_pane`,
                             type: 4,
                             buildLayout: () => [],
-                            render: () => React.createElement(category.element),
+                            render: () => <category.element isRedesign={true} />,
                             useTitle: () => category.label
                         }]
                     }

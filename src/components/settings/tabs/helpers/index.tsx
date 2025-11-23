@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@ const enum DevTab {
     SEARCH_HELPER
 }
 
-function DevHelpers() {
+function DevHelpers({ isRedesign = false }) {
     const [currentTab, setCurrentTab] = useState(DevTab.PATCH_HELPER);
 
     return (
-        <SettingsTab title="Helpers">
+        <SettingsTab showTitle={!isRedesign} title={"Helpers"}>
             <HeadingSecondary className="">Helper Tools are designed only for velocity developers</HeadingSecondary>
             <TabBar
                 type="top"
