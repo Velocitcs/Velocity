@@ -2,10 +2,10 @@
 // @name            Velocity
 // @description     A Discord client mod - Web version
 // @version         %version%
-// @author          Velocitcy (https://github.com/Velocitcy)
-// @namespace       https://github.com/Velocitcy/Velocity
-// @supportURL      https://github.com/Velocitcy/Velocity
-// @icon            https://raw.githubusercontent.com/Velocitcy/Velocity/refs/heads/main/browser/icon.png
+// @author          Velocitcy (https://github.com/Velocitcs)
+// @namespace       https://github.com/Velocitcs/Velocity
+// @supportURL      https://github.com/Velocitcs/Velocity
+// @icon            https://raw.githubusercontent.com/Velocitcs/Velocity/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*
 // @grant           GM_xmlhttpRequest

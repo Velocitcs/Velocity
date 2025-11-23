@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2022 Velocitcy and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ window.VelocityNative = {
     },
 
     updater: {
-        getRepo: async () => ({ ok: true, value: "https://github.com/Velocitcy/Velocity" }),
+        getRepo: async () => ({ ok: true, value: "https://github.com/Velocitcs/Velocity" }),
         getUpdates: async () => ({ ok: true, value: [] }),
         update: async () => ({ ok: true, value: false }),
         rebuild: async () => ({ ok: true, value: true }),

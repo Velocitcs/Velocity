@@ -1,6 +1,6 @@
 # Velocity
 
-![](https://img.shields.io/github/package-json/v/Velocitcy/Velocity?style=for-the-badge&logo=github&logoColor=d3869b&label=&color=1d2021&labelColor=282828)
+![](https://img.shields.io/github/package-json/v/Velocitcs/Velocity?style=for-the-badge&logo=github&logoColor=d3869b&label=&color=1d2021&labelColor=282828)
 
 The most funniest Discord client mod
 

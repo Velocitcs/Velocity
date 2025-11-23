@@ -1,6 +1,6 @@
 /*
  * Velocity, a modification for Discord's desktop app
- * Copyright (c) 2023 Vendicated and contributors
+ * Copyright (c) 2025 Velocitcs and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const BASE_URL = "https://github.com/Velocity/Installer/releases/latest/download/";
+const BASE_URL = "https://github.com/Velocitcy/Installer/releases/latest/download/";
 const INSTALLER_PATH_DARWIN = "VelocityInstaller.app/Contents/MacOS/VelocityInstaller";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -62,7 +62,7 @@ async function ensureBinary() {
 
     const res = await fetch(BASE_URL + filename, {
         headers: {
-            "User-Agent": "Velocity (https://github.com/Vendicated/Velocity)",
+            "User-Agent": "Velocity (https://github.com/Velocitcy/Velocity)",
             "If-None-Match": etag
         }
     });
@@ -126,8 +126,8 @@ try {
         stdio: "inherit",
         env: {
             ...process.env,
-            VENCORD_USER_DATA_DIR: BASE_DIR,
-            VENCORD_DEV_INSTALL: "1"
+            VELOCITY_USER_DATA_DIR: BASE_DIR,
+            VELOCITY_DEV_INSTALL: "1"
         }
     });
 } catch {
