@@ -20,7 +20,7 @@ import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { findByCodeLazy } from "@webpack";
-import { QuestsStore } from "@webpack/common";
+import { QuestStore } from "@webpack/common";
 
 import type { Quest, TaskType } from "./types";
 import { cleanup, isValidQuest, state, TASK_HANDLERS } from "./utils";
@@ -31,15 +31,14 @@ const claimReward = findByCodeLazy("QUESTS_CLAIM_REWARD_BEGIN");
 const failedQuests = new Set<string>();
 
 async function tryAcceptAndRun() {
-
-    const { quests } = QuestsStore;
+    const { quests } = QuestStore;
     if (!quests?.size) return;
 
     const unenrolledQuests = [...quests.values()].filter(q =>
         !q.userStatus?.enrolledAt &&
         !q.userStatus?.completedAt &&
         !q.userStatus?.claimedAt &&
-        !QuestsStore.isQuestExpired(q.id) &&
+        !QuestStore.isQuestExpired(q.id) &&
         !failedQuests.has(q.id)
     );
 
@@ -47,7 +46,6 @@ async function tryAcceptAndRun() {
         tryRun();
         return;
     }
-
 
     for (const quest of unenrolledQuests) {
         const result = await enrollQuest(quest.id, { questContent: "QUESTS_BAR" });
@@ -60,7 +58,7 @@ async function tryAcceptAndRun() {
 }
 
 function tryRun() {
-    const { quests } = QuestsStore;
+    const { quests } = QuestStore;
     if (!quests?.size) return;
 
     const quest = [...quests.values()].find(isValidQuest);
@@ -83,7 +81,7 @@ async function checkAndContinue() {
     cleanup();
     await sleep(2000);
 
-    const { quests } = QuestsStore;
+    const { quests } = QuestStore;
     for (const quest of quests.values()) {
         if (quest.userStatus?.completedAt && !quest.userStatus?.claimedAt) {
             const platform = quest.config.rewardsConfig.platforms[0];
@@ -103,19 +101,26 @@ export default definePlugin({
     authors: [Devs.Velocity],
     patches: [
         {
-            find: "e5.current=e",
+            find: "VIDEO_HLS&&tU(ti)",
             lazy: true,
             replacement: {
-                match: /(e5\.current=e[^}]*)(})/,
-                replace: "$1;if(e)e.playbackRate=16$2"
+                match: /(onLoadedMetadata:\i=>\{null!=)(\i)(\.current&&\(.*?VIDEO_HLS&&\i\(\i\),)(\i)\?(\i)\.current\.volume=0:(\i)\.current\.volume=(\i)\)/,
+                replace: "$1$2$3$2.current.playbackRate=14,$4?$5.current.volume=0:$6.current.volume=$7)"
             }
         },
         {
-            find: "seekForwardEnabled:nc",
+            find: "handleLoadedMetadata | videoAssetId:",
             lazy: true,
             replacement: {
-                match: /seekForwardEnabled:(\i\i)/,
+                match: /seekForwardEnabled:(\i\d)/,
                 replace: "seekForwardEnabled:true"
+            }
+        },
+        {
+            find: "videoInner,{[_.focused]:a}",
+            replacement: {
+                match: /\[_\.focused\]:(\i)/,
+                replace: "[_.focused]:true"
             }
         }
     ],
@@ -133,7 +138,7 @@ export default definePlugin({
     flux: {
         QUESTS_SEND_HEARTBEAT_SUCCESS(e: any) {
             state.onBeat?.(e);
-            const quest = [...QuestsStore.quests.values()].find((q: Quest) => q.id === state.currentQuestId);
+            const quest = [...QuestStore.quests.values()].find((q: Quest) => q.id === state.currentQuestId);
             if (quest?.userStatus?.completedAt) checkAndContinue();
         },
         async QUESTS_ENROLL_SUCCESS() {

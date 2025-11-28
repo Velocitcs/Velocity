@@ -123,16 +123,11 @@ export const handleDesktopTask = (quest: Quest, target: number, _progress: numbe
                     : getProgress(raw)
             );
 
-            console.log(`Quest progress: ${val}/${target}`);
-
             if (val >= target) {
-                console.log("Quest completed!");
                 ApplicationStreamingStore.getStreamerActiveStreamMetadata = orig;
                 state.onBeat = null;
             }
         };
-
-        console.log(`Spoofed stream to ${appName}.`);
     } else {
         const fake = {
             cmdLine: `C:\\Program Files\\${appName}\\${appName}.exe`,
@@ -171,10 +166,7 @@ export const handleDesktopTask = (quest: Quest, target: number, _progress: numbe
                     : getProgress(raw)
             );
 
-            console.log(`Quest progress: ${val}/${target}`);
-
             if (val >= target) {
-                console.log("Quest completed!");
                 RunningGameStore.getRunningGames = state.origGetRunningGames;
                 RunningGameStore.getGameForPID = state.origGetGameForPID;
 
@@ -188,8 +180,6 @@ export const handleDesktopTask = (quest: Quest, target: number, _progress: numbe
                 state.onBeat = null;
             }
         };
-
-        console.log(`Spoofed game to ${appName}.`);
     }
 };
 
@@ -204,7 +194,7 @@ export const handleActivityTask = (quest: Quest, target: number) => {
             channelId = (guildWithVoice as any).VOCAL[0].channel.id;
     }
 
-    if (!channelId) return console.log("No voice channel found.");
+    if (!channelId) return;
 
     let running = true;
 
@@ -222,11 +212,8 @@ export const handleActivityTask = (quest: Quest, target: number) => {
     (async () => {
         while (running) {
             const prog = await sendBeat();
-            console.log(`Quest progress: ${prog}/${target}`);
-
             if (prog >= target) {
                 await sendBeat(true);
-                console.log("Quest completed.");
                 return;
             }
 
