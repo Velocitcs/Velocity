@@ -44,15 +44,18 @@ export let MediaEngineStore: t.MediaEngineStore;
 export let OverlayRTCConnectionStore: t.OverlayRTCConnectionStore;
 export let RunningGameStore: t.RunningGameStore;
 export let UploadStore: t.UploadStore;
+export let UploadAttachmentStore: t.UploadAttachmentStore;
 export let ThreadMemberListStore: t.ThreadMemberListStore;
 export let UserAffinitiesV2Store: t.UserAffinitiesV2Store;
+export let FavoritesSuggestionStore: t.FavoritesSuggestionStore;
+export let UserOfferStore: t.UserOfferStore;
 export let PrivateChannelSortStore: t.PrivateChannelSortStore;
-
+export let PromotionsStore: t.PromotionsStore;
 export let UserSettingsProtoStore: t.UserSettingsProtoStore;
 export let GuildStore: t.GuildStore;
 export let AuthSessionsStore: t.AuthSessionsStore;
 export let SessionsStore: t.SessionsStore;
-export let QuestsStore: t.QuestsStore;
+export let QuestStore: t.QuestStore;
 export let GuildMemberCountStore: t.GuildMemberCountStore;
 export let UserGuildSettingsStore: t.UserGuildSettingsStore;
 export let GuildRoleStore: t.GuildRoleStore;
@@ -111,8 +114,9 @@ waitForStore("OverlayRTCConnectionStore", m => OverlayRTCConnectionStore = m);
 waitForStore("PermissionStore", m => PermissionStore = m);
 waitForStore("PresenceStore", m => PresenceStore = m);
 waitForStore("PrivateChannelSortStore", m => PrivateChannelSortStore = m);
-waitForStore("QuestsStore", s => QuestsStore = s);
+waitForStore("QuestStore", s => QuestStore = s);
 waitForStore("ReadStateStore", m => ReadStateStore = m);
+waitForStore("FavoritesSuggestionStore", m => FavoritesSuggestionStore = m);
 waitForStore("RelationshipStore", m => RelationshipStore = m);
 waitForStore("RunningGameStore", m => RunningGameStore = m);
 waitForStore("SelectedChannelStore", m => SelectedChannelStore = m);
@@ -128,12 +132,15 @@ waitForStore("ThemeStore", m => {
 waitForStore("ThreadMemberListStore", m => ThreadMemberListStore = m);
 waitForStore("TypingStore", m => TypingStore = m);
 waitForStore("UploadStore", s => UploadStore = s);
+waitForStore("UploadAttachmentStore", s => UploadAttachmentStore = s);
 waitForStore("UserAffinitiesV2Store", m => UserAffinitiesV2Store = m);
 waitForStore("UserGuildJoinRequestStore", s => UserGuildJoinRequestStore = s);
 waitForStore("UserGuildSettingsStore", m => UserGuildSettingsStore = m);
 waitForStore("UserProfileStore", m => UserProfileStore = m);
 waitForStore("UserSettingsProtoStore", s => UserSettingsProtoStore = s);
 waitForStore("UserStore", s => UserStore = s);
+waitForStore("UserOfferStore", s => UserOfferStore = s);
+
 waitForStore("VoiceStateStore", m => VoiceStateStore = m);
 waitForStore("WindowStore", m => WindowStore = m);
 
