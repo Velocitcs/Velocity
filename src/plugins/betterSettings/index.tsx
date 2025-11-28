@@ -249,9 +249,9 @@ export default definePlugin({
                     match: /(\[.{1,10}\.STREAMER_MODE\]:\{section:.{1,50}\.STREAMER_MODE,[^}]+url:(.+?\("streamer-mode"\)))\}/,
                     replace: "$1,icon:$self.getIcon('StreamerModeIcon')}"
                 },
-                // Advanced
+                // Advanced, why the fk does this keep breaking
                 {
-                    match: /(\[.{1,10}\.SETTINGS_ADVANCED\]:\{[\s\S]*?newIndicator:\(0,r\.jsx\)\(e\w,\{\}\)[\s\S]*?)\}/,
+                    match: /(\[[A-Za-z0-9._$]{1,40}\.SETTINGS_ADVANCED\]:\{[\s\S]*?element:\s*[A-Za-z0-9._$]+)[\s\S]*?\}/,
                     replace: "$1,icon:$self.getIcon('MoreIcon')}"
                 },
 
