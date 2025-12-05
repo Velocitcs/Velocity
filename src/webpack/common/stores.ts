@@ -127,7 +127,7 @@ waitForStore("StickersStore", m => StickersStore = m);
 waitForStore("StreamerModeStore", m => StreamerModeStore = m);
 waitForStore("ThemeStore", m => {
     ThemeStore = m;
-    Velocity.QuickCss.initQuickCssThemeStore();
+    Velocity.Api.Themes.initQuickCssThemeStore(m);
 });
 waitForStore("ThreadMemberListStore", m => ThreadMemberListStore = m);
 waitForStore("TypingStore", m => TypingStore = m);
