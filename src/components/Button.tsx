@@ -21,80 +21,15 @@ import "./Button.css";
 import { classNameFactory } from "@api/Styles";
 import { classes } from "@utils/misc";
 import type { Button as DiscordButton } from "@velocity-types";
-import type { ComponentPropsWithRef, ComponentType } from "react";
+import type { ComponentPropsWithRef } from "react";
 
 import { OpenExternalIcon } from "./Icons";
 
 const btnCls = classNameFactory("vc-btn-");
 const textBtnCls = classNameFactory("vc-text-btn-");
 
-export type ButtonVariant =
-    | "primary"
-    | "secondary"
-    | "dangerPrimary"
-    | "dangerSecondary"
-    | "overlayPrimary"
-    | "positive"
-    | "link"
-    | "none";
-
 export type ButtonSize = "min" | "xs" | "small" | "medium";
 
-export type ButtonProps = ComponentPropsWithRef<"button"> & {
-    variant?: ButtonVariant;
-    size?: ButtonSize;
-    icon?: ComponentType<any>;
-    loading?: boolean;
-};
-
-export function Button({
-    variant = "primary",
-    size = "medium",
-    children,
-    className,
-    icon: Icon,
-    loading,
-    ...restProps
-}: ButtonProps) {
-    const { ...buttonProps } = restProps;
-
-    return (
-        <button
-            data-mana-component="button"
-            className={classes(btnCls("base", variant, size), className)}
-            {...buttonProps}
-            disabled={loading || restProps.disabled}
-        >
-            {Icon && (
-                <span
-                    className={btnCls("icon")}
-                    style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "20px",
-                        height: "20px",
-                        flexShrink: 0,
-                        marginRight: "6px",
-                        marginLeft: "-4px",
-                    }}
-                >
-                    <Icon width={20} height={20} />
-                </span>
-            )}
-
-            {children}
-            {variant === "link" && !Icon && (
-                <span className={btnCls("link-icon")}>
-                    <OpenExternalIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
-                </span>
-            )}
-        </button>
-    );
-}
-
-
-// text button
 export type TextButtonVariant = "primary" | "secondary" | "danger" | "link";
 
 export type TextButtonProps = ComponentPropsWithRef<"button"> & {
@@ -114,7 +49,29 @@ export function TextButton({
     );
 }
 
-export const ButtonCompat: DiscordButton = function ButtonCompat({
+const ButtonColorMapping: Record<string, string> = {
+    BRAND: "primary",
+    PRIMARY: "primary",
+    RED: "dangerPrimary",
+    TRANSPARENT: "secondary",
+    CUSTOM: "none",
+    GREEN: "positive",
+    LINK: "link",
+    WHITE: "overlayPrimary",
+};
+
+const TextButtonPropsColorMapping: Record<string, TextButtonProps["variant"]> = {
+    BRAND: "primary",
+    PRIMARY: "primary",
+    RED: "danger",
+    TRANSPARENT: "secondary",
+    CUSTOM: "secondary",
+    GREEN: "primary",
+    LINK: "link",
+    WHITE: "secondary",
+};
+
+export const Button: DiscordButton = function Button({
     look,
     color = "BRAND",
     size = "medium",
@@ -128,22 +85,45 @@ export const ButtonCompat: DiscordButton = function ButtonCompat({
             {...(restProps as TextButtonProps)}
         />
     ) : (
-        <Button
-            variant={ButtonColorMapping[color]}
-            size={size as ButtonSize}
-            icon={icon}
-            loading={loading}
-            {...(restProps as ButtonProps)}
-        />
+        <button
+            data-mana-component="button"
+            className={classes(btnCls("base", ButtonColorMapping[color], size), restProps.className)}
+            {...restProps as any}
+            disabled={loading || restProps.disabled}
+        >
+            {icon && (
+                <span
+                    className={btnCls("icon")}
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "20px",
+                        height: "20px",
+                        flexShrink: 0,
+                        marginRight: "6px",
+                        marginLeft: "-4px",
+                    }}
+                >
+                    {icon}
+                </span>
+            )}
+            {restProps.children}
+            {color === "LINK" && !icon && (
+                <span className={btnCls("link-icon")}>
+                    <OpenExternalIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
+                </span>
+            )}
+        </button>
     );
 };
 
-ButtonCompat.Looks = {
+Button.Looks = {
     FILLED: "",
     LINK: "LINK",
 } as const;
 
-ButtonCompat.Colors = {
+Button.Colors = {
     BRAND: "BRAND",
     PRIMARY: "PRIMARY",
     RED: "RED",
@@ -154,35 +134,7 @@ ButtonCompat.Colors = {
     WHITE: "WHITE",
 } as const;
 
-const ButtonColorMapping: Record<
-    keyof typeof ButtonCompat["Colors"],
-    ButtonProps["variant"]
-> = {
-    BRAND: "primary",
-    PRIMARY: "secondary",
-    RED: "dangerPrimary",
-    TRANSPARENT: "secondary",
-    CUSTOM: "none",
-    GREEN: "positive",
-    LINK: "link",
-    WHITE: "overlayPrimary",
-};
-
-const TextButtonPropsColorMapping: Record<
-    keyof typeof ButtonCompat["Colors"],
-    TextButtonProps["variant"]
-> = {
-    BRAND: "primary",
-    PRIMARY: "primary",
-    RED: "danger",
-    TRANSPARENT: "secondary",
-    CUSTOM: "secondary",
-    GREEN: "primary",
-    LINK: "link",
-    WHITE: "secondary",
-};
-
-ButtonCompat.Sizes = {
+Button.Sizes = {
     SMALL: "small",
     MEDIUM: "medium",
     LARGE: "medium",
@@ -190,4 +142,3 @@ ButtonCompat.Sizes = {
     NONE: "min",
     MIN: "min",
 } as const;
-// #endregion

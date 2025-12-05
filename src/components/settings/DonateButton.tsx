@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { Heart } from "@components/Heart";
-import { ButtonProps } from "@discord-types";
-import { Button } from "@webpack/common";
+import { ButtonProps } from "@velocity-types";
 
 export default function DonateButton({
     look = Button.Looks.LINK,
@@ -30,7 +30,7 @@ export default function DonateButton({
             {...props}
             look={look}
             color={color}
-            onClick={() => VelocityNative.native.openExternal("https://github.com/sponsors/Vendicated")}
+            onClick={() => VelocityNative.native.openExternal("https://github.com/sponsors/Velocitcy")}
             className="vc-donate-button"
         >
             <Heart />

@@ -19,9 +19,10 @@
 import "./AddonCard.css";
 
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import { AddonBadge } from "@components/settings/AddonBadge";
 import { Switch } from "@components/Switch";
-import { Text, useRef } from "@webpack/common";
+import { useRef } from "@webpack/common";
 import type { MouseEventHandler, ReactNode } from "react";
 
 const cl = classNameFactory("vc-addon-");
