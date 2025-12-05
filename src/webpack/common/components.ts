@@ -16,9 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { TextCompat } from "@components/BaseText";
-import { ButtonCompat } from "@components/Button";
-import { FormSwitchCompat } from "@components/FormSwitch";
 import { Paragraph } from "@components/Paragraph";
 import { LazyComponent } from "@utils/lazyReact";
 import * as t from "@velocity-types";
@@ -26,20 +23,11 @@ import { filters, mapMangledModuleLazy, waitFor } from "@webpack";
 
 import { waitForComponent } from "./internal";
 
-const FormTitle = waitForComponent<t.FormTitle>("FormTitle", filters.componentByCode('["defaultMargin".concat', '="h5"'));
-const FormDivider = waitForComponent<t.FormDivider>("FormDivider", filters.componentByCode(".divider,", ",style:", '"div"', /\.divider,.*\),style:/i));
-
 export const Forms = {
-    FormTitle,
+    FormTitle: waitForComponent<t.FormTitle>("FormTitle", filters.componentByCode('["defaultMargin".concat', '="h5"')),
+    FormDivider: waitForComponent<t.FormDivider>("FormDivider", filters.componentByCode(".divider,", ",style:", '"div"', /\.divider,.*\),style:/i)),
     FormText: Paragraph,
-    FormDivider
 };
-
-// TODO: Stop using this and use Paragraph/Span directly
-export const Text = TextCompat;
-export const Button = ButtonCompat;
-/** @deprecated Use FormSwitch from Velocity */
-export const Switch = FormSwitchCompat as never;
 
 export const Card = waitForComponent<t.Card>("Card", filters.componentByCode(".editable),", ".outline:"));
 export const Checkbox = waitForComponent<t.Checkbox>("Checkbox", filters.componentByCode(".checkboxWrapperDisabled:"));
