@@ -18,6 +18,7 @@
 
 import "./style.css";
 
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { isNonNullish } from "@utils/guards";
@@ -25,7 +26,7 @@ import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { Channel, User } from "@velocity-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { Avatar, ChannelStore, Clickable, IconUtils, RelationshipStore, ScrollerThin, Text, useMemo, UserStore } from "@webpack/common";
+import { Avatar, ChannelStore, Clickable, IconUtils, RelationshipStore, ScrollerThin, useMemo, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");

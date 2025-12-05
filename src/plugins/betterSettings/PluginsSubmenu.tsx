@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { openPluginModal } from "@components/settings/tabs";
 import { getIntlMessage } from "@utils/discord";
 import { isObjectEmpty } from "@utils/misc";
@@ -40,7 +41,7 @@ export default function PluginsSubmenu() {
 
     const search = query.toLowerCase();
     const include = (p: typeof Plugins[keyof typeof Plugins]) => (
-        Velocity.Plugins.isPluginEnabled(p.name)
+        isPluginEnabled(p.name)
         && p.options && !isObjectEmpty(p.options)
         && (
             p.name.toLowerCase().includes(search)

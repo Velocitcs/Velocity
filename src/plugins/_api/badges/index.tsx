@@ -22,12 +22,13 @@ import { _getBadges, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Bad
 import ErrorBoundary from "@components/ErrorBoundary";
 import { openContributorModal } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
+import { copyWithToast } from "@utils/discord";
 import { Logger } from "@utils/Logger";
-import { copyWithToast, shouldShowContributorBadge } from "@utils/misc";
+import { shouldShowContributorBadge } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { User } from "@velocity-types";
 import { ContextMenuApi, Menu, Toasts, UserStore } from "@webpack/common";
-
+copyWithToast;
 const CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1092089799109775453.png?size=64";
 
 const ContributorBadge: ProfileBadge = {

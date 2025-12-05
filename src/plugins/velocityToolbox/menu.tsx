@@ -17,6 +17,7 @@
 */
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
+import { isPluginEnabled } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
 import { CogWheel } from "@components/Icons";
 import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab } from "@components/settings";
@@ -68,7 +69,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
     const candidates = useMemo(() =>
         sortedPlugins
             .filter(p => {
-                if (!Velocity.Plugins.isPluginEnabled(p.name)) return false;
+                if (!isPluginEnabled(p.name)) return false;
                 if (p.name.endsWith("API")) return false;
 
                 const name = p.name.toLowerCase();
@@ -283,7 +284,7 @@ function buildCustomPluginEntries() {
     const pluginEntries = [] as { plugin: Plugin, node: ReactNode; }[];
 
     for (const plugin of Object.values(plugins)) {
-        if (plugin.toolboxActions && Velocity.Plugins.isPluginEnabled(plugin.name)) {
+        if (plugin.toolboxActions && isPluginEnabled(plugin.name)) {
             const entries = typeof plugin.toolboxActions === "function"
                 ? plugin.toolboxActions()
                 : Object.entries(plugin.toolboxActions).map(([text, action]) => {

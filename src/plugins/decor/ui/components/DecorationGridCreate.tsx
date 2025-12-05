@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
 import { PlusIcon } from "@components/Icons";
 import { getIntlMessage } from "@utils/discord";
-import { Text } from "@webpack/common";
 import { HTMLProps } from "react";
 
 import { DecorationGridItem } from ".";

@@ -18,17 +18,19 @@
 
 import { addMessagePreEditListener, addMessagePreSendListener, removeMessagePreEditListener, removeMessagePreSendListener } from "@api/MessageEvents";
 import { definePluginSettings } from "@api/Settings";
+import { ApngBlendOp, ApngDisposeOp, parseAPNG } from "@utils/apng";
 import { Devs } from "@utils/constants";
-import { ApngBlendOp, ApngDisposeOp, importApngJs } from "@utils/dependencies";
 import { getCurrentGuild, getEmojiURL } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, Patch } from "@utils/types";
 import type { Emoji, Message } from "@velocity-types";
 import { StickerFormatType } from "@velocity-types/enums";
-import { findByCodeLazy, findByPropsLazy, proxyLazyWebpack } from "@webpack";
-import { Alerts, ChannelStore, DraftType, EmojiStore, FluxDispatcher, Forms, GuildMemberStore, lodash, Parser, PermissionsBits, PermissionStore, StickersStore, UploadHandler, UserSettingsActionCreators, UserSettingsProtoStore, UserStore } from "@webpack/common";
+import { findByCodeLazy, findByPropsLazy, findStoreLazy, proxyLazyWebpack } from "@webpack";
+import { Alerts, ChannelStore, DraftType, EmojiStore, FluxDispatcher, Forms, GuildMemberStore, lodash, Parser, PermissionsBits, PermissionStore, StickersStore, UploadHandler, UserSettingsActionCreators, UserStore } from "@webpack/common";
 import { applyPalette, GIFEncoder, quantize } from "gifenc";
 import type { ReactElement, ReactNode } from "react";
+
+const UserSettingsProtoStore = findStoreLazy("UserSettingsProtoStore");
 
 const BINARY_READ_OPTIONS = findByPropsLazy("readerFactory");
 
@@ -704,9 +706,10 @@ export default definePlugin({
     },
 
     async sendAnimatedSticker(stickerLink: string, stickerId: string, channelId: string) {
-        const { parseURL } = importApngJs();
 
-        const { frames, width, height } = await parseURL(stickerLink);
+        const { frames, width, height } = await fetch(stickerLink)
+            .then(res => res.arrayBuffer())
+            .then(parseAPNG);
 
         const gif = GIFEncoder();
         const resolution = settings.store.stickerSize;
@@ -755,8 +758,7 @@ export default definePlugin({
 
         gif.finish();
 
-        const bytes = new Uint8Array(gif.bytesView());
-        const file = new File([bytes.buffer], `${stickerId}.gif`, { type: "image/gif" });
+        const file = new File([gif.bytesView() as Uint8Array<ArrayBuffer>], `${stickerId}.gif`, { type: "image/gif" });
         UploadHandler.promptToUpload([file], ChannelStore.getChannel(channelId), DraftType.ChannelMessage);
     },
 

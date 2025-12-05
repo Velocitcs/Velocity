@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot } from "@utils/modal";
-import { Button, Forms, React, TextInput } from "@webpack/common";
+import { Forms, React, TextInput } from "@webpack/common";
 import { KeyboardEvent } from "react";
 
 import { SessionInfo } from "../types";

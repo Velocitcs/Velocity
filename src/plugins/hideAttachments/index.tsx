@@ -33,11 +33,6 @@ const KEY = "HideAttachments_HiddenIds";
 
 let hiddenMessages = new Set<string>();
 
-async function getHiddenMessages() {
-    hiddenMessages = await get(KEY) ?? new Set();
-    return hiddenMessages;
-}
-
 const saveHiddenMessages = (ids: Set<string>) => set(KEY, ids);
 
 migratePluginSettings("HideMedia", "HideAttachments");
@@ -86,6 +81,19 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
     ));
 };
 
+async function getHiddenMessages() {
+    hiddenMessages = await get(KEY) ?? new Set();
+    return hiddenMessages;
+}
+
+async function toggleHide(channelId: string, messageId: string) {
+    const ids = await getHiddenMessages();
+    if (!ids.delete(messageId))
+        ids.add(messageId);
+
+    await saveHiddenMessages(ids);
+    updateMessage(channelId, messageId);
+}
 
 export default definePlugin({
     name: "HideMedia",
@@ -115,19 +123,24 @@ export default definePlugin({
         "message": messageContextMenuPatch
     },
 
-    renderMessagePopoverButton(msg) {
-        if (!hasMedia(msg) && !msg.messageSnapshots.some(s => hasMedia(s.message))) return null;
-        const isHidden = hiddenMessages.has(msg.id);
-        return {
-            label: isHidden ? "Show Media" : "Hide Media",
-            icon: isHidden ? () => <ImageVisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" /> : () => <ImageInvisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" />,
-            message: msg,
-            channel: ChannelStore.getChannel(msg.channel_id),
-            onClick: () => this.toggleHide(msg.channel_id, msg.id)
-        };
+    messagePopoverButton: {
+        icon: ImageInvisible,
+        render(msg) {
+            if (!hasMedia(msg) && !msg.messageSnapshots.some(s => hasMedia(s.message))) return null;
+
+            const isHidden = hiddenMessages.has(msg.id);
+
+            return {
+                label: isHidden ? "Show Media" : "Hide Media",
+                icon: isHidden
+                    ? () => <ImageVisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" />
+                    : () => <ImageInvisible className="icon_f84418" width="24" height="24" fill="none" viewBox="0 0 24 24" />,
+                message: msg,
+                channel: ChannelStore.getChannel(msg.channel_id),
+                onClick: () => toggleHide(msg.channel_id, msg.id)
+            };
+        },
     },
-
-
 
     renderMessageAccessory({ message }) {
         if (!this.shouldHide(message.id)) return null;
@@ -150,15 +163,6 @@ export default definePlugin({
     shouldHide(messageId: string) {
         return hiddenMessages.has(messageId);
     },
-
-    async toggleHide(channelId: string, messageId: string) {
-        const ids = await getHiddenMessages();
-        if (!ids.delete(messageId))
-            ids.add(messageId);
-
-        await saveHiddenMessages(ids);
-        updateMessage(channelId, messageId);
-    }
 });
 
 

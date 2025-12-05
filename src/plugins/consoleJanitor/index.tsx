@@ -17,11 +17,12 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { SettingsSection } from "@components/settings/tabs/plugins/components/Common";
 import { Devs } from "@utils/constants";
 import definePlugin, { defineDefault, OptionType, StartAt } from "@utils/types";
-import { Checkbox, Text } from "@webpack/common";
+import { Checkbox } from "@webpack/common";
 
 const Noop = () => { };
 const NoopLogger = {

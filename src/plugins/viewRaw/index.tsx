@@ -17,26 +17,20 @@
 */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { isPluginEnabled } from "@api/PluginManager";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { CodeIcon, LogIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
+import { openEmbedRawModal } from "@plugins/copyEmbed";
 import { Devs } from "@utils/constants";
-import { getCurrentGuild, getIntlMessage } from "@utils/discord";
+import { copyWithToast, getCurrentGuild, getIntlMessage } from "@utils/discord";
 import { ManaModalDivider, ManaModalFooter, ManaModalHeader, ManaModalRoot } from "@utils/manaModal";
-import { copyWithToast } from "@utils/misc";
 import { closeModal, ModalContent, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { Message } from "@velocity-types";
-import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { ChannelStore, Forms, GuildRoleStore, Menu, React } from "@webpack/common";
-
-import { openEmbedRawModal } from "../copyEmbed/index";
-
-const iconClass = findByPropsLazy("icon", "iconContainer", "label");
-const popoverClass = findByPropsLazy("icon", "hoverBarButton");
-const Spinner = findComponentByCodeLazy("wanderingCubes", "aria-label");
+import { ChannelStore, CMIconClasses, Forms, GuildRoleStore, Menu, PopoverClasses, React } from "@webpack/common";
 
 function sortObject<T extends object>(obj: T): T {
     return Object.fromEntries(Object.entries(obj).sort(([k1], [k2]) => k1.localeCompare(k2))) as T;
@@ -79,42 +73,24 @@ export function openViewRawModal(json: string, type: string, content?: string, o
             <ManaModalRoot {...props} size="lg" paddingSize="sm">
                 <ManaModalHeader title="View Raw" />
                 <ManaModalDivider />
-                {json ? (
-                    <ModalContent>
-                        {!!content && (
-                            <>
-                                <CodeBlock
-                                    content={content}
-                                    lang="txt"
-                                    className={Margins.bottom20}
-                                />
-                                <Divider className={Margins.bottom20} />
-                            </>
-                        )}
-                        <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
-                        <CodeBlock
-                            content={json}
-                            lang="json"
-                            className={Margins.bottom20}
-                        />
-                    </ModalContent>
-                ) : (
-                    <ModalContent>
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                height: "300px",
-                                gap: "1rem"
-                            }}
-                        >
-                            <Spinner type="wanderingCubes" />
-                            <Forms.FormText>Loading raw data...</Forms.FormText>
-                        </div>
-                    </ModalContent>
-                )}
+                <ModalContent>
+                    {!!content && (
+                        <>
+                            <CodeBlock
+                                content={content}
+                                lang="txt"
+                                className={Margins.bottom20}
+                            />
+                            <Divider className={Margins.bottom20} />
+                        </>
+                    )}
+                    <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
+                    <CodeBlock
+                        content={json}
+                        lang="json"
+                        className={Margins.bottom20}
+                    />
+                </ModalContent>
 
                 <ManaModalDivider />
                 <ManaModalFooter
@@ -137,7 +113,7 @@ export function openViewRawModal(json: string, type: string, content?: string, o
                             ]
                             : []),
                         ...(originalMessage?.embeds?.length > 0 &&
-                            Velocity.Plugins.isPluginEnabled("CopyEmbed")
+                            isPluginEnabled("CopyEmbed")
                             ? [
                                 {
                                     text: "View Embed",
@@ -183,7 +159,7 @@ const messageContextCallback: NavContextMenuPatchCallback = (children, props) =>
             id="vc-view-message-raw"
             label="View Raw"
             action={() => openViewRawModalMessage(props.message)}
-            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={iconClass.icon} />}
+            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
         />
     );
 };
@@ -214,7 +190,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
                         openViewRawModal(JSON.stringify(value, null, 4), name);
                     }
                 }}
-                icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={iconClass.icon} />}
+                icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
             />
         );
     };
@@ -232,7 +208,7 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
             id={"vc-view-role-raw"}
             label="View Raw"
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
-            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className="icon_a22cb0" />}
+            icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
         />
     );
 };
@@ -253,15 +229,29 @@ export default definePlugin({
         "dev-context": devContextCallback
     },
 
-    renderMessagePopoverButton(msg) {
-        const channel = ChannelStore.getChannel(msg.channel_id);
+    messagePopoverButton: {
+        icon: CodeIcon,
+        render(msg) {
+            const handleClick = e => {
+                e.preventDefault();
+                e.stopPropagation();
+                openViewRawModalMessage(msg);
+            };
 
-        return {
-            label: "View Raw",
-            icon: () => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={popoverClass.icon} />,
-            message: msg,
-            channel,
-            onClick: () => openViewRawModalMessage(msg)
-        };
+            const handleContextMenu = e => {
+                e.preventDefault();
+                e.stopPropagation();
+                copyWithToast(msg.content);
+            };
+
+            return {
+                label: "View Raw",
+                icon: () => <CodeIcon viewBox="0 0 24 24" height="24" width="24" className={PopoverClasses.icon} />,
+                message: msg,
+                channel: ChannelStore.getChannel(msg.channel_id),
+                onClick: handleClick,
+                onContextMenu: handleContextMenu
+            };
+        }
     }
 });

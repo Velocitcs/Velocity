@@ -18,6 +18,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
+import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
@@ -31,7 +32,7 @@ import definePlugin, { OptionType } from "@utils/types";
 import { Activity } from "@velocity-types";
 import { ActivityType } from "@velocity-types/enums";
 import { findByCodeLazy, findComponentByCodeLazy } from "@webpack";
-import { ApplicationAssetUtils, Button, FluxDispatcher, Forms, React, UserStore } from "@webpack/common";
+import { ApplicationAssetUtils, FluxDispatcher, Forms, React, UserStore } from "@webpack/common";
 
 import { RPCSettings } from "./RpcSettings";
 

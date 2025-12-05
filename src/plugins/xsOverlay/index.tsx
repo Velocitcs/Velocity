@@ -17,13 +17,13 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { Devs } from "@utils/constants";
 import definePlugin, { makeRange, OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import type { Channel, Embed, GuildMember, MessageAttachment, User } from "@velocity-types";
-import { findByCodeLazy, findLazy } from "@webpack";
-import { Button, ChannelStore, GuildRoleStore, GuildStore, UserStore } from "@webpack/common";
-
-const ChannelTypes = findLazy(m => m.ANNOUNCEMENT_THREAD === 10);
+import { ChannelType } from "@velocity-types/enums";
+import { findByCodeLazy } from "@webpack";
+import { ChannelStore, GuildRoleStore, GuildStore, UserStore } from "@webpack/common";
 
 interface Message {
     guild_id: string,
@@ -227,10 +227,10 @@ export default definePlugin({
 
 
             switch (channel.type) {
-                case ChannelTypes.DM:
+                case ChannelType.DM:
                     titleString = message.author.username.trim();
                     break;
-                case ChannelTypes.GROUP_DM:
+                case ChannelType.GroupDM:
                     const channelName = channel.name.trim() ?? channel.rawRecipients.map(e => e.username).join(", ");
                     titleString = `${message.author.username} (${channelName})`;
                     break;
@@ -323,8 +323,8 @@ export default definePlugin({
 });
 
 function shouldIgnoreForChannelType(channel: Channel) {
-    if (channel.type === ChannelTypes.DM && settings.store.dmNotifications) return false;
-    if (channel.type === ChannelTypes.GROUP_DM && settings.store.groupDmNotifications) return false;
+    if (channel.type === ChannelType.DM && settings.store.dmNotifications) return false;
+    if (channel.type === ChannelType.GroupDM && settings.store.groupDmNotifications) return false;
     else return !settings.store.serverNotifications;
 }
 

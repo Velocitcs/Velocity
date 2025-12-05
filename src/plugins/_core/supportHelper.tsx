@@ -16,8 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
@@ -33,7 +36,7 @@ import { makeCodeblock } from "@utils/text";
 import definePlugin from "@utils/types";
 import { checkForUpdates, isOutdated, update } from "@utils/updater";
 import { Channel } from "@velocity-types";
-import { Alerts, Button, Card, ChannelStore, Forms, GuildMemberStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
+import { Alerts, Card, ChannelStore, Forms, GuildMemberStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Toasts, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import gitHash from "~git-hash";
@@ -94,7 +97,7 @@ async function generateDebugInfoMessage() {
     }
 
     const commonIssues = {
-        "NoRPC enabled": Velocity.Plugins.isPluginEnabled("NoRPC"),
+        "NoRPC enabled": isPluginEnabled("NoRPC"),
         "Activity Sharing disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
         "Velocity DevBuild": !IS_STANDALONE,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
@@ -113,7 +116,7 @@ function generatePluginList() {
     const isApiPlugin = (plugin: string) => plugin.endsWith("API") || plugins[plugin].required;
 
     const enabledPlugins = Object.keys(plugins)
-        .filter(p => Velocity.Plugins.isPluginEnabled(p) && !isApiPlugin(p));
+        .filter(p => isPluginEnabled(p) && !isApiPlugin(p));
 
     const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin);
     const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin);

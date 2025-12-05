@@ -16,9 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { DeleteIcon } from "@components/Icons";
-import { Button, ColorPicker, Forms, React, TextInput, useState } from "@webpack/common";
+import { ColorPicker, Forms, React, TextInput, useState } from "@webpack/common";
 
 type UserColorRule = {
     userId: string;

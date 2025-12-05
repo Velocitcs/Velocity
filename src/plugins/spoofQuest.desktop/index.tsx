@@ -101,11 +101,11 @@ export default definePlugin({
     authors: [Devs.Velocity],
     patches: [
         {
-            find: "VIDEO_HLS&&tU(ti)",
+            find: "onLoadedMetadata:e=>{null!=e2.current&&(tl.info",
             lazy: true,
             replacement: {
-                match: /(onLoadedMetadata:\i=>\{null!=)(\i)(\.current&&\(.*?VIDEO_HLS&&\i\(\i\),)(\i)\?(\i)\.current\.volume=0:(\i)\.current\.volume=(\i)\)/,
-                replace: "$1$2$3$2.current.playbackRate=14,$4?$5.current.volume=0:$6.current.volume=$7)"
+                match: /onLoadedMetadata:e=>\{null!=e2\.current&&\(tl\.info/,
+                replace: "onLoadedMetadata:e=>{null!=e2.current&&(e2.current.playbackRate=7,tl.info"
             }
         },
         {
@@ -117,10 +117,10 @@ export default definePlugin({
             }
         },
         {
-            find: "videoInner,{[_.focused]:a}",
+            find: "onLoadedMetadata:e=>{null!=e2.current&&(tl.info(\"[QV]",
             replacement: {
-                match: /\[_\.focused\]:(\i)/,
-                replace: "[_.focused]:true"
+                match: /onLoadedMetadata:e=>\{null!=e2\.current&&\(tl\.info\("\[QV\] \| handleLoadedMetadata/,
+                replace: "onLoadedMetadata:e=>{null!=e2.current&&(e2.current.focused=true,tl.info(\"[QV]"
             }
         }
     ],

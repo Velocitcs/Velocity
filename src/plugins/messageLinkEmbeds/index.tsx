@@ -20,6 +20,8 @@ import { addMessageAccessory, removeMessageAccessory } from "@api/MessageAccesso
 import { updateMessage } from "@api/MessageUpdater";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { Devs } from "@utils/constants.js";
 import { classes } from "@utils/misc";
 import { Queue } from "@utils/Queue";
@@ -27,7 +29,6 @@ import definePlugin, { OptionType } from "@utils/types";
 import { Channel, Message } from "@velocity-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import {
-    Button,
     ChannelStore,
     Constants,
     GuildStore,
@@ -37,7 +38,6 @@ import {
     PermissionsBits,
     PermissionStore,
     RestAPI,
-    Text,
     UserStore
 } from "@webpack/common";
 import { JSX } from "react";

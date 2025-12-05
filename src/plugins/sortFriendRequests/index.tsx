@@ -20,11 +20,12 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { User } from "@velocity-types";
-import { DateUtils, RelationshipStore, Text, TooltipContainer } from "@webpack/common";
+import { DateUtils, RelationshipStore, TooltipContainer } from "@webpack/common";
 import { PropsWithChildren } from "react";
 
 const formatter = new Intl.DateTimeFormat(undefined, {

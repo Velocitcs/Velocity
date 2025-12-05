@@ -32,7 +32,7 @@ import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@velocity-types";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, FluxDispatcher, Menu, MessageStore, Parser, SelectedChannelStore, Timestamp, UserStore, useStateFromStores } from "@webpack/common";
+import { ChannelStore, CMIconClasses, FluxDispatcher, Menu, MessageStore, Parser, SelectedChannelStore, Timestamp, UserStore, useStateFromStores } from "@webpack/common";
 
 import overlayStyle from "./deleteStyleOverlay.css?managed";
 import textStyle from "./deleteStyleText.css?managed";
@@ -45,7 +45,6 @@ interface MLMessage extends Message {
 }
 
 const styles = findByPropsLazy("edited", "communicationDisabled", "isSystemMessage");
-const contextMenuClass = findByPropsLazy("icon", "iconContainer", "label");
 
 function addDeleteStyle() {
     if (Settings.plugins.MessageLogger.deleteStyle === "text") {
@@ -87,8 +86,8 @@ const patchMessageContextMenu: NavContextMenuPatchCallback = (children, props) =
             key={REMOVE_HISTORY_ID}
             label="Remove Message History"
             color="danger"
-            icon={() => <MinusIcon height="24" width="24" viewBox="0 0 24 24" className={contextMenuClass.icon} />}
-            iconLeft={() => <MinusIcon height="24" width="24" viewBox="0 0 24 24" className={contextMenuClass.icon} />}
+            icon={() => <MinusIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
+            iconLeft={() => <MinusIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
             action={() => {
                 if (deleted) {
                     FluxDispatcher.dispatch({
@@ -117,7 +116,7 @@ const patchChannelContextMenu: NavContextMenuPatchCallback = (children, { channe
                 id="vc-ml-clear-channel"
                 label="Clear Message Log"
                 icon={() => (
-                    <DeleteIcon className={contextMenuClass.icon} height="24" width="24" viewBox="0 0 24 24" />
+                    <DeleteIcon className={CMIconClasses.icon} height="24" width="24" viewBox="0 0 24 24" />
                 )}
                 color="danger"
                 action={() => {
@@ -522,11 +521,19 @@ export default definePlugin({
             ]
         },
         {
-            // by velocitcy - litle bit of improvement!
             find: ".deleteMessage(t.id,e.id)",
+            replacement: [
+                {
+                    match: /(\i)\.state===\i\.\i\.SENDING\|\|!(\i)/,
+                    replace: "$1.state===$self.MessageFlags?.SENDING||!$2||$1.deleted"
+                }
+            ]
+        },
+        {
+            find: ".startEditMessageRecord(t.id,e),icon:",
             replacement: {
-                match: /(\i)\.state===\i\.\i\.SENDING\|\|!(\i)/,
-                replace: "$1.state===$self.MessageFlags?.SENDING||!$2||$1.deleted"
+                match: /return\(0,(\i)\.(\i)\)\((\i),(\i)\)&&(\i)&&!(\i)\?\(0,/,
+                replace: "return(0,$1.$2)($3,$4)&&$5&&!$6&&!$3.deleted&&!$3.noEdit?(0,"
             }
         },
 

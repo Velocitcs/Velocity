@@ -20,10 +20,9 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { DisabledLine } from "@components/DisabledLine";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { ChannelStore, Menu, React, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
@@ -61,6 +60,15 @@ const settings = definePluginSettings({
 
 let lastRepeatTime = 0;
 
+const RepeatIcon: IconComponent = ({ height = 20, width = 20, className, children }) => (
+    <svg width={width} height={height} className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ scale: "1.2" }}>
+        <path fill="currentColor" d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z" />
+        {children && (
+            <path fill="var(--status-danger)" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />
+        )}
+    </svg>
+);
+
 const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
     const { isEnabled, showIcon } = settings.use(["isEnabled", "showIcon"]);
     const toggle = () => settings.store.isEnabled = !settings.store.isEnabled;
@@ -72,12 +80,7 @@ const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
             tooltip={isEnabled ? "Disable RepeatAfterMe" : "Enable RepeatAfterMe"}
             onClick={toggle}
         >
-            <div style={{ position: "relative" }}>
-                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ scale: "1.2" }}>
-                    <path fill="currentColor" d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z" />
-                    {!isEnabled && <DisabledLine />}
-                </svg>
-            </div>
+            <RepeatIcon>{isEnabled}</RepeatIcon>
         </ChatBarButton>
     );
 };
@@ -131,7 +134,6 @@ export default definePlugin({
         },
     }],
 
-
     flux: {
         MESSAGE_CREATE(event) {
             if (!settings.store.isEnabled) return;
@@ -158,5 +160,8 @@ export default definePlugin({
         }
     },
 
-    renderChatBarButton: DMEchoToggle,
+    chatBarButton: {
+        icon: RepeatIcon,
+        render: DMEchoToggle
+    }
 });

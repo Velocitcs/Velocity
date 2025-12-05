@@ -21,31 +21,54 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
 const settings = definePluginSettings({
-    onlySnow: {
-        type: OptionType.BOOLEAN,
-        description: "Only play the Snow Halation Theme",
-        default: false,
+    ringtoneOverride: {
+        type: OptionType.SELECT,
+        description: "Ringtone (incoming calls)",
+        options: [
+            { label: "Snow Halation", value: "call_ringing_snow_halation", default: true },
+            { label: "Beat", value: "call_ringing_beat" },
+            { label: "Snowsgiving", value: "call_ringing_snowsgiving" },
+            { label: "Halloween", value: "halloween_call_ringing" },
+            { label: "Winter", value: "winter_call_ringing" },
+            { label: "Default", value: "call_ringing" }
+        ],
+        restartNeeded: true
+    },
+    callingSound: {
+        type: OptionType.SELECT,
+        description: "Calling sound (outgoing calls)",
+        options: [
+            { label: "Default", value: "call_calling", default: true },
+            { label: "Halloween", value: "halloween_call_calling" },
+            { label: "Winter", value: "winter_call_calling" }
+        ],
         restartNeeded: true
     }
 });
 
 export default definePlugin({
     name: "SecretRingToneEnabler",
-    description: "Always play the secret version of the discord ringtone (except during special ringtone events)",
-    authors: [Devs.AndrewDLO, Devs.FieryFlames, Devs.RamziAH],
+    description: "Enable secret/seasonal Discord ringtones and calling sounds",
+    authors: [Devs.AndrewDLO, Devs.FieryFlames, Devs.RamziAH, Devs.Velocity],
     settings,
     patches: [
         {
             find: '"call_ringing_beat"',
+            replacement: {
+                match: /500!==\i\(\)\.random\(1,1e3\)\?"call_ringing":\i\(\)\.sample\(\["call_ringing_beat","call_ringing_snow_halation"\]\)/,
+                replace: "$self.settings.store.ringtoneOverride"
+            }
+        },
+        {
+            find: '.uk)("call_calling",',
             replacement: [
                 {
-                    match: /500!==\i\(\)\.random\(1,1e3\)/,
-                    replace: "false"
+                    match: /(\i)\.uk\)\("call_calling",(\i\.\i)\.getSoundpack\(\)\)/,
+                    replace: "$1.uk)($self.settings.store.callingSound,$2.getSoundpack())"
                 },
                 {
-                    predicate: () => settings.store.onlySnow,
-                    match: /"call_ringing_beat",/,
-                    replace: ""
+                    match: /(\i)\.uk\)\("call_calling",(\i)\.\i\.getSoundpack\(\)\)/,
+                    replace: "$1.uk)($self.settings.store.callingSound,$2.Z.getSoundpack())"
                 }
             ]
         }

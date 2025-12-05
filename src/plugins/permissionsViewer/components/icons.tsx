@@ -16,6 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { findComponentByCodeLazy } from "@webpack";
+
+export const IdIcon = findComponentByCodeLazy("Zm4-9.66V17h3.44c1.46 0 2.6-");
+
 export function PermissionDeniedIcon() {
     return (
         <svg
@@ -53,6 +57,21 @@ export function PermissionDefaultIcon() {
                 <title>Not overwritten</title>
                 <polygon fill="var(--text-default)" points="12 2.32 10.513 2 4 13.68 5.487 14" />
             </g>
+        </svg>
+    );
+}
+
+export function ViewServerAsRoleIcon() {
+    return (
+        <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+        >
+            <path
+                fill="currentColor"
+                d="M20.7 12.7a1 1 0 0 0 0-1.4l-5-5a1 1 0 1 0-1.4 1.4l3.29 3.3H4a1 1 0 1 0 0 2h13.59l-3.3 3.3a1 1 0 0 0 1.42 1.4l5-5Z"
+            />
         </svg>
     );
 }

@@ -203,6 +203,9 @@ function initWs(isManual = false) {
                         case "":
                             results = findAll(parsedArgs[0]);
                             break;
+                        case "Bulk":
+                            results = findAll(filters.byProps(...parsedArgs));
+                            break;
                         case "ByProps":
                             results = findAll(filters.byProps(...parsedArgs));
                             break;

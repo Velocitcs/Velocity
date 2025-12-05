@@ -24,6 +24,7 @@ import { CompactPronounsChatComponentWrapper, PronounsChatComponentWrapper } fro
 import { settings } from "./settings";
 
 migratePluginSettings("UserMessagesPronouns", "PronounDB");
+
 export default definePlugin({
     name: "UserMessagesPronouns",
     authors: [Devs.Tyman, Devs.TheKodeToad, Devs.Ven, Devs.Elvyra],

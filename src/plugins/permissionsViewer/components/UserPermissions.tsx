@@ -16,13 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingTertiary } from "@components/Heading";
 import { getIntlMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { Guild, GuildMember } from "@velocity-types";
 import { filters, findBulk, proxyLazyWebpack } from "@webpack";
-import { PermissionsBits, Text, Tooltip, useMemo, UserStore } from "@webpack/common";
+import { PermissionsBits, Tooltip, useMemo, UserStore } from "@webpack/common";
 
 import { PermissionsSortOrder, settings } from "..";
 import { cl, getGuildPermissionSpecMap, getSortedRolesForMember, sortUserRoles } from "../utils";

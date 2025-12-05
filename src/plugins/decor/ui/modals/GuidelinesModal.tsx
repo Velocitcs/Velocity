@@ -16,13 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
+import { settings } from "@plugins/decor/settings";
+import { cl, DecorationModalStyles, requireAvatarDecorationModal } from "@plugins/decor/ui";
 import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, Text } from "@webpack/common";
+import { Forms } from "@webpack/common";
 
-import { settings } from "../../settings";
-import { cl, DecorationModalStyles, requireAvatarDecorationModal } from "../";
 import { openCreateDecorationModal } from "./CreateDecorationModal";
 
 function GuidelinesModal(props: ModalProps) {

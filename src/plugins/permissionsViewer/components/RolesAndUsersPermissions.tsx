@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { InfoIcon, OwnerCrownIcon } from "@components/Icons";
@@ -24,12 +25,11 @@ import { getIntlMessage, getUniqueUsername } from "@utils/discord";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { Guild, Role, UnicodeEmoji, User } from "@velocity-types";
 import { findByCodeLazy } from "@webpack";
-import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, PermissionsBits, ScrollerThin, Text, Tooltip, useEffect, useMemo, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, PermissionsBits, ScrollerThin, Tooltip, useEffect, useMemo, UserStore, useState, useStateFromStores } from "@webpack/common";
 
-import { openViewRawModal, openViewRawModalUser } from "../../viewRaw";
 import { settings } from "..";
 import { cl, getGuildPermissionSpecMap } from "../utils";
-import { PermissionAllowedIcon, PermissionDefaultIcon, PermissionDeniedIcon } from "./icons";
+import { IdIcon, PermissionAllowedIcon, PermissionDefaultIcon, PermissionDeniedIcon, ViewServerAsRoleIcon } from "./icons";
 
 export const enum PermissionType {
     Role = 0,
@@ -144,6 +144,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                                             else if (permission.type === PermissionType.User) {
                                                                 ContextMenuApi.openContextMenu(e, () => (
                                                                     <UserContextMenu
+                                                                        guild={guild}
                                                                         userId={permission.id!}
                                                                     />
                                                                 ));
@@ -176,7 +177,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                                                         ? (user != null && getUniqueUsername(user)) ?? "Unknown User"
                                                                         : (
                                                                             <Flex style={{ gap: "0.2em", alignItems: "center" }}>
-                                                                                @owner
+                                                                                Server Owner
                                                                                 <OwnerCrownIcon
                                                                                     width="16"
                                                                                     height="16"
@@ -244,37 +245,34 @@ function RoleContextMenu({ guild, roleId, onClose }: { guild: Guild; roleId: str
             navId={cl("role-context-menu")}
             onClose={ContextMenuApi.closeContextMenu}
             aria-label="Role Options"
+            contextMenuAPIArguments={[{ guild, role }]}
         >
             <Menu.MenuItem
                 id={cl("copy-role-id")}
                 label={getIntlMessage("COPY_ID_ROLE")}
-                action={() => copyToClipboard(roleId)}
+                icon={IdIcon}
+                action={() => {
+                    copyToClipboard(roleId);
+                }}
             />
-
-            {role && (
-                <Menu.MenuItem
-                    id={cl("view-role-raw")}
-                    label="View Raw"
-                    action={() => {
-                        const roleJson = JSON.stringify(role, null, 4);
-                        openViewRawModal(roleJson, "Role");
-                    }}
-                />
-            )}
 
             {(settings.store as any).unsafeViewAsRole && (
                 <Menu.MenuItem
                     id={cl("view-as-role")}
                     label={getIntlMessage("VIEW_AS_ROLE")}
+                    icon={ViewServerAsRoleIcon}
                     action={() => {
                         if (!role) return;
+
                         onClose();
                         FluxDispatcher.dispatch({
                             type: "IMPERSONATE_UPDATE",
                             guildId: guild.id,
                             data: {
                                 type: "ROLES",
-                                roles: { [roleId]: role }
+                                roles: {
+                                    [roleId]: role
+                                }
                             }
                         });
                     }}
@@ -284,32 +282,27 @@ function RoleContextMenu({ guild, roleId, onClose }: { guild: Guild; roleId: str
     );
 }
 
-function UserContextMenu({ userId }: { userId: string; }) {
-    const user = UserStore.getUser(userId);
+function UserContextMenu({ guild, userId }: { guild: Guild; userId: string; }) {
+    const member = GuildMemberStore.getMember(guild.id, userId);
 
     return (
         <Menu.Menu
             navId={cl("user-context-menu")}
             onClose={ContextMenuApi.closeContextMenu}
             aria-label="User Options"
+            contextMenuAPIArguments={[{ guild, user: member }]}
         >
             <Menu.MenuItem
                 id={cl("copy-user-id")}
                 label={getIntlMessage("COPY_ID_USER")}
-                action={() => copyToClipboard(userId)}
+                icon={IdIcon}
+                action={() => {
+                    copyToClipboard(userId);
+                }}
             />
-
-            {user && (
-                <Menu.MenuItem
-                    id={cl("view-user-raw")}
-                    label="View Raw"
-                    action={() => openViewRawModalUser(user)}
-                />
-            )}
         </Menu.Menu>
     );
 }
-
 
 const RolesAndUsersPermissions = ErrorBoundary.wrap(RolesAndUsersPermissionsComponent);
 

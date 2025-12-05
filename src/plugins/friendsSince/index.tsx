@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import definePlugin from "@utils/types";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { RelationshipStore, Text } from "@webpack/common";
+import { RelationshipStore } from "@webpack/common";
 
 const containerWrapper = findByPropsLazy("memberSinceWrapper");
 const container = findByPropsLazy("memberSince");

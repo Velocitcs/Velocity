@@ -19,11 +19,12 @@
 import { get, set } from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { CogWheel, DeleteIcon } from "@components/Icons";
 import { openModal } from "@utils/modal";
 import { OptionType } from "@utils/types";
-import { Alerts, Button, Forms, React, TextInput, useState } from "@webpack/common";
+import { Alerts, Forms, React, TextInput, useState } from "@webpack/common";
 
 import { RuleSettingsModal } from "./components/autoResponderModal";
 

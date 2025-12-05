@@ -17,12 +17,13 @@
 */
 
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Margins } from "@components/margins";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { ApplicationStreamingStore, i18n, RelationshipStore, Text, Tooltip, UserStore, useStateFromStores } from "@webpack/common";
+import { ApplicationStreamingStore, i18n, RelationshipStore, Tooltip, UserStore, useStateFromStores } from "@webpack/common";
 
 interface WatchingProps {
     userIds: string[];

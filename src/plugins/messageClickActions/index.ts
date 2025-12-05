@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
@@ -116,6 +117,10 @@ export default definePlugin({
 
     onMessageClick(msg, channel, event) {
         const isMe = msg.author.id === UserStore.getCurrentUser().id;
+        const isSelfInvokedUserApp = msg.interactionMetadata ? (() => {
+            if (msg.interactionMetadata.authorizing_integration_owners[0]) return false;
+            else return msg.interactionMetadata.authorizing_integration_owners[1] === UserStore.getCurrentUser().id;
+        })() : false;
 
         // Handle ephemeral messages
         if (msg.hasFlag && msg.hasFlag(MessageFlags.EPHEMERAL) && isPressedKey && settings.store.enableDeleteOnClick) {
@@ -150,7 +155,7 @@ export default definePlugin({
                 if (!MessageTypeSets.REPLYABLE.has(msg.type) || msg.hasFlag(MessageFlags.EPHEMERAL)) return;
 
                 const isShiftPress = event.shiftKey && !settings.store.requireModifier;
-                const shouldMention = Velocity.Plugins.isPluginEnabled(NoReplyMentionPlugin.name)
+                const shouldMention = isPluginEnabled(NoReplyMentionPlugin.name)
                     ? NoReplyMentionPlugin.shouldMention(msg, isShiftPress)
                     : !isShiftPress;
 
@@ -162,10 +167,7 @@ export default definePlugin({
                     showMentionToggle: channel.guild_id !== null
                 });
             }
-        } else if (
-            settings.store.enableDeleteOnClick &&
-            (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel))
-        ) {
+        } else if (settings.store.enableDeleteOnClick && (isMe || PermissionStore.can(PermissionsBits.MANAGE_MESSAGES, channel) || isSelfInvokedUserApp)) {
             if (msg.deleted) {
                 FluxDispatcher.dispatch({
                     type: "MESSAGE_DELETE",

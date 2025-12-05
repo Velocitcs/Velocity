@@ -17,12 +17,13 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { DeleteIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, Forms, React, TextInput, useState } from "@webpack/common";
+import { Forms, React, TextInput, useState } from "@webpack/common";
 
 const STRING_RULES_KEY = "TextReplace_rulesString";
 const REGEX_RULES_KEY = "TextReplace_rulesRegex";

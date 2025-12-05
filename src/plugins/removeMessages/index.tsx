@@ -18,11 +18,12 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { DeleteIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, FormNotice, Forms, Menu, React, TextInput, Toasts, UserStore, useState } from "@webpack/common";
+import { FormNotice, Forms, Menu, React, TextInput, Toasts, UserStore, useState } from "@webpack/common";
 
 type Rule = Record<"word", string>;
 

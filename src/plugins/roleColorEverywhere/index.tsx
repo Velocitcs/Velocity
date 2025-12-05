@@ -73,7 +73,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "RoleColorEverywhere",
-    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.Kyuuhachi, Devs.jamesbt365],
+    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.Kyuuhachi, Devs.jamesbt365, Devs.Velocity],
     description: "Adds the top role color anywhere possible",
     settings,
 
@@ -136,8 +136,8 @@ export default definePlugin({
         {
             find: ".reactorDefault",
             replacement: {
-                match: /onContextMenu:\w+=>.*?tag:"strong"/,
-                replace: "$&,style:$self.getColorStyle($2?.id,$1?.channel?.id)"
+                match: /(\i)\.Text,{tag:"strong",variant:"text-md\/normal"/,
+                replace: "$1.Text,{tag:\"strong\",style:$self.getColorStyle(arguments[0]?.user?.id,arguments[0]?.channel?.id),variant:\"text-md/normal\""
             },
             predicate: () => settings.store.reactorsList,
         },

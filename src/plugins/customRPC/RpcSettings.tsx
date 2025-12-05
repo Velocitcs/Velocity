@@ -18,13 +18,15 @@
 
 import "./settings.css";
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import { Divider } from "@components/Divider";
 import { Heading } from "@components/Heading";
 import { resolveError } from "@components/settings/tabs/plugins/components/Common";
 import { debounce } from "@shared/debounce";
 import { ActivityType } from "@velocity-types/enums";
-import { Select, Text, TextInput, useState } from "@webpack/common";
+import { Select, TextInput, useState } from "@webpack/common";
 
 import { setRpc, settings, TimestampMode } from ".";
 
@@ -62,7 +64,7 @@ function isAppIdValid(value: string) {
 
 const updateRPC = debounce(() => {
     setRpc(true);
-    if (Velocity.Plugins.isPluginEnabled("CustomRPC")) setRpc();
+    if (isPluginEnabled("CustomRPC")) setRpc();
 });
 
 function isStreamLinkDisabled() {

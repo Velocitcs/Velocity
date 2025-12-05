@@ -17,7 +17,7 @@
 */
 
 import { Settings } from "@api/Settings";
-import { AccessibilityIcon, AppearanceIcon, BookmarkIcon, CogWheel, CreateCategoryIcon, DevOptionsIcon, GithubIcon, OpenExternalIcon } from "@components/Icons";
+import { BackupRestoreIcon, CloudIcon, CogWheel, DevOptionsIcon, HelpersIcon, PaintbrushIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
 import { BackupAndRestoreTab, CloudTab, DeveloperTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab, VelocityTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
@@ -28,6 +28,31 @@ import gitHash from "~git-hash";
 
 type SectionType = "HEADER" | "DIVIDER" | "CUSTOM";
 type SectionTypes = Record<SectionType, SectionType>;
+
+const LayoutType = { SECTION: 1, ENTRY: 2, PANEL: 3, PANE: 4 } as const;
+
+interface SettingsLayoutNode {
+    key?: string;
+    type: number;
+    legacySearchKey?: string;
+    useLabel?: () => string;
+    useTitle?: () => string;
+    buildLayout?: () => SettingsLayoutNode[];
+    icon?: () => React.ReactNode;
+    render?: () => React.ReactNode;
+}
+
+interface SettingsLayoutBuilder {
+    key?: string;
+    buildLayout(): SettingsLayoutNode[];
+}
+
+function getSettingsCfg(): any { try { return Settings.plugins.Settings; } catch { return null; } }
+
+const isNewUIForcedOff = () => !!getSettingsCfg()?.disableNewUI;
+const getSettingsLocationSafe = (): string => getSettingsCfg()?.settingsLocation ?? "aboveNitro";
+
+const findIndexByKey = (layout: SettingsLayoutNode[], key: string) => layout.findIndex(s => typeof s?.key === "string" && s.key === key);
 
 export default definePlugin({
     name: "Settings",
@@ -78,6 +103,16 @@ export default definePlugin({
             }
         },
         {
+            find: "2025-09-user-settings-redesign-1",
+            replacement: {
+                match: /enabled:![01],showLegacyOpen:/g,
+                replace: (m: string) =>
+                    isNewUIForcedOff()
+                        ? "enabled:false,showLegacyOpen:"
+                        : m
+            }
+        },
+        {
             find: ".buildLayout().map",
             replacement: {
                 match: /(\i)\.buildLayout\(\)(?=\.map)/,
@@ -89,7 +124,7 @@ export default definePlugin({
     customSections: [] as ((SectionTypes: SectionTypes) => any)[],
 
     makeSettingsCategories(SectionTypes: SectionTypes) {
-        const showIcons = Velocity.Plugins.plugins.BetterSettings?.settings?.store?.settingsIcons && Velocity.Plugins.isPluginEnabled("BetterSettings");
+        const showIcons = Settings.plugins.BetterSettings.settingsIcons;
         const categories = [
             {
                 section: SectionTypes.HEADER,
@@ -106,35 +141,35 @@ export default definePlugin({
                 section: "VelocityPlugins",
                 label: "Plugins",
                 element: PluginsTab,
-                icon: showIcons ? <BookmarkIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <PluginsIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-plugins"
             },
             {
                 section: "VelocityThemes",
                 label: "Themes",
                 element: ThemesTab,
-                icon: showIcons ? <AppearanceIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <PaintbrushIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-themes"
             },
             !IS_UPDATER_DISABLED && {
                 section: "VelocityUpdater",
                 label: "Updater",
                 element: UpdaterTab,
-                icon: showIcons ? <GithubIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <UpdaterIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-updater",
             },
             {
                 section: "VelocityCloud",
                 label: "Cloud",
                 element: CloudTab,
-                icon: showIcons ? <OpenExternalIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <CloudIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-cloud"
             },
             {
                 section: "settings/tabsSync",
                 label: "Backup & Restore",
                 element: BackupAndRestoreTab,
-                icon: showIcons ? <CreateCategoryIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <BackupRestoreIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-backup-restore"
             },
             IS_DEV && {
@@ -148,7 +183,7 @@ export default definePlugin({
                 section: "VelocityHelpers",
                 label: "Helpers",
                 element: PatchHelperTab,
-                icon: showIcons ? <AccessibilityIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
+                icon: showIcons ? <HelpersIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
                 className: "vc-helpers"
             },
             ...this.customSections.map(func => func(SectionTypes)),
@@ -160,63 +195,103 @@ export default definePlugin({
         return categories.filter(Boolean);
     },
 
-    buildLayout(originalLayoutBuilder: any) {
+    buildLayout(originalLayoutBuilder: SettingsLayoutBuilder) {
         const layout = originalLayoutBuilder.buildLayout();
         if (originalLayoutBuilder.key !== "$Root") return layout;
+        if (!Array.isArray(layout)) return layout;
+        if (isNewUIForcedOff()) return layout;
 
-        const { settingsLocation } = Settings.plugins.Settings;
-        const velocityCategories = this.makeSettingsCategories({
-            HEADER: "HEADER",
-            DIVIDER: "DIVIDER",
-            CUSTOM: "CUSTOM"
-        }).filter(cat => cat.section !== "HEADER" && cat.section !== "DIVIDER");
+        if (layout.some(s => s?.key === "velocity_section")) return layout;
 
-        const velocitySection = {
-            key: "velocity_section",
-            type: 1,
-            useLabel: () => "Velocity Settings",
-            buildLayout: () => velocityCategories.map(category => ({
-                key: category.section,
-                legacySearchKey: category.label?.toUpperCase(),
-                type: 2,
-                useTitle: () => category.label,
-                icon: () => category.icon || null,
-                buildLayout: () => [
-                    {
-                        key: `${category.section}_panel`,
-                        type: 3,
-                        useTitle: () => category.label,
-                        buildLayout: () => [{
-                            key: `${category.section}_pane`,
-                            type: 4,
+        const makeEntry = (
+            key: string,
+            title: string,
+            Component: React.ComponentType<any>,
+            Icon: React.ComponentType<any>
+        ): SettingsLayoutNode => ({
+            key,
+            type: LayoutType.ENTRY,
+            legacySearchKey: title.toUpperCase(),
+            useTitle: () => title,
+            icon: () => <Icon width={20} height={20} />,
+            buildLayout: () => [
+                {
+                    key: key + "_panel",
+                    type: LayoutType.PANEL,
+                    useTitle: () => title,
+                    buildLayout: () => [
+                        {
+                            key: key + "_pane",
+                            type: LayoutType.PANE,
                             buildLayout: () => [],
-                            render: () => <category.element isRedesign={true} />,
-                            useTitle: () => category.label
-                        }]
-                    }
-                ]
-            }))
+                            render: () => <Component isRedesign={true} />,
+                            useTitle: () => title
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const velocityEntries: SettingsLayoutNode[] = [
+            makeEntry("velocity_settings", "Velocity", VelocityTab, CogWheel),
+            makeEntry("velocity_plugins", "Plugins", PluginsTab, PluginsIcon),
+            makeEntry("velocity_themes", "Themes", ThemesTab, PaintbrushIcon),
+            makeEntry("velocity_cloud", "Cloud", CloudTab, CloudIcon),
+            makeEntry("velocity_backup_restore", "Backup & Restore", BackupAndRestoreTab, BackupRestoreIcon),
+        ];
+
+        if (!IS_UPDATER_DISABLED && UpdaterTab) {
+            velocityEntries.push(makeEntry("velocity_updater", "Updater", UpdaterTab, UpdaterIcon));
+        }
+
+        if (IS_DEV && PatchHelperTab && DeveloperTab) {
+            velocityEntries.push(makeEntry("velocity_patch_helper", "Helpers", PatchHelperTab, HelpersIcon));
+            velocityEntries.push(makeEntry("velocity_developer_tools", "Developer Tools", DeveloperTab, DevOptionsIcon));
+        }
+
+        const velocitySection: SettingsLayoutNode = {
+            key: "velocity_section",
+            type: LayoutType.SECTION,
+            useLabel: () => "Velocity",
+            buildLayout: () => velocityEntries
         };
 
-        const sectionMap = {
-            top: "profile_section",
-            aboveNitro: "billing_section",
-            belowNitro: "billing_section",
-            aboveActivity: "activity_section",
-            belowActivity: "activity_section",
-            aboveAppearance: "app_section",
-            belowAppearance: "app_section",
-            aboveAccessibility: "app_section",
-            belowAccessibility: "app_section"
-        };
+        const settingsLocation = getSettingsLocationSafe();
+        let insertIndex = layout.length;
 
-        const targetSection = sectionMap[settingsLocation];
-        let insertIndex = targetSection ? layout.findIndex(s => s.key === targetSection) : -1;
-
-        if (insertIndex === -1) insertIndex = 2;
-        if (settingsLocation?.startsWith("below")) insertIndex++;
-        if (settingsLocation === "top") insertIndex = 0;
-        if (settingsLocation === "bottom") insertIndex = layout.length;
+        switch (settingsLocation) {
+            case "top": {
+                const idx = findIndexByKey(layout, "user_section");
+                insertIndex = idx === -1 ? Math.min(1, layout.length) : idx;
+                break;
+            }
+            case "aboveNitro": {
+                const idx = findIndexByKey(layout, "billing_section");
+                insertIndex = idx === -1 ? layout.length : idx;
+                break;
+            }
+            case "belowNitro": {
+                const idx = findIndexByKey(layout, "billing_section");
+                insertIndex = idx === -1 ? layout.length : idx + 1;
+                break;
+            }
+            case "aboveActivity": {
+                const idx = findIndexByKey(layout, "activity_section");
+                insertIndex = idx === -1 ? layout.length : idx;
+                break;
+            }
+            case "belowActivity": {
+                const idx = findIndexByKey(layout, "activity_section");
+                insertIndex = idx === -1 ? layout.length : idx + 1;
+                break;
+            }
+            case "bottom":
+            default: {
+                const idx = findIndexByKey(layout, "logout_section");
+                insertIndex = idx === -1 ? layout.length : idx;
+                break;
+            }
+        }
 
         layout.splice(insertIndex, 0, velocitySection);
 
@@ -295,6 +370,12 @@ export default definePlugin({
                 { label: "At the very bottom", value: "bottom" },
             ]
         },
+        disableNewUI: {
+            type: OptionType.BOOLEAN,
+            description: "Force Discord to use the old settings UI",
+            default: false,
+            restartNeeded: true
+        }
     },
 
     get electronVersion() {

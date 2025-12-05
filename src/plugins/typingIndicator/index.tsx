@@ -20,13 +20,12 @@ import "./style.css";
 
 import { definePluginSettings, Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { buildSeveralUsers } from "@plugins/typingTweaks";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { GuildMemberStore, RelationshipStore, SelectedChannelStore, Tooltip, TypingStore, UserGuildSettingsStore, UserStore, UserSummaryItem, useStateFromStores } from "@webpack/common";
-
-import { buildSeveralUsers } from "../typingTweaks";
 
 const ThreeDots = findComponentByCodeLazy(".dots,", "dotRadius:");
 

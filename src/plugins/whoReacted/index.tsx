@@ -23,15 +23,13 @@ import { Queue } from "@utils/Queue";
 import { useForceUpdater } from "@utils/react";
 import definePlugin from "@utils/types";
 import { CustomEmoji, Message, ReactionEmoji, User } from "@velocity-types";
-import { findByPropsLazy } from "@webpack";
 import { ChannelStore, Constants, FluxDispatcher, React, RestAPI, useEffect, useLayoutEffect, UserSummaryItem } from "@webpack/common";
 
-const AvatarStyles = findByPropsLazy("moreUsers", "emptyUser", "avatarContainer", "clickableAvatar");
 let Scroll: any = null;
 const queue = new Queue();
 let reactions: Record<string, ReactionCacheEntry>;
 
-function fetchReactions(msg: Message, emoji: ReactionEmoji, type: number) {
+async function fetchReactions(msg: Message, emoji: ReactionEmoji, type: number) {
     const key = emoji.name + (emoji.id ? `:${emoji.id}` : "");
     return RestAPI.get({
         url: Constants.Endpoints.REACTIONS(msg.channel_id, msg.id, key),
