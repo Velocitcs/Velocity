@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
 import { Divider } from "@components/Divider";
@@ -190,7 +191,7 @@ export function LocalThemesTab() {
                             Icon={PencilIcon}
                         />
 
-                        {Velocity.Plugins.isPluginEnabled(ClientThemePlugin.name) && (
+                        {isPluginEnabled(ClientThemePlugin.name) && (
                             <QuickAction
                                 text="Edit ClientTheme"
                                 action={() => openPluginModal(ClientThemePlugin)}

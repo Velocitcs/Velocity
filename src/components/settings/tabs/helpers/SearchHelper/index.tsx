@@ -17,6 +17,7 @@
 */
 
 import { get, set } from "@api/DataStore";
+import { Button } from "@components/Button";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
@@ -25,9 +26,9 @@ import { DeleteIcon, ErrorIcon, InfoIcon, LogIcon, PlusIcon } from "@components/
 import { Margins } from "@components/margins";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { debounce } from "@shared/debounce";
-import { copyWithToast } from "@utils/misc";
+import { copyWithToast } from "@utils/discord";
 import { filters, search } from "@webpack";
-import { Button, Forms, React, Select, TextInput, useEffect, useState } from "@webpack/common";
+import { Forms, React, Select, TextInput, useEffect, useState } from "@webpack/common";
 
 const searchTypes = [
     { label: "findByCode", value: "code" },

@@ -19,11 +19,13 @@
 import "./styles.css";
 
 import * as DataStore from "@api/DataStore";
+import { isPluginEnabled } from "@api/PluginManager";
 import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { HeadingTertiary } from "@components/Heading";
+import { Heading, HeadingTertiary } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
@@ -31,13 +33,14 @@ import { ChangeList } from "@utils/ChangeList";
 import { Logger } from "@utils/Logger";
 import { classes, isPluginDev } from "@utils/misc";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
-import { Alerts, Button, Card, FormNotice, lodash, Parser, React, SearchBar, Select, Tooltip, useMemo, UserStore, useState } from "@webpack/common";
+import { Alerts, Card, FormNotice, lodash, Parser, React, SearchBar, Select, Tooltip, useMemo, UserStore, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import Plugins, { ExcludedPlugins } from "~plugins";
 
 import { openContributorModal } from "./ContributorModal";
 import { PluginCard } from "./PluginCard";
+import { UIElementsButton } from "./UIElements";
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
@@ -58,7 +61,7 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
             <Card className={classes(cl("info-card"), required && "vc-warning-card")}>
                 {required ? (
                     <>
-                        <HeadingTertiary>Restart required!</HeadingTertiary>
+                        <Heading>Restart required!</Heading>
                         <Paragraph className={cl("dep-text")}>
                             Restart now to apply new plugins and their settings
                         </Paragraph>
@@ -68,7 +71,7 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
                     </>
                 ) : (
                     <>
-                        <HeadingTertiary>Plugin Management</HeadingTertiary>
+                        <Heading>Plugin Management</Heading>
                         <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
                         <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
                         <Paragraph
@@ -263,7 +266,7 @@ function PluginSettings({ isRedesign = false }) {
 
     const pluginFilter = (plugin: typeof Plugins[keyof typeof Plugins]) => {
         const { status } = searchValue;
-        const enabled = Velocity.Plugins.isPluginEnabled(plugin.name);
+        const enabled = isPluginEnabled(plugin.name);
 
         // status filter
         switch (status) {
@@ -487,6 +490,8 @@ function PluginSettings({ isRedesign = false }) {
         <SettingsTab showTitle={!isRedesign} title={"Plugins"}>
             <ReloadRequiredCard required={changes.hasChanges} />
 
+            <UIElementsButton />
+
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
                 Filters
             </HeadingTertiary>
@@ -560,3 +565,4 @@ function makeDependencyList(deps: string[]) {
 }
 
 export default wrapTab(PluginSettings, "Plugins");
+

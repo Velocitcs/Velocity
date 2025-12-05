@@ -18,12 +18,14 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
 import { Margins } from "@components/margins";
 import { identity } from "@utils/misc";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, Select, Slider, Text } from "@webpack/common";
+import { Forms, Select, Slider } from "@webpack/common";
 
 export function NotificationSection() {
     return (

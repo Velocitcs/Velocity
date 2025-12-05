@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
@@ -24,7 +25,7 @@ import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { changes, checkForUpdates, update, updateError } from "@utils/updater";
-import { Alerts, Button, Card, React, Toasts, useState } from "@webpack/common";
+import { Alerts, Card, React, Toasts, useState } from "@webpack/common";
 
 import { runWithDispatch } from "./runWithDispatch";
 

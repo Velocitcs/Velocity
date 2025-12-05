@@ -27,12 +27,12 @@ import { SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openContributorModal } from "@components/settings/tabs/plugins/ContributorModal";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
+import BadgeAPI from "@plugins/_api/badges";
 import { gitRemote } from "@shared/velocityUserAgent";
 import { Devs, DONOR_ROLE_ID, IS_MAC, IS_WINDOWS, VELOCITY_GUILD_ID } from "@utils/constants";
 import { isPluginDev } from "@utils/misc";
 import { relaunch, reload } from "@utils/native";
 import { Alerts, Forms, GuildMemberStore, React, UserStore } from "@webpack/common";
-import BadgeAPI from "plugins/_api/badges";
 
 import { VibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";

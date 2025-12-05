@@ -16,11 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { Margins } from "@components/margins";
 import { canonicalizeMatch, canonicalizeReplace } from "@utils/patches";
 import { makeCodeblock } from "@utils/text";
 import { ReplaceFn } from "@utils/types";
-import { Button, Forms, Parser, useMemo, useState } from "@webpack/common";
+import { Forms, Parser, useMemo, useState } from "@webpack/common";
 import type { Change } from "diff";
 
 // Do not include diff in non dev builds (side effects import)

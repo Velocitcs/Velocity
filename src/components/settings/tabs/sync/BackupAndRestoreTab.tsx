@@ -16,12 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { Margins } from "@components/margins";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { classes } from "@utils/misc";
 import { downloadSettingsBackup, importSettings, uploadSettingsBackup } from "@utils/settingsSync";
-import { Button, Card, React, TabBar, Text, TextArea, useState } from "@webpack/common";
+import { Card, React, TabBar, TextArea, useState } from "@webpack/common";
 
 const enum Tabs {
     LoadByFile,

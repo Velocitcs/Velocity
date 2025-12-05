@@ -17,10 +17,10 @@
 */
 
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import { classes } from "@utils/misc";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { DefinedSettings, PluginOptionBase } from "@utils/types";
-import { Text } from "@webpack/common";
 import { PropsWithChildren } from "react";
 
 export const cl = classNameFactory("vc-plugins-setting-");

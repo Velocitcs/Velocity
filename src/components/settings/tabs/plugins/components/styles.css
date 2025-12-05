@@ -26,10 +26,6 @@
     color: var(--header-primary);
 }
 
-.vc-plugins-setting-description {
-    color: var(--header-secondary);
-}
-
 .vc-plugins-setting-error {
     color: var(--text-danger);
 }

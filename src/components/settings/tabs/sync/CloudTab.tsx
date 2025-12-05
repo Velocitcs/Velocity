@@ -18,6 +18,7 @@
 
 import { showNotification } from "@api/Notifications";
 import { Settings, useSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { CheckedTextInput } from "@components/CheckedTextInput";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
@@ -28,7 +29,7 @@ import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { authorizeCloud, checkCloudUrlCsp, cloudLogger, deauthorizeCloud, getCloudAuth, getCloudUrl } from "@utils/cloud";
 import { deleteCloudSettings, getCloudSettings, putCloudSettings } from "@utils/settingsSync";
-import { Alerts, Button, Forms, Tooltip } from "@webpack/common";
+import { Alerts, Forms, Tooltip } from "@webpack/common";
 
 function validateUrl(url: string) {
     try {

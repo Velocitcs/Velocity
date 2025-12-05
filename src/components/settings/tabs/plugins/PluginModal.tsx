@@ -21,6 +21,7 @@ import "./PluginModal.css";
 import { generateId } from "@api/Commands";
 import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
 import { Emoji } from "@components/Emoji";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
@@ -34,7 +35,7 @@ import { ModalCloseButton, ModalContent, ModalHeader, ModalProps, ModalRoot, Mod
 import { OptionType, Plugin } from "@utils/types";
 import { User } from "@velocity-types";
 import { findByPropsLazy } from "@webpack";
-import { Clickable, ContextMenuApi, FluxDispatcher, Forms, Menu, React, Text, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import { Clickable, ContextMenuApi, FluxDispatcher, Forms, Menu, React, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 import { Constructor } from "type-fest";
 
 import { PluginMeta } from "~plugins";
