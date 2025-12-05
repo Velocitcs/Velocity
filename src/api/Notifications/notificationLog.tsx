@@ -19,11 +19,13 @@
 import * as DataStore from "@api/DataStore";
 import { Settings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { openNotificationSettingsModal } from "@components/settings/tabs/velocity/NotificationSettings";
 import { closeModal, ModalCloseButton, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { useAwaiter } from "@utils/react";
-import { Alerts, Button, Forms, ListScrollerThin, React, Text, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
+import { Alerts, Forms, ListScrollerThin, React, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
 import { nanoid } from "nanoid";
 import type { DispatchWithoutAction } from "react";
 
