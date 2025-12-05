@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { copyWithToast } from "@utils/misc";
+import { copyWithToast } from "@utils/discord";
 import { Menu } from "@webpack/common";
 
 interface IconContextMenuProps {

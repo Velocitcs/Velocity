@@ -16,23 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
 import { CogWheel, ErrorIcon } from "@components/Icons";
 import { findByCodeLazy } from "@webpack";
-import {
-    Button,
-    CalendarPicker,
-    Card,
-    ColorPicker,
-    Forms,
-    RadioGroup,
-    SearchBar,
-    TagGroup,
-    TextInput,
-    Tooltip,
-    useState
-} from "@webpack/common";
+import { CalendarPicker, Card, ColorPicker, Forms, RadioGroup, SearchBar, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
 
 const BotTag = findByCodeLazy(".botTagRegular");
 

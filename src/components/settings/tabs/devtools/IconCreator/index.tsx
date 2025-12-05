@@ -17,6 +17,7 @@
 */
 
 import { get, set } from "@api/DataStore";
+import { Button } from "@components/Button";
 import { CodeBlock } from "@components/CodeBlock";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
@@ -25,9 +26,9 @@ import { CogWheel, DeleteIcon, ErrorIcon, Icon, PlusIcon } from "@components/Ico
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
-import { copyWithToast } from "@utils/misc";
+import { copyWithToast } from "@utils/discord";
 import { openModal } from "@utils/modal";
-import { Button, FontClasses, Forms, React, TextArea, TextInput, useState } from "@webpack/common";
+import { FontClasses, Forms, React, TextArea, TextInput, useState } from "@webpack/common";
 
 import { SvgRuleModal } from "./svgRuleModal";
 import { SvgElement } from "./types";
