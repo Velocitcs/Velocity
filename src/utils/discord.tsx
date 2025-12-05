@@ -18,14 +18,25 @@
 
 import { MessageObject } from "@api/MessageEvents";
 import { Channel, CloudUpload, Guild, GuildFeatures, Message, User } from "@velocity-types";
-import { ChannelActionCreators, ChannelStore, ComponentDispatch, Constants, FluxDispatcher, GuildStore, i18n, IconUtils, InviteActions, MessageActions, RestAPI, SelectedChannelStore, SelectedGuildStore, UserProfileActions, UserProfileStore, UserSettingsActionCreators, UserUtils } from "@webpack/common";
+import { ChannelActionCreators, ChannelStore, ComponentDispatch, Constants, FluxDispatcher, GuildStore, i18n, IconUtils, InviteActions, MessageActions, RestAPI, SelectedChannelStore, SelectedGuildStore, Toasts, UserProfileActions, UserProfileStore, UserSettingsActionCreators, UserUtils } from "@webpack/common";
 import { Except } from "type-fest";
 
+import { copyToClipboard } from "./clipboard";
 import { runtimeHashMessageKey, runtimeHashMessageKeyLegacy } from "./intlHash";
 import { Logger } from "./Logger";
 import { MediaModalItem, MediaModalProps, openMediaModal } from "./modal";
 
 const IntlManagerLogger = new Logger("IntlManager");
+export async function copyWithToast(text: string, toastMessage = "Copied to clipboard!") {
+    await copyToClipboard(text);
+    Toasts.show({
+        message: toastMessage,
+        id: Toasts.genId(),
+        type: Toasts.Type.SUCCESS
+    });
+}
+
+
 
 // TODO: remove legacy hashing function once Discord ships new one everywhere for a while
 

@@ -29,9 +29,11 @@ export const SUPPORT_CATEGORY_ID = "1428704339802984508";
 export const KNOWN_ISSUES_CHANNEL_ID = "1428704297524137994";
 
 const platform = navigator.platform.toLowerCase();
+
 export const IS_WINDOWS = platform.startsWith("win");
 export const IS_MAC = platform.startsWith("mac");
 export const IS_LINUX = platform.startsWith("linux");
+export const IS_MOBILE = navigator.userAgent.includes("Mobi");
 
 export interface Dev {
     name: string;

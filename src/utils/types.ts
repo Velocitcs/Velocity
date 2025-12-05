@@ -17,13 +17,13 @@
 */
 
 import { ProfileBadge } from "@api/Badges";
-import { ChatBarButtonFactory } from "@api/ChatButtons";
+import { ChatBarButtonData } from "@api/ChatButtons";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { MemberListDecoratorFactory } from "@api/MemberListDecorators";
 import { MessageAccessoryFactory } from "@api/MessageAccessories";
 import { MessageDecorationFactory } from "@api/MessageDecorations";
 import { MessageClickListener, MessageEditListener, MessageSendListener } from "@api/MessageEvents";
-import { MessagePopoverButtonFactory } from "@api/MessagePopover";
+import { MessagePopoverButtonData } from "@api/MessagePopover";
 import { Command, FluxEvents } from "@velocity-types";
 import { ReactNode } from "react";
 import { LiteralUnion } from "type-fest";
@@ -40,6 +40,9 @@ export function makeRange(start: number, end: number, step = 1) {
     }
     return ranges;
 }
+
+export type IconComponent = (props: IconProps & Record<string, any>) => ReactNode;
+export type IconProps = { height?: number | string; width?: number | string; className?: string; };
 
 export type ReplaceFn = (match: string, ...groups: string[]) => string;
 
@@ -181,17 +184,28 @@ export interface PluginDef {
 
     userProfileBadge?: ProfileBadge;
 
+    messagePopoverButton?: MessagePopoverButtonData;
+    chatBarButton?: ChatBarButtonData;
+
+
     onMessageClick?: MessageClickListener;
     onBeforeMessageSend?: MessageSendListener;
     onBeforeMessageEdit?: MessageEditListener;
 
-    renderMessagePopoverButton?: MessagePopoverButtonFactory;
     renderMessageAccessory?: MessageAccessoryFactory;
     renderMessageDecoration?: MessageDecorationFactory;
 
     renderMemberListDecorator?: MemberListDecoratorFactory;
 
-    renderChatBarButton?: ChatBarButtonFactory;
+    // TODO: Remove eventually
+    /**
+     * @deprecated Use {@link chatBarButton} instead
+     */
+    renderChatBarButton?: never;
+    /**
+     * @deprecated Use {@link messagePopoverButton} instead
+     */
+    renderMessagePopoverButton?: never;
 }
 
 export const enum StartAt {
@@ -202,6 +216,8 @@ export const enum StartAt {
     /** Once Discord's core webpack modules have finished loading, so as soon as things like react and flux are available */
     WebpackReady = "WebpackReady"
 }
+
+export type AllOrNothing<T> = T | { [K in keyof T]?: never; };
 
 export const enum ReporterTestable {
     None = 1 << 1,
