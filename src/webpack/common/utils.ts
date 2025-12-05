@@ -25,7 +25,7 @@ export let FluxDispatcher: t.FluxDispatcher;
 waitFor(["dispatch", "subscribe"], m => {
     FluxDispatcher = m;
     // Non import access to avoid circular dependency
-    Velocity.Plugins.subscribeAllPluginsFluxEvents(m);
+    Velocity.Api.PluginManager.subscribeAllPluginsFluxEvents(m);
 
     const cb = () => {
         m.unsubscribe("CONNECTION_OPEN", cb);
