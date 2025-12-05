@@ -21,4 +21,6 @@ import { findByPropsLazy } from "@webpack";
 
 export const ButtonWrapperClasses: t.ButtonWrapperClasses = findByPropsLazy("buttonWrapper", "buttonContent");
 export const CMIconClasses: t.CMButtonClasses = findByPropsLazy("icon", "iconContainer", "label");
+export const PopoverClasses: t.PopoverClasses = findByPropsLazy("icon", "hoverBarButton", "separator");
+export const ChatBarClasses: t.ChatBarClasses = findByPropsLazy("pulseIcon", "buttonContent", "sparkle");
 export const FontClasses: t.FontClasses = findByPropsLazy("heading-sm/medium", "heading-lg/bold", "eyebrow", "xs");
