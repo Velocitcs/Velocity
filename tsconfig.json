@@ -34,11 +34,17 @@
             "@utils/*": [
                 "./utils/*"
             ],
+            "@plugins/*": [
+                "./plugins/*"
+            ],
             "@shared/*": [
                 "./shared/*"
             ],
             "@webpack/common": [
                 "./webpack/common"
+            ],
+            "@webpack/common/*": [
+                "./webpack/common/*"
             ],
             "@webpack": [
                 "./webpack/webpack"
