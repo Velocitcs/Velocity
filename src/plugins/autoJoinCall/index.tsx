@@ -20,13 +20,22 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { findByCodeLazy, findByPropsLazy } from "@webpack";
+import { filters, findByPropsLazy, mapMangledModuleLazy } from "@webpack";
 import { ApplicationStreamingStore, ChannelStore, MediaEngineStore, OverlayRTCConnectionStore, VoiceStateStore } from "@webpack/common";
 
 import { streamContextMenuPatch, streamEnablingPatch } from "./contextMenu";
 const VoiceActions = findByPropsLazy("selectVoiceChannel");
 const MediaEngineActions = findByPropsLazy("toggleSelfMute", "toggleSelfDeaf");
-const StreamActions = findByCodeLazy("startStreamWithSource");
+
+const { Z: createStream } = mapMangledModuleLazy("startStreamWithSource", {
+    Z: filters.byCode("startStreamWithSource")
+});
+interface Screen {
+    icon: string;
+    id: string;
+    name: string;
+    url: string;
+}
 
 const settings = definePluginSettings({
     channelId: {
@@ -57,42 +66,44 @@ const settings = definePluginSettings({
     streamSource: {
         type: OptionType.SELECT,
         description: "Stream source",
-        default: JSON.stringify({
-            id: "screen:0:0",
-            name: "Screen 1",
-            icon: ""
-        }),
+        default: "screen:0:0",
         options: async () => {
-            const sources = await DiscordNative.desktopCapture.getDesktopCaptureSources({
-                types: ["screen"]
-            });
-            return sources.map((s: any, index: number) => ({
+            const screens = await getScreens("GET_SCREENS");
+            return screens.map((screen: Screen, index: number) => ({
                 label: `Screen ${index + 1}`,
-                value: JSON.stringify({
-                    id: s.id,
-                    name: `Screen ${index + 1}`,
-                    icon: s.icon
-                }),
-                default: index === 0
+                value: screen.id
             }));
         }
     }
 });
 
+async function getScreens(method: "GET_SCREENS" | "GET_SCREEN_BY_SETTINGS") {
+    const screens = await DiscordNative.desktopCapture.getDesktopCaptureSources({
+        types: ["screen"]
+    });
+
+    if (method === "GET_SCREENS") {
+        return screens;
+    }
+    if (method === "GET_SCREEN_BY_SETTINGS") {
+        const streamSourceId = settings.store.streamSource;
+        return screens.find((s: Screen) => s.id === streamSourceId) as Screen;
+    }
+}
+
 async function startStream() {
     if (ApplicationStreamingStore.getCurrentUserActiveStream() != null) return;
 
-    const sourceData = JSON.parse(settings.store.streamSource!);
+    const sourceData = await getScreens("GET_SCREEN_BY_SETTINGS");
 
     // WARNING: This will always throw an error "Options `sourceId` and `type` are required."
     // because of how the crasher is designed, this will not be fixed or changed
-    await StreamActions(
+    await createStream(
         {
             id: sourceData.id,
             name: sourceData.name,
-            icon: sourceData.icon
-        },
-        {
+            icon: sourceData.icon,
+
             preset: 0,
             resolution: 1080,
             fps: 60,
@@ -149,19 +160,11 @@ export default definePlugin({
 
     patches: [
         {
-            find: "t8({deaf:!1,mute:!1})",
+            find: "deaf:!",
             replacement: {
                 match: /\(a\.mute\|\|a\.deaf\)&&/g,
                 replace: "false&&"
             }
-        },
-        {
-            find: "t8({deaf:!1,mute:!1})",
-            replacement: {
-                match: /\(a\.mute\|\|a\.deaf\)&&/g,
-                replace: "false&&"
-            },
-            predicate: () => settings.store.voiceSetting === "deafen"
         }
     ],
 
