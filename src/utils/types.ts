@@ -126,10 +126,6 @@ export interface PluginDef {
      */
     hidden?: boolean;
     /**
-     * Whether this plugin should be unavailable for use
-     */
-    unavailable?: boolean;
-    /**
      * Whether this plugin should be enabled by default, but can be disabled
      */
     enabledByDefault?: boolean;
@@ -196,16 +192,6 @@ export interface PluginDef {
     renderMessageDecoration?: MessageDecorationFactory;
 
     renderMemberListDecorator?: MemberListDecoratorFactory;
-
-    // TODO: Remove eventually
-    /**
-     * @deprecated Use {@link chatBarButton} instead
-     */
-    renderChatBarButton?: never;
-    /**
-     * @deprecated Use {@link messagePopoverButton} instead
-     */
-    renderMessagePopoverButton?: never;
 }
 
 export const enum StartAt {
