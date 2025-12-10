@@ -17,18 +17,17 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
-import { classNameFactory } from "@api/Styles";
-import { LeaveIcon } from "@components/Icons";
+import { classNameFactory, disableStyle, enableStyle } from "@api/Styles";
 import * as Icons from "@components/Icons";
+import { buildPluginMenuEntries, buildThemeMenuEntries } from "@plugins/velocityToolbox/menu";
 import { Devs } from "@utils/constants";
-import { getIntlMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
 import { ComponentDispatch, FocusLock, Menu, useEffect, useRef } from "@webpack/common";
 import type { HTMLAttributes, ReactElement } from "react";
 
-import PluginsSubmenu from "./PluginsSubmenu";
+import fullHeightStyle from "./fullHeightContext.css?managed";
 
 type SettingsEntry = { section: string, label: string; };
 
@@ -63,6 +62,11 @@ const settings = definePluginSettings({
     }
 });
 
+interface TransformedSettingsEntry {
+    section: string;
+    items: SettingsEntry[];
+}
+
 interface LayerProps extends HTMLAttributes<HTMLDivElement> {
     mode: "SHOWN" | "HIDDEN";
     baseLayer?: boolean;
@@ -80,13 +84,13 @@ function Layer({ mode, baseLayer = false, ...props }: LayerProps) {
     const node = (
         <div
             ref={containerRef}
-            {...({ "aria-hidden": hidden } as any)}
+            aria-hidden={hidden}
             className={cl({
                 [Classes.layer]: true,
                 [Classes.baseLayer]: baseLayer,
                 "stop-animations": hidden
             })}
-            {...(hidden && { style: { opacity: 0 } })}
+            style={{ opacity: hidden ? 0 : undefined }}
             {...props}
         />
     );
@@ -102,202 +106,72 @@ export default definePlugin({
     authors: [Devs.Kyuuhachi],
     settings,
 
+    start() {
+        if (settings.store.organizeMenu)
+            enableStyle(fullHeightStyle);
+    },
+
+    stop() {
+        disableStyle(fullHeightStyle);
+    },
+
     patches: [
         {
             find: "SEARCH_NO_RESULTS]:{section:",
             replacement: [
-                // My Account
                 {
-                    match: /(\[.{1,10}\.ACCOUNT\]:\{section:.{1,50}\.ACCOUNT,[^}]+url:(.+?\("account"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('UserIcon')}"
-                },
+                    match: /\[eN\.s6\.(\w+)\]:\{(section:|searchableTitles:|label:|ariaLabel:)/g,
+                    replace: (match, key, prop) => {
 
-                // Profile Customization
-                {
-                    match: /(\[.{1,10}\.PROFILE_CUSTOMIZATION\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("profile-customization"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('BikeIcon')}"
-                },
+                        const iconMap = {
+                            ACCOUNT: "UserIcon", PROFILE_CUSTOMIZATION: "BikeIcon",
+                            CONTENT_SOCIAL: "SocialIcon",
+                            DATA_PRIVACY: "PrivacyIcon",
+                            PRIVACY_FAMILY_CENTER: "FamilyIcon",
+                            THIRD_PARTY_ACCESS: "DiscoverIcon",
+                            AUTHORIZED_APPS: "AppsIcon",
+                            SESSIONS: "DeviceIcon",
+                            CONNECTIONS: "ConnectionsIcon",
+                            CHANGELOG: "InfoIcon",
+                            MERCHANDISE: "ShopIcon",
+                            GUILD_BOOSTING: "BoostIcon",
+                            GIFT_INVENTORY: "GiftIcon",
+                            BILLING: "BillingIcon",
+                            APPEARANCE: "AppearanceIcon",
+                            ACCESSIBILITY: "AccessibilityIcon",
+                            VOICE_AND_VIDEO: "Microphone",
+                            CHAT: "ChatIcon",
+                            NOTIFICATIONS: "NotificationsIcon",
+                            KEYBINDS: "KeyboardIcon",
+                            LANGUAGE: "LanguageIcon",
+                            WINDOW_SETTINGS: "ScreenshareIcon",
+                            LINUX_SETTINGS: "ScreenshareIcon",
+                            STREAMER_MODE: "StreamerModeIcon",
+                            SETTINGS_ADVANCED: "MoreIcon",
+                            ACTIVITY_PRIVACY: "UserGameIcon",
+                            REGISTERED_GAMES: "ControlerIcon",
+                            OVERLAY: "GameOverlayIcon",
+                            EXPERIMENTS: "PotionIcon",
+                            DEVELOPER_OPTIONS: "DevOptionsIcon"
+                        };
 
-                // Content & Social
-                {
-                    match: /(\[.{1,10}\.CONTENT_SOCIAL\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("content-and-social"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('SocialIcon')}"
+                        const icon = iconMap[key];
+                        return icon ? `[eN.s6.${key}]:{icon:$self.getIcon('${icon}'),${prop}` : match;
+                    }
                 },
-
-                // Data Privacy
-                {
-                    match: /(\[.{1,10}\.DATA_PRIVACY\]:\{section:.{1,50}\.DATA_AND_PRIVACY,[^}]+url:(.+?\("data-and-privacy"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('PrivacyIcon')}"
-                },
-
-                // Family Center
-                {
-                    match: /(\[.{1,10}\.PRIVACY_FAMILY_CENTER\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("family-center"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('FamilyIcon')}"
-                },
-
-                // Third-Party Access - experiment: 2024-11_third_party_access_settings_redesign
-                {
-                    match: /(\[.{1,10}\.THIRD_PARTY_ACCESS\]:\{[\s\S]*?element:\s*e\w+\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('DiscoverIcon')}"
-                },
-
-                // Authorized Apps
-                {
-                    match: /(\[.{1,10}\.AUTHORIZED_APPS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("authorized-apps"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('AppsIcon')}"
-                },
-
-                // Devices (Sessions)
-                {
-                    match: /(\[.{1,10}\.SESSIONS\]:\{[\s\S]*?impressionProperties:\{[^}]+\}[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('DeviceIcon')}"
-                },
-
-                // Connections
-                {
-                    match: /(\[.{1,10}\.CONNECTIONS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("connections"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ConnectionsIcon')}"
-                },
-
-                // Clips
-                {
-                    match: /(\[.{1,10}\.CLIPS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("clips"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ClipsIcon')}"
-                },
-
-                // Server Boost (Guild Boosting)
-                {
-                    match: /(\[.{1,10}\.GUILD_BOOSTING\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('BoostIcon')}"
-                },
-
-                // Subscriptions
                 {
                     match: /(\[.{1,10}\.SUBSCRIPTIONS\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?icon:\s*.{1,10}\s*\?[\s\S]*?null[\s\S]*?)\}/,
                     replace: "$1,icon:$self.getIcon('SubscriptionsIcon')}"
                 },
-
-                // Gift Inventory
                 {
-                    match: /(\[.{1,10}\.GIFT_INVENTORY\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('GiftIcon')}"
+                    match: /(\[.{1,10}\.CLIPS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("clips"\)[\s\S]*?)\}/,
+                    replace: "$1,icon:$self.getIcon('ClipsIcon')}"
                 },
-
-                // Billing
                 {
-                    match: /(\[.{1,10}\.BILLING\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('BillingIcon')}"
-                },
-
-                // Appearance
-                {
-                    match: /(\[.{1,10}\.APPEARANCE\]:\{section:[\s\S]*?url:\s*.{1,20}\.SETTINGS\("appearance"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('AppearanceIcon')}"
-                },
-
-                // Accessibility
-                {
-                    match: /(\[.{1,10}\.ACCESSIBILITY\]:\{section:.{1,50}\.ACCESSIBILITY,[^}]+url:(.+?\("accessibility"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('AccessibilityIcon')}"
-                },
-
-                // Voice & Video
-                {
-                    match: /(\[.{1,10}\.VOICE_AND_VIDEO\]:\{section:.{1,50}\.VOICE,[^}]+url:(.+?\("voice"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('Microphone')}"
-                },
-
-                // Chat
-                {
-                    match: /(\[.{1,10}\.CHAT\]:\{section:.{1,50}\.TEXT,[^}]+url:(.+?\("text"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('ChatIcon')}"
-                },
-
-                // Notifications
-                {
-                    match: /(\[.{1,10}\.NOTIFICATIONS\]:\{section:.{1,50}\.NOTIFICATIONS,[^}]+url:(.+?\("notifications"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('NotificationsIcon')}"
-                },
-
-                // Keybinds
-                {
-                    match: /(\[.{1,10}\.KEYBINDS\]:\{section:.{1,50}\.KEYBINDS,[^}]+url:(.+?\("keybinds"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('KeyboardIcon')}"
-                },
-
-                // Language
-                {
-                    match: /(\[.{1,10}\.LANGUAGE\]:\{section:.{1,50}\.LOCALE,[^}]+url:(.+?\("language"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('LanguageIcon')}"
-                },
-
-                // Windows Settings
-                {
-                    match: /(\[.{1,10}\.WINDOW_SETTINGS\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ScreenshareIcon')}"
-                },
-
-                // Linux Settings
-                {
-                    match: /(\[.{1,10}\.LINUX_SETTINGS\]:\{[\s\S]*?element:\s*.{1,10}[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ScreenshareIcon')}"
-                },
-
-                // Streamer Mode
-                {
-                    match: /(\[.{1,10}\.STREAMER_MODE\]:\{section:.{1,50}\.STREAMER_MODE,[^}]+url:(.+?\("streamer-mode"\)))\}/,
-                    replace: "$1,icon:$self.getIcon('StreamerModeIcon')}"
-                },
-                // Advanced, why the fk does this keep breaking
-                {
-                    match: /(\[[A-Za-z0-9._$]{1,40}\.SETTINGS_ADVANCED\]:\{[\s\S]*?element:\s*[A-Za-z0-9._$]+)[\s\S]*?\}/,
-                    replace: "$1,icon:$self.getIcon('MoreIcon')}"
-                },
-
-                // Activity Privacy
-                {
-                    match: /(\[.{1,10}\.ACTIVITY_PRIVACY\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("activity-privacy"\)[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('UserGameIcon')}"
-                },
-
-                // Registered Games
-                {
-                    match: /(\[.{1,10}\.REGISTERED_GAMES\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('ControlerIcon')}"
-                },
-
-                // Overlay
-                {
-                    match: /(\[.{1,10}\.OVERLAY\]:\{[\s\S]*?element:\s*.{1,10}\.Z[\s\S]*?)\}/,
-                    replace: "$1,icon:$self.getIcon('GameOverlayIcon')}"
-                },
-
-                // What's New (Changelog)
-                {
-                    match: /(\[.{1,10}\.s6\.CHANGELOG\]:\{[\s\S]*?label:\s*.{1,20}\.intl\.string\(.{1,20}\.t\.\w+\))/,
-                    replace: "$1,icon:$self.getIcon('InfoIcon')"
-                },
-
-                // Merchandise
-                {
-                    match: /(\[.{1,10}\.s6\.MERCHANDISE\]:\{[\s\S]*?ariaLabel:\s*.{1,20}\.intl\.string\(.{1,20}\.t\.\w+\))/,
-                    replace: "$1,icon:$self.getIcon('ShopIcon')"
-                },
-
-                // Experiments
-                {
-                    match: /(\[.{1,10}\.EXPERIMENTS\]:\{[\s\S]*?url:\s*.{1,20}\.SETTINGS\("experiments"\)[\s\S]*?)\}(,?)/,
-                    replace: "$1,icon:$self.getIcon('PotionIcon')}$2"
-                },
-
-                // Developer Options
-                {
-                    match: /(\[.{1,40}\.DEVELOPER_OPTIONS(?:_[A-Z_]+)?\]:\{[\s\S]*?)(?=(?:\},\s*\[|$))/g,
-                    replace: "$1,icon:$self.getIcon('DevOptionsIcon')"
+                    match: /predicate:\s*\(\)\s*=>\s*\w+[\w.]*,/g,
+                    replace: ""
                 }
-            ],
-            predicate: () => settings.store.settingsIcons
+            ]
         },
         {
             find: "this.renderArtisanalHack()",
@@ -328,20 +202,11 @@ export default definePlugin({
             ],
             predicate: () => settings.store.disableFade
         },
-        {
-            // New settings redesign UI
-            find: ".buildLayout().map",
-            replacement: {
-                match: /(\i)\.buildLayout\(\)(?=\.map)/,
-                replace: "$self.wrapLayout($1)"
-            },
-            predicate: () => settings.store.organizeMenu
-        },
         { // Load menu TOC eagerly
             find: "#{intl::USER_SETTINGS_WITH_BUILD_OVERRIDE}",
             replacement: {
                 match: /(\i)\(this,"handleOpenSettingsContextMenu",.{0,100}?null!=\i&&.{0,100}?(await [^};]*?\)\)).*?,(?=\1\(this)/,
-                replace: "$&(async ()=>await $2)(),"
+                replace: "$&(async ()=>$2)(),"
             },
             predicate: () => settings.store.eagerLoad
         },
@@ -350,21 +215,21 @@ export default definePlugin({
             find: "#{intl::USER_SETTINGS_ACTIONS_MENU_LABEL}",
             replacement: [
                 {
-                    match: /=\[\];if\((\i)(?=\.forEach)/,
-                    replace: "=$self.wrapMap([]);if($self.transformSettingsEntries($1)",
+                    match: /=\[\];if\((\i)(?=\.forEach.{0,100}"logout"!==\i.{0,30}(\i)\.get\(\i\))/,
+                    replace: "=$self.wrapMap([]);if($self.transformSettingsEntries($1,$2)",
                     predicate: () => settings.store.organizeMenu
                 },
                 {
                     match: /case \i\.\i\.DEVELOPER_OPTIONS:return \i;/,
-                    replace: "$&case 'VelocityPlugins':return $self.PluginsSubmenu();"
+                    replace: "$&case 'VelocityPlugins':return $self.buildPluginMenuEntries(true);$&case 'VelocityThemes':return $self.buildThemeMenuEntries();"
                 }
             ]
         },
     ],
 
-    getIcon(name = "UnknownIcon") {
-        const IconComponent = Icons[name] || Icons.UnknownIcon;
-        const isDefault = name === "UnknownIcon" || !Icons[name];
+    getIcon(name = "PlaceholderIcon") {
+        const IconComponent = Icons[name] || Icons.PlaceholderIcon;
+        const isDefault = name === "PlaceholderIcon" || !Icons[name];
 
         return (
             <IconComponent
@@ -376,7 +241,9 @@ export default definePlugin({
     },
 
 
-    PluginsSubmenu,
+
+    buildPluginMenuEntries,
+    buildThemeMenuEntries,
 
     // This is the very outer layer of the entire ui, so we can't wrap this in an ErrorBoundary
     // without possibly also catching unrelated errors of children.
@@ -390,23 +257,19 @@ export default definePlugin({
             return props.children;
         }
 
-        return <Layer {...props} />;
+        return <Layer {...props
+        } />;
     },
 
-    transformSettingsEntries(list: SettingsEntry[]) {
-        const items = [{ label: null as string | null, items: [] as SettingsEntry[] }];
-        let addedOtherOptions = false;
+    transformSettingsEntries(list: SettingsEntry[], keyMap: Map<string, string>) {
+        const items = [] as TransformedSettingsEntry[];
 
         for (const item of list) {
             if (item.section === "HEADER") {
-                items.push({ label: item.label, items: [] });
-            } else if (item.section === "DIVIDER") {
-                if (!addedOtherOptions) {
-                    items.push({ label: getIntlMessage("OTHER_OPTIONS"), items: [] });
-                    addedOtherOptions = true;
-                }
-            } else {
-                items.at(-1)!.items.push(item);
+                keyMap.set(item.label, item.label);
+                items.push({ section: item.label, items: [] });
+            } else if (item.section !== "DIVIDER" && keyMap.has(item.section)) {
+                items.at(-1)?.items.push(item);
             }
         }
 
@@ -416,41 +279,27 @@ export default definePlugin({
     wrapMap(toWrap: any[]) {
         // @ts-expect-error
         toWrap.map = function (render: (item: SettingsEntry) => ReactElement<any>) {
-            const allItems = this.filter(a => a.items.length > 0);
             const result: any[] = [];
-            let logoutItem: ReactElement<any> | null = null;
 
-            allItems.forEach(({ label, items }) => {
-                const children = items.map((item: SettingsEntry) => {
-                    const rendered = render(item);
-                    if (item.section === "LOGOUT" || item.label?.toLowerCase().includes("log out")) {
-                        logoutItem = rendered;
-                        return null;
+            this
+                .filter(a => a.items.length > 0)
+                .forEach(({ section, items }: any) => {
+                    const children = items.map((item: SettingsEntry) => render(item)).filter(Boolean);
+
+                    if (section) {
+                        result.push(
+                            <Menu.MenuItem
+                                key={section}
+                                id={section.replace(/\W/, "_")}
+                                label={section}
+                            >
+                                {children}
+                            </Menu.MenuItem>
+                        );
+                    } else {
+                        result.push(...children);
                     }
-                    return rendered;
-                }).filter(Boolean);
-
-                if (label) {
-                    result.push(
-                        <Menu.MenuItem
-                            key={label}
-                            id={label.replace(/\W/, "_")}
-                            label={label}
-                        >
-                            {children}
-                        </Menu.MenuItem>
-                    );
-                } else {
-                    result.push(...children);
-                }
-            });
-
-            if (logoutItem) {
-                result.push(
-                    <Menu.MenuSeparator key="logout-sep" />,
-                    { ...logoutItem as any, props: { ...(logoutItem as any).props, color: "danger", icon: <LeaveIcon width="20" height="20" viewBox="0 0 24 24" className="icon_f84418" /> } },
-                );
-            }
+                });
 
             return result;
         };
