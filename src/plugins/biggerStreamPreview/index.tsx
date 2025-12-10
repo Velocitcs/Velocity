@@ -52,8 +52,8 @@ export interface StreamContextProps {
     theme: string,
 }
 
-export const handleViewPreview = async ({ guildId, channelId, ownerId }: ApplicationStream | Stream) => {
-    const previewUrl = await ApplicationStreamPreviewStore.getPreviewURL(guildId, channelId, ownerId);
+export const handleViewPreview = ({ guildId, channelId, ownerId }: ApplicationStream | Stream) => {
+    const previewUrl = ApplicationStreamPreviewStore.getPreviewURL(guildId, channelId, ownerId);
     if (!previewUrl) return;
 
     openImageModal({
