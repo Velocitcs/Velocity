@@ -103,7 +103,7 @@ export const patchRoleContextMenu = (
             <Menu.MenuItem
                 id="vc-edit-role"
                 label="Edit Role"
-                icon={() => PencilIcon({ width: 18, height: 18, viewBox: "0 0 24" })}
+                icon={() => PencilIcon({ width: 18, height: 18, viewBox: "0 0 24 24" })}
                 action={async () => {
                     ModalAPI.closeModal("vc-permviewer-modal");
 
@@ -168,7 +168,8 @@ export default definePlugin({
         "vc-permviewer-role-context-menu"(children, { guild, role }: { guild: Guild, role?: Role; }) {
             if (!role) return;
 
-            patchRoleContextMenu(children, role, PermissionStore.getGuildPermissionProps(guild).canManageRoles && guild.id);
+            patchRoleContextMenu(children, role, PermissionStore.getGuildPermissionProps(guild).canManageRoles ? guild.id : undefined
+            );
         },
         "guild-settings-role-context"(children, { role }: { role: Role; }) {
             patchRoleContextMenu(children, role);
@@ -180,7 +181,7 @@ export default definePlugin({
             const role = GuildRoleStore.getRole(guild.id, id);
             if (!role) return;
 
-            patchRoleContextMenu(children, role, PermissionStore.getGuildPermissionProps(guild).canManageRoles && guild.id);
+            patchRoleContextMenu(children, role, PermissionStore.getGuildPermissionProps(guild).canManageRoles ? guild.id : undefined);
         }
     }
 });
