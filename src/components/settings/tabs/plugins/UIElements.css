@@ -1,15 +1,15 @@
 .vc-plugin-ui-elements-button {
     display: flex;
     align-items: center;
-    color: var(--interactive-normal);
+    color: var(--interactive-icon-default, var(--interactive-normal));
     margin-top: 1em;
     cursor: pointer;
     padding: 0.7em;
 
 
     &:hover {
-        background-color: var(--background-modifier-hover);
-        color: var(--interactive-hover);
+        background-color: var(--background-mod-subtle, var(--background-modifier-hover));
+        color: var(--interactive-icon-hover, var(--interactive-hover));
     }
 }
 

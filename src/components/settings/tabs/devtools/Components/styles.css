@@ -1,0 +1,89 @@
+.vc-components-tab {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.vc-components-search-box {
+    margin-bottom: 8px;
+    padding: 12px 0;
+}
+
+.vc-components-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+}
+
+.vc-components-card {
+    border: 1px solid var(--background-tertiary);
+    border-radius: 8px;
+    background-color: rgb(32 34 37 / 60%);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.vc-components-card.vc-components-full-width {
+    grid-column: 1 / -1;
+}
+
+.vc-components-card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--background-tertiary);
+    background-color: var(--background-secondary-alt);
+}
+
+.vc-components-card-header h5 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.vc-components-card-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vc-components-picker-container {
+    margin-top: 8px;
+    padding: 12px 0;
+}
+
+.vc-components-inputs-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vc-components-tags-container {
+    padding: 10px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.vc-components-error {
+    padding: 16px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--red-400);
+    border-radius: 8px;
+    color: var(--red-400);
+    text-align: center;
+}
+
+.vc-components-slider-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.vc-components-slider-wrapper > div:first-child {
+    flex: 1;
+}
