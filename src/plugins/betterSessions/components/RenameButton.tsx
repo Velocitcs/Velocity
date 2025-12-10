@@ -25,9 +25,9 @@ import { RenameModal } from "./RenameModal";
 export function RenameButton({ session, state }: { session: SessionInfo["session"], state: [string, React.Dispatch<React.SetStateAction<string>>]; }) {
     return (
         <Button
-            variant="secondary"
-            size="xs"
-            className="vc-betterSessions-rename-btn"
+            color={Button.Colors.BRAND}
+            size={Button.Sizes.MIN}
+            className="vc-btn-base vc-betterSessions-rename-btn"
             onClick={() =>
                 openModal(props => (
                     <RenameModal
