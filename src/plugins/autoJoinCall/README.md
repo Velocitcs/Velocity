@@ -4,4 +4,4 @@ AutoJoinCall will automatically join calls for you whether you're restarting dis
 
 This comes with auto mute and deafen features and auto screenshare if you prefer
 
-![](https://github.com/user-attachments/assets/9392acd6-fdd5-427c-9366-fa5426cd7357)
+![](https://github.com/Velocitcs/Velocity/assets/242420516/bd51be3c-2393-466d-b480-0cf688be825b)
