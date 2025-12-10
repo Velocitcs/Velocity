@@ -26,7 +26,7 @@ export const streamContextMenuPatch: NavContextMenuPatchCallback = children => {
         <Menu.MenuItem
             id="vc-autojoin-settings"
             label="Auto Join Settings"
-            icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className={CMIconClasses.icon} />)}
+            icon={() => <CogWheel width="24" height="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
             action={() => openPluginModal(Velocity.Plugins.plugins.AutoJoinCall)}
         />
     );
