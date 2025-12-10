@@ -155,7 +155,7 @@ export async function syncGroups() {
     groups.clear();
 
     for (const { type, id, name, rawRecipients, icon } of ChannelStore.getSortedPrivateChannels()) {
-        if (type === ChannelType.GroupDM)
+        if (type === ChannelType.GROUP_DM)
             groups.set(id, {
                 id,
                 name: name || rawRecipients.map(r => r.username).join(", "),
