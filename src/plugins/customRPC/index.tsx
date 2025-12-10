@@ -277,12 +277,12 @@ export default definePlugin({
 
                 <Divider className={Margins.top8} />
 
-                <div style={{ width: "284px", ...profileThemeStyle, marginTop: 8, borderRadius: 8, background: "var(--background-mod-faint)" }}>
-                    {activity && <ActivityView
-                        activity={activity}
-                        user={UserStore.getCurrentUser()}
-                        currentUser={UserStore.getCurrentUser()}
-                    />}
+
+                <div style={{ width: "284px", ...profileThemeStyle, marginTop: 8, borderRadius: 8, background: "var(--background-mod-muted, var(--background-mod-faint))" }}>                    {activity && <ActivityView
+                    activity={activity}
+                    user={UserStore.getCurrentUser()}
+                    currentUser={UserStore.getCurrentUser()}
+                />}
                 </div>
             </>
         );
