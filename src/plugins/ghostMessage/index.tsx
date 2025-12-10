@@ -18,26 +18,15 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import { findByPropsLazy } from "@webpack";
-import { UserStore } from "@webpack/common";
-
-const MessageActions = findByPropsLazy("deleteMessage");
+import { MessageActions, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
     prefix: {
-        type: OptionType.SELECT,
+        type: OptionType.STRING,
         description: "Prefix to trigger ghost message deletion",
-        options: [
-            { label: "! (Exclamation)", value: "!", default: true },
-            { label: ". (Period)", value: "." },
-            { label: "? (Question)", value: "?" },
-            { label: "~ (Tilde)", value: "~" },
-            { label: "+ (Plus)", value: "+" },
-            { label: "_ (Underscore)", value: "_" },
-            { label: "- (Dash)", value: "-" },
-            { label: "= (Equals)", value: "=" }
-        ]
+        default: "!"
     },
     ignoreChannels: {
         type: OptionType.STRING,
@@ -70,9 +59,12 @@ export default definePlugin({
             if (ignoredChannels.includes(message.channel_id)) return;
 
             try {
-                await MessageActions.deleteMessage(message.channel_id, message.id);
+
+                if (!message.deleted && message.content !== null) {
+                    await MessageActions.deleteMessage(message.channel_id, message.id);
+                }
             } catch (e) {
-                console.error("Failed to delete ghost message:", e);
+                new Logger("GhostMessage").error("ghost message failed ):", e);
             }
         }
     }
