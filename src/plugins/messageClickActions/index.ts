@@ -22,18 +22,10 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { MessageFlags } from "@velocity-types/enums";
 import { findByPropsLazy } from "@webpack";
-import {
-    FluxDispatcher,
-    MessageTypeSets,
-    PermissionsBits,
-    PermissionStore,
-    UserStore,
-    WindowStore
-} from "@webpack/common";
+import { FluxDispatcher, MessageActions, MessageTypeSets, PermissionsBits, PermissionStore, UserStore, WindowStore } from "@webpack/common";
 import NoReplyMentionPlugin from "plugins/noReplyMention";
 
-const MessageActions = findByPropsLazy("deleteMessage", "startEditMessage");
-const EditStore = findByPropsLazy("isEditing", "isEditingAny");
+const EditActions = findByPropsLazy("isEditing", "isEditingAny");
 
 let isPressedKey = false;
 
@@ -99,7 +91,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "MessageClickActions",
     description: "Hold key and click to delete, double click to edit/reply",
-    authors: [Devs.Ven],
+    authors: [Devs.Ven, Devs.Velocity],
 
     settings,
 
@@ -115,7 +107,7 @@ export default definePlugin({
         WindowStore.removeChangeListener(focusChanged);
     },
 
-    onMessageClick(msg, channel, event) {
+    onMessageClick(msg: any, channel, event) {
         const isMe = msg.author.id === UserStore.getCurrentUser().id;
         const isSelfInvokedUserApp = msg.interactionMetadata ? (() => {
             if (msg.interactionMetadata.authorizing_integration_owners[0]) return false;
@@ -143,7 +135,7 @@ export default definePlugin({
             if (isMe) {
                 if (
                     !settings.store.enableDoubleClickToEdit ||
-                    EditStore.isEditing(channel.id, msg.id) ||
+                    EditActions.isEditing(channel.id, msg.id) ||
                     msg.state !== "SENT"
                 )
                     return;
