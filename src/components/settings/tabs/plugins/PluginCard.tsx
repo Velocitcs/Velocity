@@ -152,7 +152,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             isNew={isNew}
             enabled={isEnabled()}
             setEnabled={toggleEnabled}
-            disabled={disabled || plugin.unavailable}
+            disabled={disabled}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             badge={plugin.renderBadge?.()}
@@ -162,8 +162,6 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
                     aria-checked="false"
                     onClick={() => openPluginModal(plugin, onRestartNeeded)}
                     className={cl("info-button")}
-                    disabled={plugin.unavailable}
-                    style={plugin.unavailable ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
                 >
                     {plugin.options && !isObjectEmpty(plugin.options)
                         ? <CogWheel className={cl("settings-button")} viewBox="0 0 24 24" width="24" height="24" />
