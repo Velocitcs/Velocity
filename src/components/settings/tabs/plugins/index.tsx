@@ -74,14 +74,6 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
                         <Heading>Plugin Management</Heading>
                         <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
                         <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
-                        <Paragraph
-                            style={{
-                                color: "var(--text-feedback-positive)",
-                                fontWeight: 500,
-                            }}
-                        >
-                            <b>TIP:</b> Use # to reveal search filters!
-                        </Paragraph>
                     </>
                 )}
             </Card>
@@ -109,85 +101,11 @@ function ReloadRequiredCard({ required }: { required: boolean; }) {
 }
 
 function ExcludedPluginsList({ search }: { search: string; }) {
-    const normalized = search.trim().toLowerCase();
-    const isFilter = normalized.startsWith("#");
-
-    const FILTER_KEYS: Record<string, string[]> = {
-        type: ["setting", "info"],
-        badge: ["true", "false"],
-        patches: ["true", "false"],
-        author: ["authorname"],
-    };
-
-    const incompleteMatch = normalized.match(/^#(\w+)\s*([^\s#]*)$/);
-    const hasClosingHash = normalized.endsWith("#") && normalized.indexOf("#") !== normalized.lastIndexOf("#");
-    const isIncomplete = !!incompleteMatch && !hasClosingHash;
-
-    if (isFilter && isIncomplete) {
-        return (
-            <Paragraph className={Margins.top16}>
-                <Paragraph style={{ fontWeight: "bold", marginBottom: "6px" }}>
-                    Woah, you have came across a secret filter system. Check it out!
-                </Paragraph>
-
-                <ul style={{ listStyle: "disc", marginLeft: "20px" }}>
-                    {Object.entries(FILTER_KEYS).map(([key, values]) => (
-                        <li key={key} style={{ marginBottom: "8px" }}>
-                            <code
-                                style={{
-                                    background: "var(--background-secondary)",
-                                    padding: "2px 6px",
-                                    borderRadius: "4px",
-                                    fontSize: "12px",
-                                }}
-                            >
-                                #{key}
-                            </code>
-                            {"  "}
-                            →{" "}
-                            {values.map((v, i) => (
-                                <React.Fragment key={v}>
-                                    <code
-                                        style={{
-                                            background: "var(--background-tertiary)",
-                                            padding: "2px 4px",
-                                            borderRadius: "4px",
-                                            fontSize: "12px",
-                                        }}
-                                    >
-                                        {v}
-                                    </code>
-                                    {i < values.length - 1 && ", "}
-                                </React.Fragment>
-                            ))}
-                        </li>
-                    ))}
-                </ul>
-
-                <Paragraph style={{ marginTop: "10px", fontSize: "13px", color: "var(--text-normal)" }}>
-                    Start a filter with <code>#</code>, add a key and value, then close it with another <code>#</code>.<br />
-                    Example: <code>#type setting#</code><br />
-                    You can chain multiple filters like <code>#type setting# #badge true#</code>.<br />
-                </Paragraph>
-            </Paragraph>
-        );
-    }
-
-    if (isFilter && hasClosingHash) {
-        return (
-            <Paragraph className={Margins.top16}>
-                No plugins meet the search criteria.
-            </Paragraph>
-        );
-    }
-
     const matchingExcludedPlugins = Object.entries(ExcludedPlugins).filter(([name]) =>
         name.toLowerCase().includes(search)
     );
-    const ExcludedReasons: Record<
-        "web" | "discordDesktop" | "desktop" | "dev",
-        string
-    > = {
+
+    const ExcludedReasons: Record<string, string> = {
         desktop: "Discord Desktop app",
         discordDesktop: "Discord Desktop app",
         web: "Web version of Discord",
@@ -275,129 +193,10 @@ function PluginSettings({ isRedesign = false }) {
             case SearchStatus.NEW: if (!newPlugins?.includes(plugin.name)) return false; break;
         }
 
-        let query = search.trim().toLowerCase();
+        const query = search.trim().toLowerCase();
         if (!query.length) return true;
 
-        // ---- parse inline filters:  #key value#
-        const inlineFilters: Array<{ key: string; value: string; }> = [];
-        const inlineRegex = /#([a-z]+)\s+([^#]+)#/g;
-        let m;
-        while ((m = inlineRegex.exec(query)) !== null) {
-            inlineFilters.push({ key: m[1].toLowerCase(), value: m[2].trim().toLowerCase() });
-        }
-        const remainingSearch = query.replace(inlineRegex, "").trim();
-
-        // apply inline filters
-        if (inlineFilters.length) {
-            for (const { key, value } of inlineFilters) {
-                let ok = false;
-                switch (key) {
-                    case "type": {
-                        switch (value) {
-                            case "setting":
-                            case "settings":
-                                ok = !!plugin.options && Object.keys(plugin.options).length > 0;
-                                break;
-                            case "info":
-                            case "information":
-                                ok = !plugin.options || Object.keys(plugin.options).length === 0;
-                                break;
-                        }
-                        break;
-                    }
-                    case "badge": {
-                        const wants = ["true", "1", "yes"].includes(value);
-                        const has =
-                            typeof plugin.renderBadge === "function" ||
-                            Boolean((plugin as any).badge) ||
-                            Boolean((plugin as any).badges?.length);
-                        ok = wants ? has : !has;
-                        break;
-                    }
-                    case "patches": {
-                        const wants = ["true", "1", "yes"].includes(value);
-                        const has = Array.isArray(plugin.patches) && plugin.patches.length > 0;
-                        ok = wants ? has : !has;
-                        break;
-                    }
-                    case "author": {
-                        const authors = (plugin as any).authors as Array<{ name?: string; } | string> | undefined;
-                        ok =
-                            authors?.some(a =>
-                                typeof a === "string"
-                                    ? a.toLowerCase().includes(value)
-                                    : typeof a?.name === "string" && a.name.toLowerCase().includes(value)
-                            ) ?? false;
-                        break;
-                    }
-                    default:
-                        ok = true;
-                        break;
-                }
-                if (!ok) return false;
-            }
-            // ✔ if all inline filters matched and there is NO free text, accept
-            if (!remainingSearch) return true;
-            // otherwise continue and match remaining free text below
-            query = remainingSearch;
-        }
-
-        // ---- legacy single-filter syntax (tolerate trailing #)
-        switch (true) {
-            case query.startsWith("#author "): {
-                const args = query.replace(/^#author\s+/, "").replace(/#$/, "").trim().split(/\s+/);
-                const authorQuery = args[0]?.toLowerCase();
-                const pluginQuery = args[1]?.toLowerCase();
-
-                const authors = (plugin as any).authors as Array<{ name?: string; } | string> | undefined;
-                const authorMatches =
-                    authors?.some(a =>
-                        typeof a === "string"
-                            ? a.toLowerCase().includes(authorQuery)
-                            : typeof a?.name === "string" && a.name.toLowerCase().includes(authorQuery)
-                    ) ?? false;
-
-                const pluginMatches =
-                    !pluginQuery ||
-                    plugin.name.toLowerCase().includes(pluginQuery) ||
-                    (typeof plugin.description === "string" && plugin.description.toLowerCase().includes(pluginQuery));
-
-                return authorMatches && pluginMatches;
-            }
-
-            case query.startsWith("#badge "): {
-                const raw = query.replace(/^#badge\s+/, "").replace(/#$/, "").trim();
-                const wants = ["true", "1", "yes"].includes(raw);
-                const has =
-                    typeof plugin.renderBadge === "function" ||
-                    Boolean((plugin as any).badge) ||
-                    Boolean((plugin as any).badges?.length);
-                return wants ? has : !has;
-            }
-
-            case query.startsWith("#patches "): {
-                const raw = query.replace(/^#patches\s+/, "").replace(/#$/, "").trim();
-                const wants = ["true", "1", "yes"].includes(raw);
-                const has = Array.isArray(plugin.patches) && plugin.patches.length > 0;
-                return wants ? has : !has;
-            }
-
-            case query.startsWith("#type "): {
-                const raw = query.replace(/^#type\s+/, "").replace(/#$/, "").trim();
-                switch (raw) {
-                    case "setting":
-                    case "settings":
-                        return !!plugin.options && Object.keys(plugin.options).length > 0;
-                    case "info":
-                    case "information":
-                        return !plugin.options || Object.keys(plugin.options).length === 0;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-        // ---- plain text search (either after inline remainder, or normal)
+        // ---- plain text search
         switch (true) {
             case plugin.name.toLowerCase().includes(query):
             case typeof plugin.description === "string" && plugin.description.toLowerCase().includes(query):
@@ -436,54 +235,31 @@ function PluginSettings({ isRedesign = false }) {
         if (!pluginFilter(p)) continue;
 
         const isRequired = p.required || p.isDependency || depMap[p.name]?.some(d => settings.plugins[d].enabled);
-        const isUnavailable = p.unavailable;
 
-        if (isUnavailable) {
-            plugins.push(
-                <Tooltip text="This plugin is currently unavailable" key={p.name}>
-                    {({ onMouseLeave, onMouseEnter }) => (
-                        <PluginCard
-                            onMouseLeave={onMouseLeave}
-                            onMouseEnter={onMouseEnter}
-                            onRestartNeeded={() => { }}
-                            disabled={true}
-                            plugin={p}
-                            key={p.name}
-                            style={{ pointerEvents: "none", opacity: 0.5 }}
-                        />
-                    )}
-                </Tooltip>
-            );
-        } else if (isRequired) {
-            const tooltipText = p.required || !depMap[p.name]
-                ? "This plugin is required for Velocity to function."
-                : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
+        const card = isRequired ? (
+            <Tooltip text={p.required || !depMap[p.name] ? "This plugin is required for Velocity to function." : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled))} key={p.name}>
+                {({ onMouseLeave, onMouseEnter }) => (
+                    <PluginCard
+                        onMouseLeave={onMouseLeave}
+                        onMouseEnter={onMouseEnter}
+                        onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
+                        disabled={true}
+                        plugin={p}
+                        key={p.name}
+                    />
+                )}
+            </Tooltip>
+        ) : (
+            <PluginCard
+                onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
+                disabled={false}
+                plugin={p}
+                isNew={newPlugins?.includes(p.name)}
+                key={p.name}
+            />
+        );
 
-            requiredPlugins.push(
-                <Tooltip text={tooltipText} key={p.name}>
-                    {({ onMouseLeave, onMouseEnter }) => (
-                        <PluginCard
-                            onMouseLeave={onMouseLeave}
-                            onMouseEnter={onMouseEnter}
-                            onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
-                            disabled={true}
-                            plugin={p}
-                            key={p.name}
-                        />
-                    )}
-                </Tooltip>
-            );
-        } else {
-            plugins.push(
-                <PluginCard
-                    onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
-                    disabled={false}
-                    plugin={p}
-                    isNew={newPlugins?.includes(p.name)}
-                    key={p.name}
-                />
-            );
-        }
+        (isRequired ? requiredPlugins : plugins).push(card);
     }
 
     return (
