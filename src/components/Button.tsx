@@ -20,78 +20,86 @@ import "./Button.css";
 
 import { classNameFactory } from "@api/Styles";
 import { classes } from "@utils/misc";
-import type { Button as DiscordButton } from "@velocity-types";
-import type { ComponentPropsWithRef } from "react";
+import type { Button as ButtonTypes } from "@velocity-types";
+import type { ComponentPropsWithRef, ComponentType } from "react";
 
 import { OpenExternalIcon } from "./Icons";
 
 const btnCls = classNameFactory("vc-btn-");
-const textBtnCls = classNameFactory("vc-text-btn-");
 
+export type ButtonVariant = | "primary" | "secondary" | "dangerPrimary" | "dangerSecondary" | "overlayPrimary" | "positive" | "transparent" | "link" | "white" | "custom";
+export type ButtonType = | "button" | "text";
 export type ButtonSize = "min" | "xs" | "small" | "medium";
 
-export type TextButtonVariant = "primary" | "secondary" | "danger" | "link";
-
-export type TextButtonProps = ComponentPropsWithRef<"button"> & {
-    variant?: TextButtonVariant;
+export type ButtonProps = ComponentPropsWithRef<"button"> & {
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+    type?: ButtonType;
+    icon?: ComponentType<any>;
+    loading?: boolean;
+    fullWidth?: boolean;
 };
 
-export function TextButton({
-    variant = "primary",
-    className,
-    ...restProps
-}: TextButtonProps) {
-    return (
-        <button
-            className={classes(textBtnCls("base", variant), className)}
-            {...restProps}
-        />
-    );
-}
+const Sizes = {
+    SMALL: "small",
+    MEDIUM: "medium",
+    LARGE: "large",
+    XLARGE: "xlarge",
+    TINY: "min",
+    MAX: "max",
+    ICON: "icon",
+    MIN: "min",
+    NONE: "none",
+};
 
-const ButtonColorMapping: Record<string, string> = {
+const Looks = {
+    FILLED: "",
+    LINK: "LINK",
+    INVERTED: "INVERTED",
+    OUTLINED: "OUTLINED",
+    BLANK: "BLANK",
+};
+
+const Colors = {
+    BRAND: "BRAND",
+    PRIMARY: "PRIMARY",
+    RED: "RED",
+    TRANSPARENT: "TRANSPARENT",
+    CUSTOM: "CUSTOM",
+    GREEN: "GREEN",
+    LINK: "LINK",
+    WHITE: "WHITE",
+};
+
+const ButtonColorMapping: Record<keyof typeof Colors, ButtonProps["variant"]> = {
     BRAND: "primary",
-    PRIMARY: "primary",
+    PRIMARY: "secondary",
     RED: "dangerPrimary",
     TRANSPARENT: "secondary",
-    CUSTOM: "none",
+    CUSTOM: "custom",
     GREEN: "positive",
     LINK: "link",
     WHITE: "overlayPrimary",
 };
 
-const TextButtonPropsColorMapping: Record<string, TextButtonProps["variant"]> = {
-    BRAND: "primary",
-    PRIMARY: "primary",
-    RED: "danger",
-    TRANSPARENT: "secondary",
-    CUSTOM: "secondary",
-    GREEN: "primary",
-    LINK: "link",
-    WHITE: "secondary",
-};
-
-export const Button: DiscordButton = function Button({
-    look,
-    color = "BRAND",
+function ButtonBase({
+    variant = "primary",
     size = "medium",
-    loading = false,
-    icon,
+    children,
+    className,
+    icon: Icon,
+    loading,
+    fullWidth,
     ...restProps
-}) {
-    return look === "LINK" ? (
-        <TextButton
-            variant={TextButtonPropsColorMapping[color]}
-            {...(restProps as TextButtonProps)}
-        />
-    ) : (
+}: ButtonProps) {
+    return (
         <button
             data-mana-component="button"
-            className={classes(btnCls("base", ButtonColorMapping[color], size), restProps.className)}
-            {...restProps as any}
+            className={classes(btnCls("base", variant, size, fullWidth && "fullWidth"), className)}
             disabled={loading || restProps.disabled}
+            {...restProps}
         >
-            {icon && (
+            {Icon && (
                 <span
                     className={btnCls("icon")}
                     style={{
@@ -105,40 +113,47 @@ export const Button: DiscordButton = function Button({
                         marginLeft: "-4px",
                     }}
                 >
-                    {icon}
+                    <Icon width={20} height={20} />
                 </span>
             )}
-            {restProps.children}
-            {color === "LINK" && !icon && (
+
+            {children}
+            {variant === "link" && !Icon && (
                 <span className={btnCls("link-icon")}>
                     <OpenExternalIcon width="24" height="24" fill="none" viewBox="0 0 24 24" className="vc-icon" />
                 </span>
             )}
         </button>
     );
+}
+
+export const Button: ButtonTypes = function Button({
+    look,
+    color = "BRAND" as keyof typeof Colors,
+    size = "medium",
+    loading = false,
+    fullWidth,
+    icon,
+    ...restProps
+}) {
+    return (
+        <ButtonBase
+            variant={ButtonColorMapping[color]}
+            size={size as ButtonSize}
+            icon={icon}
+            fullWidth={fullWidth}
+            loading={loading}
+            {...(restProps as ButtonProps)}
+        />
+    );
+} as ButtonTypes & {
+    Looks: Record<keyof typeof Looks, string>;
+    Colors: Record<keyof typeof Colors, string>;
+    Sizes: Record<keyof typeof Sizes, string>;
+    Types: Record<ButtonType, string>;
 };
 
-Button.Looks = {
-    FILLED: "",
-    LINK: "LINK",
-} as const;
-
-Button.Colors = {
-    BRAND: "BRAND",
-    PRIMARY: "PRIMARY",
-    RED: "RED",
-    TRANSPARENT: "TRANSPARENT",
-    CUSTOM: "CUSTOM",
-    GREEN: "GREEN",
-    LINK: "LINK",
-    WHITE: "WHITE",
-} as const;
-
-Button.Sizes = {
-    SMALL: "small",
-    MEDIUM: "medium",
-    LARGE: "medium",
-    XLARGE: "medium",
-    NONE: "min",
-    MIN: "min",
-} as const;
+Button.Colors = Colors;
+Button.Sizes = Sizes;
+Button.Looks = Looks;
+Button.Types = { BUTTON: "button", TEXT: "text" };
