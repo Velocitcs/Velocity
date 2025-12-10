@@ -59,15 +59,14 @@ export function MemberCount({ isTooltip, tooltipGuildId }: { isTooltip?: true; t
         [OnlineMemberCountStore],
         () => OnlineMemberCountStore.getCount(guildId)
     );
-
     const { groups } = useStateFromStores(
         [ChannelMemberStore],
-        () => ChannelMemberStore.getProps(guildId, currentChannel?.id)
+        () => guildId && currentChannel?.id ? ChannelMemberStore.getProps(guildId, currentChannel.id) : { groups: [], rows: [], listId: "", version: 0 }
     );
 
     const threadGroups = useStateFromStores(
         [ThreadMemberListStore],
-        () => ThreadMemberListStore.getMemberListSections(currentChannel?.id)
+        () => currentChannel?.id ? ThreadMemberListStore.getMemberListSections(currentChannel.id) : undefined
     );
 
     if (!isTooltip && (groups.length >= 1 || groups[0].id !== "unknown")) {
