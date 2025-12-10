@@ -147,7 +147,7 @@ export default definePlugin({
                             alignItems: "center",
                             overflow: "hidden",
                             borderRadius: "50%",
-                            backgroundColor: "var(--interactive-normal)",
+                            backgroundColor: "var(--interactive-icon-default, var(--interactive-normal))",
                             color: "var(--background-base-lower)",
                         }}
                     >
