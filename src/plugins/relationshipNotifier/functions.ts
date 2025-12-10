@@ -81,7 +81,7 @@ export function onGuildDelete({ guild: { id, unavailable } }: GuildDelete) {
 
 export function onChannelDelete({ channel: { id, type } }: ChannelDelete) {
     if (!settings.store.groups) return;
-    if (type !== ChannelType.GroupDM) return;
+    if (type !== ChannelType.GROUP_DM) return;
 
     if (manuallyRemovedGroup === id) {
         deleteGroup(id);
