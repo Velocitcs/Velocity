@@ -17,19 +17,16 @@
 */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { isPluginEnabled } from "@api/PluginManager";
 import { CodeBlock } from "@components/CodeBlock";
-import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { CodeIcon, LogIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
-import { openEmbedRawModal } from "@plugins/copyEmbed";
 import { Devs } from "@utils/constants";
 import { copyWithToast, getCurrentGuild, getIntlMessage } from "@utils/discord";
 import { ManaModalDivider, ManaModalFooter, ManaModalHeader, ManaModalRoot } from "@utils/manaModal";
-import { closeModal, ModalContent, openModal } from "@utils/modal";
+import { ModalContent, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { Message } from "@velocity-types";
+import { Message, User } from "@velocity-types";
 import { ChannelStore, CMIconClasses, Forms, GuildRoleStore, Menu, PopoverClasses, React } from "@webpack/common";
 
 function sortObject<T extends object>(obj: T): T {
@@ -38,37 +35,28 @@ function sortObject<T extends object>(obj: T): T {
 
 function cleanMessage(msg: Message) {
     const clone = sortObject(JSON.parse(JSON.stringify(msg)));
-    for (const key of [
-        "email",
-        "phone",
-        "mfaEnabled",
-        "personalConnectionId"
-    ]) delete clone.author[key];
+    for (const key of ["email", "phone", "mfaEnabled", "personalConnectionId"])
+        delete clone.author[key];
 
     const cloneAny = clone as any;
     delete cloneAny.editHistory;
     delete cloneAny.deleted;
     delete cloneAny.firstEditTimestamp;
-    cloneAny.attachments?.forEach(a => delete a.deleted);
+    cloneAny.attachments?.forEach((a: any) => delete a.deleted);
 
     return clone;
 }
 
-function cleanUser(user: any) {
+function cleanUser(user: User) {
     const clone = sortObject(JSON.parse(JSON.stringify(user)));
-    for (const key of [
-        "email",
-        "phone",
-        "mfaEnabled",
-        "personalConnectionId"
-    ]) delete clone[key];
+    for (const key of ["email", "phone", "mfaEnabled", "personalConnectionId"])
+        delete clone[key];
 
     return clone;
 }
 
-
-export function openViewRawModal(json: string, type: string, content?: string, originalMessage?: any) {
-    const key = openModal(props => (
+export function openViewRawModal(json: string, type: string, content?: string) {
+    openModal(props => (
         <ErrorBoundary>
             <ManaModalRoot {...props} size="lg" paddingSize="sm">
                 <ManaModalHeader title="View Raw" />
@@ -81,7 +69,6 @@ export function openViewRawModal(json: string, type: string, content?: string, o
                                 lang="txt"
                                 className={Margins.bottom20}
                             />
-                            <Divider className={Margins.bottom20} />
                         </>
                     )}
                     <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
@@ -111,22 +98,6 @@ export function openViewRawModal(json: string, type: string, content?: string, o
                                         copyWithToast(content, "Content copied to clipboard!")
                                 }
                             ]
-                            : []),
-                        ...(originalMessage?.embeds?.length > 0 &&
-                            isPluginEnabled("CopyEmbed")
-                            ? [
-                                {
-                                    text: "View Embed",
-                                    type: "reset",
-                                    variant: "secondary",
-                                    fullWidth: true,
-                                    icon: () => <LogIcon width="24" height="24" />,
-                                    onClick: () => {
-                                        closeModal(key);
-                                        openEmbedRawModal(originalMessage);
-                                    }
-                                }
-                            ]
                             : [])
                     ]}
                 />
@@ -135,20 +106,14 @@ export function openViewRawModal(json: string, type: string, content?: string, o
     ));
 }
 
-
 function openViewRawModalMessage(msg: Message) {
-    const originalMsg = msg;
     msg = cleanMessage(msg);
-    const msgJson = JSON.stringify(msg, null, 4);
-
-    return openViewRawModal(msgJson, "Message", msg.content, originalMsg);
+    return openViewRawModal(JSON.stringify(msg, null, 4), "Message", msg.content);
 }
 
-export function openViewRawModalUser(user: any) {
+export function openViewRawModalUser(user: User) {
     user = cleanUser(user);
-    const userJson = JSON.stringify(user, null, 4);
-
-    return openViewRawModal(userJson, "User");
+    return openViewRawModal(JSON.stringify(user, null, 4), "User");
 }
 
 const messageContextCallback: NavContextMenuPatchCallback = (children, props) => {
@@ -173,9 +138,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
         const lastChild = children.at(-1);
         if (lastChild?.key === "developer-actions") {
             const p = lastChild.props;
-            if (!Array.isArray(p.children))
-                p.children = [p.children];
-
+            if (!Array.isArray(p.children)) p.children = [p.children];
             children = p.children;
         }
 
@@ -205,7 +168,7 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
 
     children.push(
         <Menu.MenuItem
-            id={"vc-view-role-raw"}
+            id="vc-view-role-raw"
             label="View Raw"
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
             icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
@@ -232,25 +195,17 @@ export default definePlugin({
     messagePopoverButton: {
         icon: CodeIcon,
         render(msg) {
-            const handleClick = e => {
-                e.preventDefault();
-                e.stopPropagation();
-                openViewRawModalMessage(msg);
-            };
-
-            const handleContextMenu = e => {
-                e.preventDefault();
-                e.stopPropagation();
-                copyWithToast(msg.content);
-            };
-
             return {
                 label: "View Raw",
                 icon: () => <CodeIcon viewBox="0 0 24 24" height="24" width="24" className={PopoverClasses.icon} />,
                 message: msg,
                 channel: ChannelStore.getChannel(msg.channel_id),
-                onClick: handleClick,
-                onContextMenu: handleContextMenu
+                onClick: () => openViewRawModalMessage(msg),
+                onContextMenu: (e: any) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    copyWithToast(msg.content);
+                }
             };
         }
     }
