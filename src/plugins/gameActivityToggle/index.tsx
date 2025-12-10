@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import "./style.css";
+
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -24,7 +26,7 @@ import { openPluginModal } from "@components/settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { Menu, Popout, React } from "@webpack/common";
+import { CMIconClasses, Menu, Popout, React } from "@webpack/common";
 
 import managedStyle from "./style.css?managed";
 
@@ -91,7 +93,7 @@ function ActivityContextMenu({ closePopout }) {
             <Menu.MenuItem
                 id="game-activity-context-settings"
                 label="Activity Settings"
-                icon={() => (<CogWheel width="24" height="24" fill="none" viewBox="0 0 24 24" className="icon_f84418 " />)}
+                icon={() => <CogWheel width="24" height="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
                 action={() => openPluginModal(Velocity.Plugins.plugins.GameActivityToggle)}
             />
         </Menu.Menu>
