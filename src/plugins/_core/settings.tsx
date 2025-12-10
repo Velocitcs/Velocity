@@ -23,6 +23,7 @@ import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { React } from "@webpack/common";
+import { ReactNode } from "react";
 
 import gitHash from "~git-hash";
 
@@ -35,11 +36,13 @@ interface SettingsLayoutNode {
     key?: string;
     type: number;
     legacySearchKey?: string;
+    getLegacySearchKey?(): string;
     useLabel?: () => string;
     useTitle?: () => string;
     buildLayout?: () => SettingsLayoutNode[];
     icon?: () => React.ReactNode;
     render?: () => React.ReactNode;
+    StronglyDiscouragedCustomComponent?(): ReactNode;
 }
 
 interface SettingsLayoutBuilder {
@@ -118,6 +121,14 @@ export default definePlugin({
                 match: /(\i)\.buildLayout\(\)(?=\.map)/,
                 replace: "$self.buildLayout($1)"
             }
+        },
+
+        {
+            find: "getWebUserSettingFromSection",
+            replacement: {
+                match: /new Map\(\[(?=\[.{0,10}\.ACCOUNT,.{0,10}\.ACCOUNT_PANEL)/,
+                replace: "new Map([...$self.getSettingsSectionMappings(),"
+            }
         }
     ],
 
@@ -131,7 +142,7 @@ export default definePlugin({
                 label: "Velocity"
             },
             {
-                section: "settings/tabs",
+                section: "VelocitySettings",
                 label: "Velocity",
                 element: VelocityTab,
                 icon: showIcons ? <CogWheel height="18" width="18" viewBox="0 0 24 24" /> : null,
@@ -166,7 +177,7 @@ export default definePlugin({
                 className: "vc-cloud"
             },
             {
-                section: "settings/tabsSync",
+                section: "VelocityBackupAndRestore",
                 label: "Backup & Restore",
                 element: BackupAndRestoreTab,
                 icon: showIcons ? <BackupRestoreIcon height="18" width="18" viewBox="0 0 24 24" /> : null,
@@ -195,6 +206,19 @@ export default definePlugin({
         return categories.filter(Boolean);
     },
 
+    getSettingsSectionMappings() {
+        return [
+            ["VelocitySettings", "velocity_main_panel"],
+            ["VelocityPlugins", "velocity_plugins_panel"],
+            ["VelocityThemes", "velocity_themes_panel"],
+            ["VelocityUpdater", "velocity_updater_panel"],
+            ["VelocityCloud", "velocity_cloud_panel"],
+            ["VelocityBackupAndRestore", "velocity_backup_restore_panel"],
+            ["VelocityDeveloper", "velocity_developer_tools_panel"],
+            ["VelocityHelpers", "velocity_helpers_panel"]
+        ];
+    },
+
     buildLayout(originalLayoutBuilder: SettingsLayoutBuilder) {
         const layout = originalLayoutBuilder.buildLayout();
         if (originalLayoutBuilder.key !== "$Root") return layout;
@@ -212,6 +236,7 @@ export default definePlugin({
             key,
             type: LayoutType.ENTRY,
             legacySearchKey: title.toUpperCase(),
+            getLegacySearchKey: () => title.toUpperCase(),
             useTitle: () => title,
             icon: () => <Icon width={20} height={20} />,
             buildLayout: () => [
@@ -224,6 +249,7 @@ export default definePlugin({
                             key: key + "_pane",
                             type: LayoutType.PANE,
                             buildLayout: () => [],
+                            StronglyDiscouragedCustomComponent: () => <Component />,
                             render: () => <Component isRedesign={true} />,
                             useTitle: () => title
                         }
@@ -245,7 +271,7 @@ export default definePlugin({
         }
 
         if (IS_DEV && PatchHelperTab && DeveloperTab) {
-            velocityEntries.push(makeEntry("velocity_patch_helper", "Helpers", PatchHelperTab, HelpersIcon));
+            velocityEntries.push(makeEntry("velocity_helpers", "Helpers", PatchHelperTab, HelpersIcon));
             velocityEntries.push(makeEntry("velocity_developer_tools", "Developer Tools", DeveloperTab, DevOptionsIcon));
         }
 
