@@ -19,10 +19,11 @@
 import "./style.css";
 
 import { addServerListElement, removeServerListElement, ServerListRenderPosition } from "@api/ServerList";
-import { TextButton } from "@components/Button";
+import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
+import { ActiveThreadData, ChannelRecord } from "@velocity-types";
 import { ActiveJoinedThreadsStore, FluxDispatcher, GuildChannelStore, GuildStore, React, ReadStateStore } from "@webpack/common";
 
 function onClick() {
@@ -34,6 +35,7 @@ function onClick() {
             .concat(
                 Object.values(ActiveJoinedThreadsStore.getActiveJoinedThreadsForGuild(guild.id))
                     .flatMap(threadChannels => Object.values(threadChannels))
+                    .map((t: ActiveThreadData): ChannelRecord => ({ channel: t.channel, comparator: -1 }))
             )
             .forEach((c: { channel: { id: string; }; }) => {
                 if (!ReadStateStore.hasUnread(c.channel.id)) return;
@@ -54,19 +56,21 @@ function onClick() {
 }
 
 const ReadAllButton = () => (
-    <TextButton
-        variant="secondary"
+    <Button
         onClick={onClick}
         className="vc-ranb-button"
+        size={Button.Sizes.SMALL}
+        color={Button.Colors.CUSTOM}
+        type="text"
     >
         Read All
-    </TextButton>
+    </Button>
 );
 
 export default definePlugin({
     name: "ReadAllNotificationsButton",
     description: "Read all server notifications with a single button click!",
-    authors: [Devs.kemo],
+    authors: [Devs.kemo, Devs.Velocity],
     dependencies: ["ServerListAPI"],
 
     renderReadAllButton: ErrorBoundary.wrap(ReadAllButton, { noop: true }),
