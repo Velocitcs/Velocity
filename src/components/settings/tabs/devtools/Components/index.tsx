@@ -16,338 +16,568 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import "./styles.css";
+
+import { classNameFactory } from "@api/Styles";
 import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
+import { FormSwitch } from "@components/FormSwitch";
 import { CogWheel, ErrorIcon } from "@components/Icons";
+import { Logger } from "@utils/Logger";
 import { findByCodeLazy } from "@webpack";
-import { CalendarPicker, Card, ColorPicker, Forms, RadioGroup, SearchBar, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
+import { CalendarPicker, ColorPicker, Forms, RadioGroup, SearchableSelect, SearchBar, Select, Slider, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
+import { Moment } from "moment";
+import { ReactNode } from "react";
+
+const logger = new Logger("ComponentsTab", "#ffae00ff");
+const cl = classNameFactory("vc-components-");
 
 const BotTag = findByCodeLazy(".botTagRegular");
 
-function Section({ title, children }) {
+interface SectionProps {
+    title: string;
+    description: string;
+    children: ReactNode;
+}
+
+function Section({ title, description, children }: SectionProps) {
     return (
-        <Card className="vc-card" style={{ flex: 1 }}>
-            <Forms.FormTitle tag="h5">{title}</Forms.FormTitle>
-            <Flex flexDirection="column" style={{ gap: 10 }}>
-                {children}
-            </Flex>
-        </Card>
+        <ErrorBoundary message={`${title} section failed to render`}>
+            <div className={cl("card", "full-width")}>
+                <div className={cl("card-header")}>
+                    <h5>{title}</h5>
+                </div>
+                <div className={cl("card-body")}>
+                    <Forms.FormText>{description}</Forms.FormText>
+                    {children}
+                </div>
+            </div>
+        </ErrorBoundary>
+    );
+}
+
+function GridSection({ title, description, children }: SectionProps) {
+    return (
+        <ErrorBoundary message={`${title} section failed to render`}>
+            <div className={cl("card")}>
+                <div className={cl("card-header")}>
+                    <h5>{title}</h5>
+                </div>
+                <div className={cl("card-body")}>
+                    <Forms.FormText>{description}</Forms.FormText>
+                    {children}
+                </div>
+            </div>
+        </ErrorBoundary>
     );
 }
 
 export function ComponentsTab() {
-    const [showPicker, setShowPicker] = useState(false);
-    const [color, setColor] = useState<number | null>(0xff9434);
-    const [selectedValue, setSelectedValue] = useState("option1");
-    const [search, setSearch] = useState("");
-    const [basicInput, setBasicInput] = useState("");
-    const [leadingInput, setLeadingInput] = useState("");
-    const [countInput, setCountInput] = useState("");
-    const [clearableInput, setClearableInput] = useState("Test clearable");
-    const [errorInput, setErrorInput] = useState("");
-    const [tags, setTags] = useState([
-        { id: "bot", label: "Bot" },
-        { id: "webhooks", label: "Webhooks" }
-    ]);
-    const [tagInput, setTagInput] = useState("");
+    const [state, setState] = useState({
+        pickerDate: undefined as Moment | undefined,
+        showPicker: false,
+        color: 0xff9434,
+        selectedValue: "option1",
+        selectValue: "opt1",
+        sliderValue: 50,
+        checkboxBasic: false,
+        checkboxDisabled: false,
+        search: "",
+        selectableValue: { label: "Apple", value: "apple" },
+        inputs: {
+            basic: "",
+            leading: "",
+            maxLength: "",
+            clearable: "Test clearable",
+            readOnly: "",
+            fullWidth: "",
+            tag: ""
+        },
+        tags: [
+            { id: "bot", label: "Bot" },
+            { id: "webhooks", label: "Webhooks" }
+        ]
+    });
 
-    const positions = ["top", "bottom", "left", "right"] as const;
-    const buttonColors = ["BRAND", "RED", "GREEN", "PRIMARY", "TRANSPARENT", "LINK"] as const;
+    const updateInput = (key: string, value: string) => {
+        setState(prev => ({
+            ...prev,
+            inputs: { ...prev.inputs, [key]: value }
+        }));
+    };
 
-    const addTag = () => {
-        if (tagInput.trim()) {
-            const newTag = {
-                id: Date.now().toString(),
-                label: tagInput.trim()
-            };
-            console.log("Adding tag:", newTag);
-            setTags([...tags, newTag]);
-            setTagInput("");
+    const updateState = (key: string, value: any) => {
+        setState(prev => ({ ...prev, [key]: value }));
+    };
+
+    const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (!state.inputs.tag.trim()) return;
+
+            const newTag = { id: Date.now().toString(), label: state.inputs.tag.trim() };
+            logger.log("[TagGroup] Added tag", { tag: newTag, totalTags: state.tags.length + 1 });
+
+            setState(prev => ({
+                ...prev,
+                tags: [...prev.tags, newTag],
+                inputs: { ...prev.inputs, tag: "" }
+            }));
         }
     };
 
-    const removeTag = keys => {
+    const removeTag = (keys: Set<string>) => {
         const keyArray = Array.from(keys);
-        console.log("Removing tags with keys:", keyArray);
-        setTags(tags.filter(tag => !keyArray.includes(tag.id)));
+        logger.log("[TagGroup] Removed tags", { removedIds: keyArray, totalTags: state.tags.length - keyArray.length });
+
+        setState(prev => ({
+            ...prev,
+            tags: prev.tags.filter(tag => !keyArray.includes(tag.id))
+        }));
     };
 
+    const handleCalendarSelect = (date: Moment) => {
+        logger.log("[CalendarPicker] Date selected", { date: date.format("YYYY-MM-DD") });
+        updateState("pickerDate", date);
+        updateState("showPicker", false);
+    };
+
+    const handleColorChange = (value: number | null) => {
+        const hexColor = value ? `#${value.toString(16).padStart(6, "0")}` : "none";
+        logger.log("[ColorPicker] Color changed", { hexColor, rawValue: value });
+        updateState("color", value);
+    };
+
+    const handleRadioChange = (option: { value: any; name?: string | ReactNode; desc?: string; }) => {
+        logger.log("[RadioGroup] Selection changed", { value: option.value, name: option.name });
+        updateState("selectedValue", option.value);
+    };
+
+
     return (
-        <>
-            <Flex flexDirection="column" style={{ gap: 5 }}>
+        <div className={cl("tab")}>
+            <div className={cl("search-box")}>
                 <SearchBar
                     autoFocus={true}
                     placeholder="Search sections..."
-                    query={search}
-                    onClear={() => {
-                        setSearch("");
-                    }}
-                    onChange={val => {
-                        setSearch(val);
-                    }}
+                    query={state.search}
+                    onClear={() => updateState("search", "")}
+                    onChange={val => updateState("search", val)}
                 />
-                <Divider style={{ marginBottom: 20 }} />
-            </Flex>
+            </div>
+            <div className={cl("grid")}>
+                <GridSection title="Calendar Picker" description="Select dates from a calendar interface">
+                    <Flex flexDirection="row" style={{ alignItems: "center", gap: 12 }}>
+                        <Button
+                            onClick={() => updateState("showPicker", !state.showPicker)}
+                            size="medium"
+                            color="success"
+                        >
+                            {state.showPicker ? "Hide" : "Show"} Calendar
+                        </Button>
+                        {state.pickerDate && (
+                            <Forms.FormText>
+                                Selected: {state.pickerDate.format("YYYY-MM-DD")}
+                            </Forms.FormText>
+                        )}
+                    </Flex>
 
-            <Flex flexDirection="row" style={{ gap: 20, alignItems: "flex-start" }}>
-                <Section title="Calendar Picker">
-                    <Forms.FormText>Calendar date picker component</Forms.FormText>
-                    <Button
-                        onClick={() => {
-                            console.log("Calendar button clicked, showPicker:", !showPicker);
-                            setShowPicker(!showPicker);
-                        }}
-                        size="medium"
-                        color={showPicker ? "red" : "brand"}
-                    >
-                        {showPicker ? "Close" : "Open"}
-                    </Button>
-
-                    {showPicker && (
-                        <div style={{ marginTop: 10 }}>
+                    {state.showPicker && (
+                        <div className={cl("picker-container")}>
                             <CalendarPicker
-                                autoFocus
-                                onSelect={date => {
-                                    console.log("CalendarPicker onSelect:", date);
-                                    setShowPicker(false);
-                                }}
+                                autoFocus={true}
+                                value={state.pickerDate}
+                                onSelect={handleCalendarSelect}
                             />
                         </div>
                     )}
-                </Section>
+                </GridSection>
 
-                <Section title="Color picker component">
-                    <Forms.FormText>Color picker with some cool text effect</Forms.FormText>
-                    <Flex flexDirection="row" style={{ alignItems: "center", gap: 10 }}>
+                <GridSection title="Color Picker" description="Pick colors with eye dropper and palette">
+                    <Flex flexDirection="row" style={{ alignItems: "center", gap: 16 }}>
                         <ColorPicker
-                            color={color}
+                            color={state.color}
                             showEyeDropper
-                            onChange={value => {
-                                console.log("ColorPicker onChange:", value);
-                                setColor(value);
-                            }}
+                            onChange={handleColorChange}
                         />
                         <Forms.FormText
                             style={{
                                 fontSize: 18,
                                 fontWeight: 600,
-                                color: color
-                                    ? `#${color.toString(16).padStart(6, "0")}`
+                                color: state.color
+                                    ? `#${state.color.toString(16).padStart(6, "0")}`
                                     : "var(--text-normal)"
                             }}
                         >
-                            Test Text
+                            {state.color ? `#${state.color.toString(16).padStart(6, "0")}` : "Select color"}
                         </Forms.FormText>
                     </Flex>
-                </Section>
-            </Flex>
+                </GridSection>
+            </div>
 
-            <Divider style={{ margin: "24px 0" }} />
+            <Section title="Text Input" description="Various text input configurations and states">
+                <div className={cl("inputs-stack")}>
+                    <TextInput
+                        placeholder="Standard input"
+                        value={state.inputs.basic}
+                        onChange={val => updateInput("basic", val)}
+                    />
 
-            <Section title="Text Input">
-                <Forms.FormText>Basic text input with different props</Forms.FormText>
+                    <TextInput
+                        placeholder="Input with prefix"
+                        leading="https://"
+                        value={state.inputs.leading}
+                        onChange={val => updateInput("leading", val)}
+                    />
 
-                <TextInput
-                    placeholder="Basic input"
-                    value={basicInput}
-                    onChange={val => {
-                        setBasicInput(val);
-                    }}
-                />
+                    <TextInput
+                        placeholder="Limited to 50 characters"
+                        value={state.inputs.maxLength}
+                        onChange={val => updateInput("maxLength", val)}
+                        maxLength={50}
+                        showCharacterCount={true}
+                    />
+                    <TextInput
+                        placeholder="Can be cleared"
+                        value={state.inputs.clearable}
+                        onChange={val => updateInput("clearable", val)}
+                        onClear={() => updateInput("clearable", "")}
+                        clearable={true}
+                    />
 
-                <TextInput
-                    placeholder="With leading text"
-                    leading="https://"
-                    value={leadingInput}
-                    onChange={val => {
-                        setLeadingInput(val);
-                    }}
-                />
+                    <TextInput
+                        placeholder="Read-only input"
+                        value="Cannot be edited"
+                        readOnly={true}
+                    />
 
-                <TextInput
-                    placeholder="With character count"
-                    value={countInput}
-                    onChange={val => {
-                        setCountInput(val);
-                    }}
-                    maxLength={50}
-                    showCharacterCount
-                />
+                    <TextInput
+                        placeholder="Full width input"
+                        value={state.inputs.fullWidth}
+                        onChange={val => updateInput("fullWidth", val)}
+                        fullWidth={true}
+                    />
 
-                <TextInput
-                    placeholder="Clearable input"
-                    value={clearableInput}
-                    onChange={val => {
-                        console.log("Clearable TextInput onChange:", val);
-                        setClearableInput(val);
-                    }}
-                    clearable={true}
-                />
-
-                <TextInput
-                    placeholder="With error"
-                    error="This field is required"
-                    value={errorInput}
-                    onChange={val => {
-                        setErrorInput(val);
-                    }}
-                />
+                    <TextInput
+                        placeholder="Input with error"
+                        error="This field is required"
+                        value={state.inputs.readOnly}
+                        onChange={val => updateInput("readOnly", val)}
+                    />
+                </div>
             </Section>
 
-            <Divider style={{ margin: "24px 0" }} />
-
-            <Section title="Tag Input">
-                <Forms.FormText>Selectable, removable, and typeable tags</Forms.FormText>
-
-                <Flex flexDirection="row" style={{ gap: 8 }}>
-                    <TextInput
-                        placeholder="Type tag name..."
-                        value={tagInput}
+            <Section title="Form Switch" description="Toggle switches with titles and descriptions">
+                <div className={cl("inputs-stack")}>
+                    <FormSwitch
+                        title="Enable feature"
+                        description="Turn this feature on or off"
+                        value={state.checkboxBasic}
                         onChange={val => {
-                            setTagInput(val);
-                        }}
-                        onKeyDown={e => {
-                            if (e.key === "Enter") {
-                                e.preventDefault();
-                                addTag();
-                            }
+                            logger.log("[FormSwitch] Toggled", { value: val });
+                            updateState("checkboxBasic", val);
                         }}
                     />
+                    <FormSwitch
+                        title="Disabled switch"
+                        description="This switch cannot be toggled"
+                        value={state.checkboxDisabled}
+                        onChange={val => updateState("checkboxDisabled", val)}
+                        disabled={true}
+                    />
+                </div>
+            </Section>
+
+            <Section title="Select" description="Dropdown selection from predefined options">
+                <Flex flexDirection="row" style={{ gap: 12, alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                        <Select
+                            placeholder="Choose an option..."
+                            options={[
+                                { label: "Option 1", value: "opt1" },
+                                { label: "Option 2", value: "opt2" },
+                                { label: "Disabled Option", value: "opt3", disabled: true }
+                            ]}
+                            isSelected={val => val === state.selectValue}
+                            select={val => {
+                                logger.log("[Select] Selected", { value: val });
+                                updateState("selectValue", val);
+                            }}
+                            serialize={val => val}
+                            renderOptionLabel={opt => (
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <span>✓</span>
+                                    <span>{opt.label}</span>
+                                </div>
+                            )}
+                        />
+                    </div>
                     <Button
+                        size={Button.Sizes.MEDIUM}
+                        color={Button.Colors.BRAND}
                         onClick={() => {
-                            addTag();
+                            logger.log("[Select] Props", {
+                                placeholder: "Choose an option...",
+                                options: [
+                                    { label: "Option 1", value: "opt1" },
+                                    { label: "Option 2", value: "opt2" },
+                                    { label: "Disabled Option", value: "opt3", disabled: true }
+                                ],
+                                isSelected: "val => val === state.selectValue",
+                                select: "callback",
+                                serialize: "val => val",
+                                renderOptionLabel: "function"
+                            });
                         }}
-                        size="medium"
-                        color="brand"
                     >
-                        Add
+                        Show Props
                     </Button>
                 </Flex>
-
-                <TagGroup
-                    label="Tags"
-                    layout="inline"
-                    selectionMode="multiple"
-                    items={tags}
-                    onRemove={keys => {
-                        console.log("TagGroup onRemove:", keys);
-                        removeTag(keys);
-                    }}
-                />
             </Section>
 
-            <Divider style={{ margin: "24px 0" }} />
-
-            <Section title="Bot Tags">
-                <Forms.FormText>All of the discord bot tag types</Forms.FormText>
-                <Flex flexDirection="row" style={{ gap: 8, flexWrap: "wrap" }}>
-                    <BotTag type={BotTag.Types.BOT} verified></BotTag>
-                    <BotTag type={BotTag.Types.SYSTEM_DM} verified></BotTag>
-                    <BotTag type={BotTag.Types.SERVER} verified></BotTag>
-                    <BotTag type={BotTag.Types.ORIGINAL_POSTER} verified></BotTag>
-                    <BotTag type={BotTag.Types.STAFF_ONLY_DM} verified></BotTag>
-                    <BotTag type={BotTag.Types.NOT_STAFF_WARNING} verified></BotTag>
-                    <BotTag type={BotTag.Types.REMIX} verified></BotTag>
+            <Section title="Searchable Select" description="Dropdown with search and filtering">
+                <Flex flexDirection="row" style={{ gap: 12, alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                        <SearchableSelect
+                            placeholder="Search and select..."
+                            options={[
+                                { label: "Apple", value: "apple" },
+                                { label: "Banana", value: "banana" },
+                                { label: "Cherry", value: "cherry" },
+                                { label: "Date", value: "date" },
+                                { label: "Elderberry", value: "elderberry" },
+                                { label: "Fig", value: "fig" }
+                            ]}
+                            value={state.selectableValue}
+                            onChange={val => {
+                                logger.log("[SearchableSelect] Changed", { value: val });
+                                updateState("selectableValue", val);
+                            }}
+                            renderOptionPrefix={() => (
+                                <span style={{ color: "#a78bfa" }}>🔥</span>
+                            )}
+                            renderOptionSuffix={opt => opt ? (
+                                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                                    {opt.value.toUpperCase()}
+                                </span>
+                            ) : null}
+                            clearable={true}
+                        />
+                    </div>
+                    <Button
+                        size={Button.Sizes.MEDIUM}
+                        color={Button.Colors.BRAND}
+                        onClick={() => {
+                            logger.log("[SearchableSelect] Props", {
+                                placeholder: "Search and select...",
+                                options: [
+                                    { label: "Apple", value: "apple" },
+                                    { label: "Banana", value: "banana" },
+                                    { label: "Cherry", value: "cherry" },
+                                    { label: "Date", value: "date" },
+                                    { label: "Elderberry", value: "elderberry" },
+                                    { label: "Fig", value: "fig" }
+                                ],
+                                value: "state.selectableValue",
+                                onChange: "callback",
+                                renderOptionPrefix: "function",
+                                renderOptionSuffix: "function",
+                                multi: false,
+                                clearable: true,
+                                closeOnSelect: true
+                            });
+                        }}
+                    >
+                        Show Props
+                    </Button>
                 </Flex>
             </Section>
-            <Divider style={{ margin: "24px 0" }} />
+            <Section title="Slider" description="Numeric input with draggable slider">
+                {(() => {
+                    const sliderProps = {
+                        initialValue: 50,
+                        minValue: 0,
+                        maxValue: 100,
+                        onValueChange: "callback"
+                    };
 
+                    const markerSliderProps = {
+                        initialValue: 25,
+                        minValue: 0,
+                        maxValue: 100,
+                        markers: [0, 25, 50, 75, 100],
+                        stickToMarkers: true,
+                        onValueChange: "callback"
+                    };
 
-            <Flex flexDirection="column" style={{ gap: 12 }}>
-                <Forms.FormTitle tag="h5">Tooltip props section</Forms.FormTitle>
-                <Forms.FormText>
-                    Custom tooltip position props for Tooltip component.
-                </Forms.FormText>
-                <Flex flexDirection="row" style={{ gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-                    {positions.map(position => (
+                    return (
+                        <>
+                            <div className={cl("slider-wrapper")}>
+                                <Slider
+                                    {...sliderProps}
+                                    onValueChange={val => {
+                                        logger.log("[Slider] Value changed", { value: val });
+                                        updateState("sliderValue", val);
+                                    }}
+                                />
+                                <Button
+                                    size={Button.Sizes.SMALL}
+                                    color={Button.Colors.BRAND}
+                                    onClick={() => {
+                                        logger.log("[Slider] Props", sliderProps);
+                                    }}
+                                >
+                                    Show Props
+                                </Button>
+                            </div>
+
+                            <div className={cl("slider-wrapper")}>
+                                <Slider
+                                    {...markerSliderProps}
+                                    onValueChange={val => {
+                                        logger.log("[Slider] Marker slider changed", { value: val });
+                                    }}
+                                />
+                                <Button
+                                    size={Button.Sizes.SMALL}
+                                    color={Button.Colors.BRAND}
+                                    onClick={() => {
+                                        logger.log("[Slider] Marker Slider Props", markerSliderProps);
+                                    }}
+                                >
+                                    Show Props
+                                </Button>
+                            </div>
+                        </>
+                    );
+                })()}
+            </Section>
+
+            <Section title="Tag Input" description="Add, remove, and manage tags">
+                <TextInput
+                    placeholder="Type tag name..."
+                    value={state.inputs.tag}
+                    onChange={val => updateInput("tag", val)}
+                    onKeyDown={addTag}
+                />
+
+                <div className={cl("tags-container")}>
+                    <TagGroup
+                        label="Tags"
+                        layout="inline"
+                        selectionMode="multiple"
+                        items={state.tags}
+                        onRemove={removeTag}
+                    />
+                </div>
+            </Section>
+
+            <Section title="Bot Tags" description="Special badges for bots and user types">
+                <Flex flexDirection="row" style={{ gap: 12, flexWrap: "wrap" }}>
+                    {Object.entries(BotTag.Types).map(([key, type]) => (
+                        <BotTag key={key} type={type} />
+                    ))}
+                </Flex>
+            </Section>
+
+            <Section title="Tooltip Positions" description="Tooltips positioned in different directions">
+                <Flex flexDirection="row" style={{ gap: 12, flexWrap: "wrap" }}>
+                    {(["top", "bottom", "left", "right"] as const).map(position => (
                         <Tooltip
                             key={position}
-                            text={`Tooltip on ${position}`}
+                            text={`Positioned ${position}`}
                             position={position}
                             color="primary"
                         >
                             {({ onMouseEnter, onMouseLeave }) => (
                                 <Button
-                                    size="small"
-                                    color="brand"
-                                    onMouseEnter={onMouseEnter}
+                                    size={Button.Sizes.SMALL}
+                                    color={Button.Colors.BRAND}
+                                    onMouseEnter={() => {
+                                        logger.log("[Tooltip] Position prop", { position });
+                                        onMouseEnter();
+                                    }}
                                     onMouseLeave={onMouseLeave}
                                 >
-                                    Tooltip on the {position}
+                                    {position.toUpperCase()}
                                 </Button>
                             )}
                         </Tooltip>
                     ))}
                 </Flex>
-            </Flex>
 
-            <Divider style={{ margin: "24px 0" }} />
+                <Divider />
 
-            <Section title="Developer Button Colors">
-                <Forms.FormText>Test all button color variations.</Forms.FormText>
-                <Flex flexDirection="row" style={{ gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-                    {buttonColors.map(btnColor => (
+                <Flex flexDirection="row" style={{ gap: 12, flexWrap: "wrap" }}>
+                    {["primary", "brand", "green", "red", "yellow"].map(color => (
+                        <Tooltip
+                            key={color}
+                            text={`${color} tooltip`}
+                            position="top"
+                            color={color}
+                        >
+                            {({ onMouseEnter, onMouseLeave }) => (
+                                <Button
+                                    size={Button.Sizes.SMALL}
+                                    color={Button.Colors.BRAND}
+                                    onMouseEnter={() => {
+                                        logger.log("[Tooltip] Color prop", { color });
+                                        onMouseEnter();
+                                    }}
+                                    onMouseLeave={onMouseLeave}
+                                >
+                                    {color.toUpperCase()}
+                                </Button>
+                            )}
+                        </Tooltip>
+                    ))}
+                </Flex>
+            </Section>
+
+            <Section title="Button Colors" description="All available button color variants">
+                <Flex flexDirection="row" style={{ gap: 12, flexWrap: "wrap" }}>
+                    {Object.entries(Button.Colors).map(([key, btnColor]) => (
                         <Button
-                            key={btnColor}
+                            key={key}
                             color={btnColor}
                             size="medium"
-                            onClick={() => console.log(`Button ${btnColor} clicked`)}
+                            onClick={() => logger.log("[Button] Clicked", { color: key, value: btnColor })}
                         >
-                            {btnColor.toUpperCase()}
+                            {key}
                         </Button>
                     ))}
                 </Flex>
             </Section>
 
-            <Divider style={{ margin: "24px 0" }} />
-
-            <Section title="Radio Groups">
-                <Forms.FormText>
-                    Test radio button props, open console for RADIO props
-                </Forms.FormText>
-
+            <Section title="Radio Groups" description="Single selection from multiple radio options">
                 <RadioGroup.Gu
-                    value={selectedValue}
+                    value={state.selectedValue}
                     options={[
-                        { name: "With Color", value: "option1", color: "#ff9434" },
-                        { name: "With Description", value: "option2", desc: "This is a description" },
+                        { name: "With Color. Randomized because its cool", value: "option1", color: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}` },
+                        { name: "With Description", value: "option2", desc: "Supporting text" },
                         { name: "Disabled Option", value: "option3", disabled: true },
                         {
                             name: (
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                    <span>Option With a Custom HTML!</span>
-                                    <div
-                                        style={{
-                                            marginLeft: "auto",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "8px"
-                                        }}
-                                    >
-                                        <span>Another text with an icon</span>
-                                        <CogWheel
-                                            height="24"
-                                            width="24"
-                                            viewBox="0 0 24 24"
-                                            className="vc-icon"
-                                        />
+                                    <span>Custom HTML</span>
+                                    <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
+                                        <span>With icon</span>
+                                        <CogWheel height="24" width="24" viewBox="0 0 24 24" className="vc-icon" />
                                     </div>
                                 </div>
                             ),
                             value: "option4"
                         },
-                        { name: "With Color and Desc", value: "option5", color: "#34ff94", desc: "Colored with description" },
-                        { name: "With an icon prop", value: "option6", icon: (props: any) => <ErrorIcon {...props} height={24} width={24} viewBox="0 0 24 24" /> },
-                        { name: "With Icon Class", desc: "(wrong class lol but you get it.)", value: "option7", radioItemIconClassName: "radioBar__88a69" },
-                        { name: "With Bar Class", value: "option8", radioBarClassName: "option_be1a1e" },
+                        { name: "Color + Description", value: "option5", color: "#34ff94", desc: "Both props combined" },
+                        { name: "With Icon", value: "option6", icon: (props: any) => <ErrorIcon {...props} height={24} width={24} viewBox="0 0 24 24" /> },
+                        { name: "Icon Class", desc: "Custom class styling", value: "option7", radioItemIconClassName: "radioBar__88a69" },
+                        { name: "Bar Class", value: "option8", radioBarClassName: "option_be1a1e" }
                     ]}
-                    onChange={option => {
-                        console.log("RadioGroup onChange:", option);
-                        setSelectedValue(option.value);
-                    }}
+                    onChange={handleRadioChange}
                 />
             </Section>
-        </>
+        </div>
     );
 }
