@@ -120,7 +120,7 @@ export default definePlugin({
             find: "SEARCH_NO_RESULTS]:{section:",
             replacement: [
                 {
-                    match: /\[eN\.s6\.(\w+)\]:\{(section:|searchableTitles:|label:|ariaLabel:)/g,
+                    match: /\[eP\.s6\.(\w+)\]:\{(section:|searchableTitles:|label:|ariaLabel:)/g,
                     replace: (match, key, prop) => {
 
                         const iconMap = {
@@ -138,6 +138,7 @@ export default definePlugin({
                             GIFT_INVENTORY: "GiftIcon",
                             BILLING: "BillingIcon",
                             APPEARANCE: "AppearanceIcon",
+                            GAMES: "GameOverlayIcon",
                             ACCESSIBILITY: "AccessibilityIcon",
                             VOICE_AND_VIDEO: "Microphone",
                             CHAT: "ChatIcon",
@@ -156,7 +157,7 @@ export default definePlugin({
                         };
 
                         const icon = iconMap[key];
-                        return icon ? `[eN.s6.${key}]:{icon:$self.getIcon('${icon}'),${prop}` : match;
+                        return icon ? `[eP.s6.${key}]:{icon:$self.getIcon('${icon}'),${prop}` : match;
                     }
                 },
                 {
