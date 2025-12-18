@@ -20,21 +20,7 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { useCallback, useEffect, useRef, useState } from "@webpack/common";
-
-interface SearchBarComponentProps {
-    ref?: React.RefObject<any>;
-    autoFocus: boolean;
-    size: string;
-    onChange: (query: string) => void;
-    onClear: () => void;
-    query: string;
-    placeholder: string;
-    className?: string;
-}
-
-type TSearchBarComponent =
-    React.FC<SearchBarComponentProps>;
+import { SearchBar, useCallback, useEffect, useRef, useState } from "@webpack/common";
 
 interface Gif {
     format: number;
@@ -93,7 +79,7 @@ export default definePlugin({
                     // https://regex101.com/r/07gpzP/1
                     // ($1 renderHeaderContent=function { ... switch (x) ... case FAVORITES:return) ($2) ($3 case default:return r.jsx(($<searchComp>), {...props}))
                     match: /(renderHeaderContent\(\).{1,150}FAVORITES:return)(.{1,150});(case.{1,200}default:return\(0,\i\.jsx\)\((?<searchComp>\i\..{1,10}),)/,
-                    replace: "$1 this.state.resultType === 'Favorites' ? $self.renderSearchBar(this, $<searchComp>) : $2;$3"
+                    replace: "$1 this.state.resultType === 'Favorites' ? $self.renderSearchBar(this) : $2;$3"
                 },
                 {
                     // to persist filtered favorites when component re-renders.
@@ -111,11 +97,11 @@ export default definePlugin({
     getTargetString,
 
     instance: null as Instance | null,
-    renderSearchBar(instance: Instance, SearchBarComponent: TSearchBarComponent) {
+    renderSearchBar(instance: Instance) {
         this.instance = instance;
         return (
             <ErrorBoundary noop>
-                <SearchBar instance={instance} SearchBarComponent={SearchBarComponent} />
+                <GifSearchBar instance={instance} />
             </ErrorBoundary>
         );
     },
@@ -129,8 +115,7 @@ export default definePlugin({
     }
 });
 
-
-function SearchBar({ instance, SearchBarComponent }: { instance: Instance; SearchBarComponent: TSearchBarComponent; }) {
+function GifSearchBar({ instance }: { instance: Instance; }) {
     const [query, setQuery] = useState("");
     const ref = useRef<{ containerRef?: React.RefObject<HTMLDivElement>; } | null>(null);
 
@@ -174,8 +159,7 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
     }, []);
 
     return (
-        <SearchBarComponent
-            ref={ref}
+        <SearchBar
             autoFocus={true}
             size="md"
             className=""
