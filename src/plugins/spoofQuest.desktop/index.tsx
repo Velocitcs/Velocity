@@ -34,11 +34,12 @@ async function tryAcceptAndRun() {
     const { quests } = QuestStore;
     if (!quests?.size) return;
 
+    const expiredMap = QuestStore.getExpiredQuestsMap();
     const unenrolledQuests = [...quests.values()].filter(q =>
         !q.userStatus?.enrolledAt &&
         !q.userStatus?.completedAt &&
         !q.userStatus?.claimedAt &&
-        !QuestStore.isQuestExpired(q.id) &&
+        !expiredMap.get(q.id) &&
         !failedQuests.has(q.id)
     );
 
@@ -121,6 +122,13 @@ export default definePlugin({
             replacement: {
                 match: /onLoadedMetadata:e=>\{null!=e2\.current&&\(tl\.info\("\[QV\] \| handleLoadedMetadata/,
                 replace: "onLoadedMetadata:e=>{null!=e2.current&&(e2.current.focused=true,tl.info(\"[QV]"
+            }
+        },
+        {
+            find: "handleCanPlay: did NOT early return",
+            replacement: {
+                match: /\$!==d\.Dvm\.HIDDEN&&\$!==d\.Dvm\.EXITING&&\$!==d\.Dvm\.EXITED&&\(null==\$\|\|!eE\||ev\|e7\)&&\(!ep\|ef\|e7\)\|\|null==e2\.current\|eO!==w\.rq\.PLAYING\|\(tl\.info/,
+                replace: "true||(tl.info"
             }
         }
     ],
