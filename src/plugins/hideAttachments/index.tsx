@@ -108,10 +108,10 @@ export default definePlugin({
             }
         },
         {
-            find: '"aria-labelledby":ee,"aria-describedby":et',
+            find: "hideTimestamp:!0,hideGuildTag:!1}),childrenAccessories:e.hideAccessories?void 0:",
             replacement: {
-                match: /childrenAccessories:e\.hideAccessories\?void 0:\(0,(\i)\.Q\)\(e,(\i)\)/,
-                replace: "childrenAccessories:e.hideAccessories?void 0:$self.shouldHide(e?.message?.id)?(0,r.jsx)(\"span\",{className:\"vc-hideAttachments-accessory\",children:\"Media Hidden\"}):(0,$1.Q)(e,$2)"
+                match: /childrenAccessories:(\i)\.hideAccessories\?void 0:\(0,(\i)\.Q\)\((\i),(\i),(\i)\)/,
+                replace: "childrenAccessories:$1.hideAccessories?void 0:$self.shouldHide($3?.message?.id)?(0,r.jsx)(\"span\",{className:\"vc-hideAttachments\",children:\"Media Hidden\"}):(0,$2.Q)($3,$4,$5)"
             }
         }
     ],
