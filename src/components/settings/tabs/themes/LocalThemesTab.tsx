@@ -23,6 +23,7 @@ import { Divider } from "@components/Divider";
 import { DeleteIcon, FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { Margins } from "@components/margins";
+import { Paragraph } from "@components/Paragraph";
 import { AddonCard } from "@components/settings/AddonCard";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
@@ -30,7 +31,7 @@ import { UserThemeHeader } from "@main/themes";
 import { classes } from "@utils/misc";
 import { openModal } from "@utils/modal";
 import { findLazy } from "@webpack";
-import { Card, Forms, showToast, Toasts, Tooltip, useEffect, useRef, useState } from "@webpack/common";
+import { Alerts, Card, Forms, showToast, Toasts, Tooltip, useEffect, useRef, useState } from "@webpack/common";
 import ClientThemePlugin from "plugins/clientTheme";
 import type { ComponentType, CSSProperties, Ref, SyntheticEvent } from "react";
 
@@ -38,6 +39,12 @@ import { ThemeModal } from "./themeModal";
 
 
 const cl = classNameFactory("vc-settings-theme-");
+
+export enum ThemeReturnState {
+    SUCCESS,
+    ALREADY_EXIST,
+    ERROR
+}
 
 type FileInput = ComponentType<{
     ref: Ref<HTMLInputElement>;
@@ -87,7 +94,6 @@ async function onFileUpload(e: SyntheticEvent<HTMLInputElement>, callback: () =>
 const linkContainerStyle: CSSProperties = { marginBottom: ".5em", display: "flex", flexDirection: "column" };
 const linkStyle: CSSProperties = { marginRight: ".5em" };
 const uploadSpanStyle: CSSProperties = { position: "relative" };
-const IS_WEB = typeof window !== "undefined" && !window.VelocityNative;
 
 export function LocalThemesTab() {
     const settings = useSettings(["enabledThemes"]);
@@ -107,15 +113,17 @@ export function LocalThemesTab() {
     const requiredThemes = userThemes?.filter(t => (t as any).required) || [];
 
 
-    function openCreateThemeModal(onSuccess: () => void) {
-        const key = openModal(props => (
-            <ThemeModal mode="create" onSuccess={onSuccess} modalKey={key} {...props} />
-        ));
-    }
-
-    function openEditThemeModal(onSuccess: () => void) {
-        const key = openModal(props => (
-            <ThemeModal mode="edit" onSuccess={onSuccess} modalKey={key} {...props} />
+    function openThemeModal(type: "create" | "edit") {
+        openModal(props => (
+            <ThemeModal
+                mode={type}
+                modalProps={props}
+                returnState={state => {
+                    if (state === ThemeReturnState.SUCCESS) {
+                        refreshLocalThemes();
+                    }
+                }}
+            />
         ));
     }
 
@@ -129,13 +137,13 @@ export function LocalThemesTab() {
                     </Link>
                     <Link href="https://github.com/search?q=discord+theme">GitHub</Link>
                 </div>
-                <Forms.FormText>If using the BD site, click on "Download" and place the downloaded .theme.css file into your themes folder.</Forms.FormText>
+                <Paragraph>If using the BD site, click on "Download" and place the downloaded .theme.css file into your themes folder.</Paragraph>
             </Card>
 
             <Card className="vc-settings-card">
                 <Forms.FormTitle tag="h5">External Resources</Forms.FormTitle>
-                <Forms.FormText>For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.</Forms.FormText>
-                <Forms.FormText>Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.</Forms.FormText>
+                <Paragraph>For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.</Paragraph>
+                <Paragraph>Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.</Paragraph>
             </Card>
 
             <section>
@@ -144,7 +152,7 @@ export function LocalThemesTab() {
                     <>
                         <QuickAction
                             text="Create New Theme"
-                            action={() => openCreateThemeModal(refreshLocalThemes)}
+                            action={() => openThemeModal("create")}
                             Icon={PlusIcon}
                         />
 
@@ -187,7 +195,7 @@ export function LocalThemesTab() {
 
                         <QuickAction
                             text="Edit Theme"
-                            action={() => openEditThemeModal(refreshLocalThemes)}
+                            action={() => openThemeModal("edit")}
                             Icon={PencilIcon}
                         />
 
@@ -222,7 +230,7 @@ export function LocalThemesTab() {
                                                 color: "var(--status-danger)"
                                             }}
                                             onClick={() => {
-                                                Velocity.Webpack.Common.Alerts.show({
+                                                Alerts.show({
                                                     title: "Delete Theme",
                                                     body: `Are you sure you want to delete "${theme.name}"? This action cannot be undone.`,
                                                     confirmText: "Delete",

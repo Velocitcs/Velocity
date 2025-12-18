@@ -18,8 +18,8 @@
 
 import { useSettings } from "@api/Settings";
 import { Margins } from "@components/margins";
-import { classes } from "@utils/misc";
-import { Card, Forms, TextArea, useState } from "@webpack/common";
+import { Paragraph } from "@components/Paragraph";
+import { Card, FormNotice, Forms, TextArea, useState } from "@webpack/common";
 
 export function OnlineThemesTab() {
     const settings = useSettings(["themeLinks"]);
@@ -42,17 +42,14 @@ export function OnlineThemesTab() {
 
     return (
         <>
-            <Card className={classes("vc-warning-card", Margins.bottom16)}>
-                <Forms.FormText size="md">
-                    This section is for advanced users. If you are having difficulties using it, use the
-                    Local Themes tab instead.
-                </Forms.FormText>
-            </Card>
+            <FormNotice messageType="warn" className={Margins.bottom16}>
+                This section is for advanced users. <br></br> If you are having difficulties using it, use the local Themes tab instead.
+            </FormNotice>
             <Card className="vc-settings-card">
                 <Forms.FormTitle tag="h5">Paste links to css files here</Forms.FormTitle>
-                <Forms.FormText>One link per line</Forms.FormText>
-                <Forms.FormText>You can prefix lines with @light or @dark to toggle them based on your Discord theme</Forms.FormText>
-                <Forms.FormText>Make sure to use direct links to files (raw or github.io)!</Forms.FormText>
+                <Paragraph>One link per line</Paragraph>
+                <Paragraph>You can prefix lines with @light or @dark to toggle them based on your Discord theme</Paragraph>
+                <Paragraph>Make sure to use direct links to files (raw or github.io)!</Paragraph>
             </Card>
 
             <section>
