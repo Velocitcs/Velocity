@@ -230,7 +230,7 @@ export default definePlugin({
                 case ChannelType.DM:
                     titleString = message.author.username.trim();
                     break;
-                case ChannelType.GroupDM:
+                case ChannelType.GROUP_DM:
                     const channelName = channel.name.trim() ?? channel.rawRecipients.map(e => e.username).join(", ");
                     titleString = `${message.author.username} (${channelName})`;
                     break;
@@ -324,7 +324,7 @@ export default definePlugin({
 
 function shouldIgnoreForChannelType(channel: Channel) {
     if (channel.type === ChannelType.DM && settings.store.dmNotifications) return false;
-    if (channel.type === ChannelType.GroupDM && settings.store.groupDmNotifications) return false;
+    if (channel.type === ChannelType.GROUP_DM && settings.store.groupDmNotifications) return false;
     else return !settings.store.serverNotifications;
 }
 
