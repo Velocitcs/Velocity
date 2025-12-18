@@ -23,6 +23,7 @@ import { classNameFactory } from "@api/Styles";
 import { Text } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { DeleteIcon, PlusIcon } from "@components/Icons";
+import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
 import { getIntlMessage, openUserProfile } from "@utils/discord";
 import { ModalContent, ModalFooter, ModalHeader, ModalRoot } from "@utils/modal";
@@ -93,6 +94,94 @@ function ReasonsComponent() {
     );
 }
 
+function BanModalComponent({ transitionState, guild, user, ban, onClose }: any) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [copied, setCopied] = useState(false);
+
+    const handleUnban = async () => {
+        setError(null);
+        setLoading(true);
+        try {
+            await BanActions.unbanUser(guild.id, user.id);
+            onClose();
+        } catch (e: any) {
+            setError(e.message);
+            setLoading(false);
+        }
+    };
+
+    const copyUsername = () => {
+        copyToClipboard(user.username);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <ModalRoot className={cl("ban-modal")} transitionState={transitionState}>
+            <ModalHeader separator={false} className={cl("modal-user-section")}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Clickable onClick={() => openUserProfile(user.id)} style={{ cursor: "pointer" }}>
+                        <Avatar src={user.getAvatarURL(guild.id, 96)} size="SIZE_80" />
+                    </Clickable>
+                    <div className={cl("ban-user-details")}>
+                        {copied ? (
+                            <Tooltip text="Copied!" color="green" forceOpen={true}>
+                                {props => (
+                                    <Text
+                                        {...props}
+                                        variant="heading-xl/semibold"
+                                        onClick={copyUsername}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        @{user.username}
+                                    </Text>
+                                )}
+                            </Tooltip>
+                        ) : (
+                            <Text
+                                variant="heading-xl/semibold"
+                                onClick={copyUsername}
+                                style={{ cursor: "pointer" }}
+                            >
+                                @{user.username}
+                            </Text>
+                        )}
+                        {user.globalName && <Text variant="text-md/normal" color="header-secondary">{user.globalName}</Text>}
+                        {!user.hasUniqueUsername() && <Text variant="text-md/normal" color="header-secondary">#{user.discriminator}</Text>}
+                    </div>
+                </div>
+            </ModalHeader>
+
+            <ModalContent className={cl("ban-modal-content")}>
+                <Text variant="text-md/bold">Ban Reason</Text>
+                <Text variant="text-sm/normal">{ban?.reason || "No reason provided"}</Text>
+
+                <Text variant="text-md/bold" style={{ marginTop: "16px" }}>User Info</Text>
+                <Text variant="text-xs/normal" color="text-muted">User ID: {user.id}</Text>
+                {user.globalName && <Text variant="text-xs/normal" color="text-muted">Display Name: {user.globalName}</Text>}
+                <Text variant="text-xs/normal" color="text-muted">Account Created: {new Date(user.createdAt).toLocaleDateString()}</Text>
+
+                {error && <Text variant="text-sm/normal" color="text-danger">{error}</Text>}
+            </ModalContent>
+
+            <ModalFooter className={cl("modal-footer")}>
+                <Button
+                    size={Button.Sizes.MEDIUM}
+                    color={Button.Colors.RED}
+                    onClick={handleUnban}
+                    disabled={loading}
+                >
+                    {loading ? "Unbanning..." : "Unban User"}
+                </Button>
+                <Button size={Button.Sizes.MEDIUM} color={Button.Colors.PRIMARY} onClick={onClose}>
+                    Close
+                </Button>
+            </ModalFooter>
+        </ModalRoot>
+    );
+}
+
 const settings = definePluginSettings({
     reasons: {
         description: "Your custom reasons",
@@ -134,102 +223,17 @@ export default definePlugin({
             ]
         },
         {
-            find: "className:T.bannedUserModal",
+            find: "bansSearchContainer,children:",
             predicate: () => settings.store.betterModal,
             replacement: {
-                match: /return\s*\(0,\w+\.jsxs\)\(\w+\.\w+,\{className:\w+\.bannedUserModal,transitionState:\w+/,
-                replace: "return $self.renderBanModal(arguments[0]);return (0,r.jsxs)(o.Y0X,{className:T.bannedUserModal,transitionState:n"
+                match: /y\(this,"handleShowModal",\(\)=>\{let\{guild:e,user:t,ban:i\}=this\.props;\(0,o\.ZDy\)\(async\(\)=>\{let\{default:l\}=await n\.e\("61697"\)\.then\(n\.bind\(n,355160\)\);return n=>\(0,r\.jsx\)\(l,E\(N\(\{\},n\),\{guild:e,user:t,ban:i\}\)\)\}\)\}\)/,
+                replace: "y(this,\"handleShowModal\",()=>{let{guild:e,user:t,ban:i}=this.props;(0,o.ZDy)(async()=>{return n=>$self.renderBanModal({...n,guild:e,user:t,ban:i})})})"
             }
         }
     ],
 
     renderBanModal(props: any) {
-        const { transitionState, guild, user, ban, hideDiscriminator, onClose } = props;
-        const [loading, setLoading] = useState(false);
-        const [error, setError] = useState(null);
-        const [copied, setCopied] = useState(false);
-
-        const handleUnban = async () => {
-            setError(null);
-            setLoading(true);
-            try {
-                await BanActions.unbanUser(guild.id, user.id);
-                onClose();
-            } catch (e: any) {
-                setError(e.message);
-                setLoading(false);
-            }
-        };
-
-        const copyUsername = () => {
-            navigator.clipboard.writeText(user.username);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        };
-
-        return (
-            <ModalRoot className={cl("ban-modal")} transitionState={transitionState}>
-                <ModalHeader separator={false} className={cl("modal-user-section")}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <Clickable onClick={() => openUserProfile(user.id)} style={{ cursor: "pointer" }}>
-                            <Avatar src={user.getAvatarURL(guild.id, 96)} size="SIZE_80" />
-                        </Clickable>
-                        <div className={cl("ban-user-details")}>
-                            {copied ? (
-                                <Tooltip text="Copied!" color="green" forceOpen={true}>
-                                    {props => (
-                                        <Text
-                                            {...props}
-                                            variant="heading-xl/semibold"
-                                            onClick={copyUsername}
-                                            style={{ cursor: "pointer" }}
-                                        >
-                                            @{user.username}
-                                        </Text>
-                                    )}
-                                </Tooltip>
-                            ) : (
-                                <Text
-                                    variant="heading-xl/semibold"
-                                    onClick={copyUsername}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    @{user.username}
-                                </Text>
-                            )}
-                            {user.globalName && <Text variant="text-md/normal" color="header-secondary">{user.globalName}</Text>}
-                            {!hideDiscriminator && !user.hasUniqueUsername() && <Text variant="text-md/normal" color="header-secondary">#{user.discriminator}</Text>}
-                        </div>
-                    </div>
-                </ModalHeader>
-
-                <ModalContent className={cl("ban-modal-content")}>
-                    <Text variant="text-md/bold">Ban Reason</Text>
-                    <Text variant="text-sm/normal">{ban?.reason || "No reason provided"}</Text>
-
-                    <Text variant="text-md/bold" style={{ marginTop: "16px" }}>User Info</Text>
-                    <Text variant="text-xs/normal" color="text-muted">User ID: {user.id}</Text>
-                    {user.globalName && <Text variant="text-xs/normal" color="text-muted">Display Name: {user.globalName}</Text>}
-                    <Text variant="text-xs/normal" color="text-muted">Account Created: {new Date(user.createdAt).toLocaleDateString()}</Text>
-
-                    {error && <Text variant="text-sm/normal" color="text-danger">{error}</Text>}
-                </ModalContent>
-
-                <ModalFooter className={cl("modal-footer")}>
-                    <Button
-                        size={Button.Sizes.MEDIUM}
-                        color={Button.Colors.RED}
-                        onClick={handleUnban}
-                        disabled={loading}
-                    >
-                        {loading ? "Unbanning..." : "Unban User"}
-                    </Button>
-                    <Button size={Button.Sizes.MEDIUM} color={Button.Colors.PRIMARY} onClick={onClose}>
-                        Close
-                    </Button>
-                </ModalFooter>
-            </ModalRoot>
-        );
+        return <BanModalComponent {...props} />;
     },
 
     getReasons() {
