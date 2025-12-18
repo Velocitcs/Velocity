@@ -19,6 +19,7 @@
 import "./ChatButton.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import { getOrderedNames } from "@components/settings/tabs/plugins/UIElements";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
@@ -91,7 +92,27 @@ export interface ChatBarProps {
     };
 }
 
-export type ChatBarButtonFactory = (props: ChatBarProps & { isMainChat: boolean; }) => JSX.Element | null;
+function getOrderedKeys(
+    map: Map<string, any>,
+    settings: Record<string, any>
+) {
+    const known = new Set(map.keys());
+
+    // keys in saved order
+    const ordered = Object.keys(settings).filter(k => known.has(k));
+
+    // append new / unknown buttons
+    for (const key of known) {
+        if (!ordered.includes(key)) {
+            ordered.push(key);
+        }
+    }
+
+    return ordered;
+}
+
+
+export type ChatBarButtonFactory = (props: ChatBarProps & { isMainChat: boolean; isAnyChat: boolean; }) => JSX.Element | null;
 export type ChatBarButtonData = {
     render: ChatBarButtonFactory;
     /**
@@ -110,15 +131,34 @@ const logger = new Logger("ChatButtons");
 function VelocityChatBarButtons(props: ChatBarProps) {
     const { chatBarButtons } = useSettings(["uiElements.chatBarButtons.*"]).uiElements;
 
+    const orderedKeys = getOrderedNames(ChatBarButtonMap, chatBarButtons);
+    const { analyticsName } = props.type;
+
     return (
         <>
-            {Array.from(ChatBarButtonMap)
-                .filter(([key]) => chatBarButtons[key]?.enabled !== false)
-                .map(([key, { render: Button }]) => (
-                    <ErrorBoundary noop key={key} onError={e => logger.error(`Failed to render ${key}`, e.error)}>
-                        <Button {...props} isMainChat={props.type.analyticsName === "normal"} />
+            {orderedKeys.map(key => {
+                const data = ChatBarButtonMap.get(key);
+                if (!data) return null;
+                if (chatBarButtons[key]?.enabled === false) return null;
+
+                const Button = data.render;
+
+                return (
+                    <ErrorBoundary
+                        noop
+                        key={key}
+                        onError={e =>
+                            logger.error(`Failed to render ${key}`, e.error)
+                        }
+                    >
+                        <Button
+                            {...props}
+                            isMainChat={analyticsName === "normal"}
+                            isAnyChat={["normal", "sidebar"].includes(analyticsName)}
+                        />
                     </ErrorBoundary>
-                ))}
+                );
+            })}
         </>
     );
 }
