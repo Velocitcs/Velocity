@@ -270,8 +270,8 @@ export default definePlugin({
             replacement: {
                 // let { ... nowPlaying: a = !1 ...
                 // let { overlay: b ... } = Props
-                match: /#{intl::SETTINGS_GAMES_TOGGLE_OVERLAY}.+?}\(\),(?<=nowPlaying:(\i)=!1,.+?overlay:\i,[^}]+?\}=(\i).+?)/,
-                replace: (m, nowPlaying, props) => `${m}$self.renderToggleGameActivityButton(${props},${nowPlaying}),`,
+                match: /return\s*\(0,r\.jsxs\)\(r\.Fragment,\{children:\[\(0,r\.jsxs\)\("div"/,
+                replace: m => "return (0,r.jsxs)(r.Fragment,{children:[$self.renderToggleGameActivityButton(S,a),(0,r.jsxs)(\"div\"",
                 noWarn: true,
             }
         },
