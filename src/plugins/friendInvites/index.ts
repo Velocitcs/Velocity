@@ -19,9 +19,7 @@
 import { ApplicationCommandInputType, sendBotMessage } from "@api/Commands";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { findByPropsLazy } from "@webpack";
-
-const FriendInvites = findByPropsLazy("createFriendInvite");
+import { InviteActions } from "@webpack/common";
 
 export default definePlugin({
     name: "FriendInvites",
@@ -34,7 +32,7 @@ export default definePlugin({
             inputType: ApplicationCommandInputType.BUILT_IN,
 
             execute: async (args, ctx) => {
-                const invite = await FriendInvites.createFriendInvite();
+                const invite = await InviteActions.createFriendInvite();
 
                 sendBotMessage(ctx.channel.id, {
                     content: `
@@ -50,7 +48,7 @@ export default definePlugin({
             description: "View a list of all generated friend invites.",
             inputType: ApplicationCommandInputType.BUILT_IN,
             execute: async (_, ctx) => {
-                const invites = await FriendInvites.getAllFriendInvites();
+                const invites = await InviteActions.getAllFriendInvites();
                 const friendInviteList = invites.map(i =>
                     `
                     _discord.gg/${i.code}_ ·
@@ -69,7 +67,7 @@ export default definePlugin({
             description: "Revokes all generated friend invites.",
             inputType: ApplicationCommandInputType.BUILT_IN,
             execute: async (_, ctx) => {
-                await FriendInvites.revokeFriendInvites();
+                await InviteActions.revokeFriendInvites();
 
                 sendBotMessage(ctx.channel.id, {
                     content: "All friend invites have been revoked."
