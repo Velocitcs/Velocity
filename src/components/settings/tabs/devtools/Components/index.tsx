@@ -25,49 +25,50 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { CogWheel, ErrorIcon } from "@components/Icons";
+import { Margins } from "@components/margins";
+import { Paragraph } from "@components/Paragraph";
 import { Logger } from "@utils/Logger";
-import { findByCodeLazy } from "@webpack";
-import { CalendarPicker, ColorPicker, Forms, RadioGroup, SearchableSelect, SearchBar, Select, Slider, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
+import { classes } from "@utils/misc";
+import { findByCodeLazy, findComponentByCodeLazy } from "@webpack";
+import { CalendarPicker, Card, ColorPicker, RadioGroup, SearchableSelect, SearchBar, Select, Slider, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
 import { Moment } from "moment";
-import { ReactNode } from "react";
+import { ComponentType, ReactNode } from "react";
+
+import { EmbedComponentProps } from "./types";
 
 const logger = new Logger("ComponentsTab", "#ffae00ff");
 const cl = classNameFactory("vc-components-");
-
+const Embed: ComponentType<EmbedComponentProps> = findComponentByCodeLazy(".inlineMediaEmbed");
 const BotTag = findByCodeLazy(".botTagRegular");
 
 interface SectionProps {
     title: string;
     description: string;
     children: ReactNode;
+    panel?: ReactNode;
 }
 
-function Section({ title, description, children }: SectionProps) {
+function Section({ title, description, children, panel }: SectionProps) {
     return (
         <ErrorBoundary message={`${title} section failed to render`}>
             <div className={cl("card", "full-width")}>
-                <div className={cl("card-header")}>
-                    <h5>{title}</h5>
-                </div>
-                <div className={cl("card-body")}>
-                    <Forms.FormText>{description}</Forms.FormText>
-                    {children}
-                </div>
-            </div>
-        </ErrorBoundary>
-    );
-}
-
-function GridSection({ title, description, children }: SectionProps) {
-    return (
-        <ErrorBoundary message={`${title} section failed to render`}>
-            <div className={cl("card")}>
-                <div className={cl("card-header")}>
-                    <h5>{title}</h5>
-                </div>
-                <div className={cl("card-body")}>
-                    <Forms.FormText>{description}</Forms.FormText>
-                    {children}
+                <div className={cl("card-left")}>
+                    <div className={cl("card-header")}>
+                        <h5>{title}</h5>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "row", flex: 1 }}>
+                        <div style={{ flex: 1 }}>
+                            <div className={cl("card-body")}>
+                                <Paragraph>{description}</Paragraph>
+                                {children}
+                            </div>
+                        </div>
+                        {panel && (
+                            <div className={cl("card-right")}>
+                                {panel}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </ErrorBoundary>
@@ -86,6 +87,16 @@ export function ComponentsTab() {
         checkboxDisabled: false,
         search: "",
         selectableValue: { label: "Apple", value: "apple" },
+        embed: {
+            title: "Example Title",
+            description: "This is a test embed with some content",
+            authorName: "Example User",
+            authorIcon: "https://cdn.discordapp.com/embed/avatars/0.png",
+            colorNum: 0x2c2f33,
+            footerText: "Example Footer",
+            footerIcon: "",
+            timestamp: false
+        },
         inputs: {
             basic: "",
             leading: "",
@@ -101,58 +112,62 @@ export function ComponentsTab() {
         ]
     });
 
-    const updateInput = (key: string, value: string) => {
-        setState(prev => ({
-            ...prev,
-            inputs: { ...prev.inputs, [key]: value }
-        }));
-    };
+    const useAction = (key: string, action?: string) => {
+        return {
+            inputs: {
+                update: (inputKey: string, value: string) => {
+                    setState(prev => ({
+                        ...prev,
+                        inputs: { ...prev.inputs, [inputKey]: value }
+                    }));
+                }
+            },
+            tags: {
+                add: (e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (!state.inputs.tag.trim()) return;
 
-    const updateState = (key: string, value: any) => {
-        setState(prev => ({ ...prev, [key]: value }));
-    };
+                        const newTag = { id: Date.now().toString(), label: state.inputs.tag.trim() };
+                        logger.log("[TagGroup] Added tag", { tag: newTag, totalTags: state.tags.length + 1 });
 
-    const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (!state.inputs.tag.trim()) return;
+                        setState(prev => ({
+                            ...prev,
+                            tags: [...prev.tags, newTag],
+                            inputs: { ...prev.inputs, tag: "" }
+                        }));
+                    }
+                },
+                remove: (keys: Set<string>) => {
+                    const keyArray = Array.from(keys);
+                    logger.log("[TagGroup] Removed tags", { removedIds: keyArray, totalTags: state.tags.length - keyArray.length });
 
-            const newTag = { id: Date.now().toString(), label: state.inputs.tag.trim() };
-            logger.log("[TagGroup] Added tag", { tag: newTag, totalTags: state.tags.length + 1 });
-
-            setState(prev => ({
-                ...prev,
-                tags: [...prev.tags, newTag],
-                inputs: { ...prev.inputs, tag: "" }
-            }));
-        }
-    };
-
-    const removeTag = (keys: Set<string>) => {
-        const keyArray = Array.from(keys);
-        logger.log("[TagGroup] Removed tags", { removedIds: keyArray, totalTags: state.tags.length - keyArray.length });
-
-        setState(prev => ({
-            ...prev,
-            tags: prev.tags.filter(tag => !keyArray.includes(tag.id))
-        }));
-    };
-
-    const handleCalendarSelect = (date: Moment) => {
-        logger.log("[CalendarPicker] Date selected", { date: date.format("YYYY-MM-DD") });
-        updateState("pickerDate", date);
-        updateState("showPicker", false);
-    };
-
-    const handleColorChange = (value: number | null) => {
-        const hexColor = value ? `#${value.toString(16).padStart(6, "0")}` : "none";
-        logger.log("[ColorPicker] Color changed", { hexColor, rawValue: value });
-        updateState("color", value);
-    };
-
-    const handleRadioChange = (option: { value: any; name?: string | ReactNode; desc?: string; }) => {
-        logger.log("[RadioGroup] Selection changed", { value: option.value, name: option.name });
-        updateState("selectedValue", option.value);
+                    setState(prev => ({
+                        ...prev,
+                        tags: prev.tags.filter(tag => !keyArray.includes(tag.id))
+                    }));
+                }
+            },
+            calendar: {
+                select: (date: Moment) => {
+                    logger.log("[CalendarPicker] Date selected", { date: date.format("YYYY-MM-DD") });
+                    setState(prev => ({ ...prev, pickerDate: date, showPicker: false }));
+                }
+            },
+            color: {
+                change: (value: number | null) => {
+                    const hexColor = value ? `#${value.toString(16).padStart(6, "0")}` : "none";
+                    logger.log("[ColorPicker] Color changed", { hexColor, rawValue: value });
+                    setState(prev => ({ ...prev, color: value ?? 0xff9434 }));
+                }
+            },
+            radio: {
+                change: (option: { value: any; name?: string | ReactNode; desc?: string; }) => {
+                    logger.log("[RadioGroup] Selection changed", { value: option.value, name: option.name });
+                    setState(prev => ({ ...prev, selectedValue: option.value }));
+                }
+            }
+        }[key]?.[action!];
     };
 
 
@@ -163,24 +178,24 @@ export function ComponentsTab() {
                     autoFocus={true}
                     placeholder="Search sections..."
                     query={state.search}
-                    onClear={() => updateState("search", "")}
-                    onChange={val => updateState("search", val)}
+                    onClear={() => setState(prev => ({ ...prev, search: "" }))}
+                    onChange={val => setState(prev => ({ ...prev, search: val }))}
                 />
             </div>
             <div className={cl("grid")}>
-                <GridSection title="Calendar Picker" description="Select dates from a calendar interface">
+                <Section title="Calendar Picker" description="Select dates from a calendar interface">
                     <Flex flexDirection="row" style={{ alignItems: "center", gap: 12 }}>
                         <Button
-                            onClick={() => updateState("showPicker", !state.showPicker)}
+                            onClick={() => setState(prev => ({ ...prev, showPicker: !prev.showPicker }))}
                             size="medium"
                             color="success"
                         >
                             {state.showPicker ? "Hide" : "Show"} Calendar
                         </Button>
                         {state.pickerDate && (
-                            <Forms.FormText>
+                            <Paragraph>
                                 Selected: {state.pickerDate.format("YYYY-MM-DD")}
-                            </Forms.FormText>
+                            </Paragraph>
                         )}
                     </Flex>
 
@@ -189,20 +204,20 @@ export function ComponentsTab() {
                             <CalendarPicker
                                 autoFocus={true}
                                 value={state.pickerDate}
-                                onSelect={handleCalendarSelect}
+                                onSelect={date => useAction("calendar", "select")(date)}
                             />
                         </div>
                     )}
-                </GridSection>
+                </Section>
 
-                <GridSection title="Color Picker" description="Pick colors with eye dropper and palette">
+                <Section title="Color Picker" description="Pick colors with eye dropper and palette">
                     <Flex flexDirection="row" style={{ alignItems: "center", gap: 16 }}>
                         <ColorPicker
                             color={state.color}
                             showEyeDropper
-                            onChange={handleColorChange}
+                            onChange={value => useAction("color", "change")(value)}
                         />
-                        <Forms.FormText
+                        <Paragraph
                             style={{
                                 fontSize: 18,
                                 fontWeight: 600,
@@ -212,38 +227,174 @@ export function ComponentsTab() {
                             }}
                         >
                             {state.color ? `#${state.color.toString(16).padStart(6, "0")}` : "Select color"}
-                        </Forms.FormText>
+                        </Paragraph>
                     </Flex>
-                </GridSection>
+                </Section>
             </div>
+            <Section
+                title="Message Embed"
+                description="Normal looking Discord message embed"
+                panel={
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 250 }}>
+                        <TextInput
+                            placeholder="Title"
+                            value={state.embed.title}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, title: val }
+                            }))}
+                        />
+                        <TextInput
+                            placeholder="Description"
+                            value={state.embed.description}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, description: val }
+                            }))}
+                        />
+                        <TextInput
+                            placeholder="Author name"
+                            value={state.embed.authorName}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, authorName: val }
+                            }))}
+                        />
+                        <TextInput
+                            placeholder="Author icon URL"
+                            value={state.embed.authorIcon}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, authorIcon: val }
+                            }))}
+                        />
+                        <div>
+                            <label style={{ fontSize: 12, display: "block", marginBottom: 8 }}>Color</label>
+                            <ColorPicker
+                                color={state.embed.colorNum}
+                                onChange={val => setState(prev => ({
+                                    ...prev,
+                                    embed: { ...prev.embed, colorNum: val ?? 0x2c2f33 }
+                                }))}
+                            />
+                        </div>
+                        <TextInput
+                            placeholder="Footer text"
+                            value={state.embed.footerText}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, footerText: val }
+                            }))}
+                        />
+                        <TextInput
+                            placeholder="Footer icon URL"
+                            value={state.embed.footerIcon}
+                            onChange={val => setState(prev => ({
+                                ...prev,
+                                embed: { ...prev.embed, footerIcon: val }
+                            }))}
+                        />
+                        <div>
+                            <label style={{ fontSize: 12, display: "block", marginBottom: 8 }}>Timestamp</label>
+                            <FormSwitch
+                                title="Timestamp"
+                                value={state.embed.timestamp}
+                                onChange={value => {
+                                    setState(prev => ({
+                                        ...prev,
+                                        embed: { ...prev.embed, timestamp: value }
+                                    }));
+                                }}
+
+                            />
+                        </div>
+                    </div>
+                }
+            >
+                <div style={{ marginTop: 12 }}>
+                    <Embed
+                        embed={{
+                            rawTitle: state.embed.title,
+                            rawDescription: state.embed.description,
+                            color: `#${state.embed.colorNum.toString(16).padStart(6, "0")}`,
+                            author: state.embed.authorName ? {
+                                name: state.embed.authorName,
+                                iconProxyURL: state.embed.authorIcon || "https://cdn.discordapp.com/embed/avatars/0.png"
+                            } : undefined,
+                            footer: state.embed.footerText ? {
+                                text: state.embed.footerText,
+                                iconProxyURL: state.embed.footerIcon
+                            } : undefined,
+                            timestamp: state.embed.timestamp ? Date.now() : undefined,
+                            type: "rich"
+                        }}
+                        message={{ id: "12345", channel_id: "1443150879799902270" }}
+                        embedIndex={0}
+                        renderDescription={() => (
+                            <Paragraph>
+                                {state.embed.description || "Here's some embed content that looks like a normal Discord message embed."}
+                            </Paragraph>
+                        )}
+                        renderTitle={(embed, title) => <span>{title}</span>}
+                        renderImageComponent={props => <img {...props} />}
+                        renderVideoComponent={props => <video {...props} />}
+                        renderLinkComponent={props => <a {...props} />}
+                    />
+                </div>
+            </Section>
+
+            <Section title="Card Styles" description="Displays Card component style colors">
+                <div className={cl("cards-stack")}>
+                    <Card className={classes("vc-settings-card", "vc-warning-card", Margins.bottom16)}>
+                        <Flex flexDirection="column">
+                            <strong>Text 1</strong>
+                            <span>This text has a text which is a text.</span>
+                        </Flex>
+                    </Card>
+
+                    <Card className={classes("vc-settings-card", "vc-danger-card", Margins.bottom16)}>
+                        <Flex flexDirection="column">
+                            <strong>Text 1</strong>
+                            <span>This text has a text which is a text.</span>
+                        </Flex>
+                    </Card>
+
+                    <Card className={classes("vc-settings-card", "vc-positive-card", Margins.bottom16)}>
+                        <Flex flexDirection="column">
+                            <strong>Text 1</strong>
+                            <span>This text has a text which is a text.</span>
+                        </Flex>
+                    </Card>
+                </div>
+            </Section>
 
             <Section title="Text Input" description="Various text input configurations and states">
                 <div className={cl("inputs-stack")}>
                     <TextInput
                         placeholder="Standard input"
                         value={state.inputs.basic}
-                        onChange={val => updateInput("basic", val)}
+                        onChange={val => useAction("inputs", "update")("basic", val)}
                     />
 
                     <TextInput
                         placeholder="Input with prefix"
                         leading="https://"
                         value={state.inputs.leading}
-                        onChange={val => updateInput("leading", val)}
+                        onChange={val => useAction("inputs", "update")("leading", val)}
                     />
 
                     <TextInput
                         placeholder="Limited to 50 characters"
                         value={state.inputs.maxLength}
-                        onChange={val => updateInput("maxLength", val)}
+                        onChange={val => useAction("inputs", "update")("maxLength", val)}
                         maxLength={50}
                         showCharacterCount={true}
                     />
                     <TextInput
                         placeholder="Can be cleared"
                         value={state.inputs.clearable}
-                        onChange={val => updateInput("clearable", val)}
-                        onClear={() => updateInput("clearable", "")}
+                        onChange={val => useAction("inputs", "update")("clearable", val)}
+                        onClear={() => useAction("inputs", "update")("clearable", "")}
                         clearable={true}
                     />
 
@@ -256,7 +407,7 @@ export function ComponentsTab() {
                     <TextInput
                         placeholder="Full width input"
                         value={state.inputs.fullWidth}
-                        onChange={val => updateInput("fullWidth", val)}
+                        onChange={val => useAction("inputs", "update")("fullWidth", val)}
                         fullWidth={true}
                     />
 
@@ -264,7 +415,7 @@ export function ComponentsTab() {
                         placeholder="Input with error"
                         error="This field is required"
                         value={state.inputs.readOnly}
-                        onChange={val => updateInput("readOnly", val)}
+                        onChange={val => useAction("inputs", "update")("readOnly", val)}
                     />
                 </div>
             </Section>
@@ -277,14 +428,14 @@ export function ComponentsTab() {
                         value={state.checkboxBasic}
                         onChange={val => {
                             logger.log("[FormSwitch] Toggled", { value: val });
-                            updateState("checkboxBasic", val);
+                            setState(prev => ({ ...prev, checkboxBasic: val }));
                         }}
                     />
                     <FormSwitch
                         title="Disabled switch"
                         description="This switch cannot be toggled"
                         value={state.checkboxDisabled}
-                        onChange={val => updateState("checkboxDisabled", val)}
+                        onChange={val => setState(prev => ({ ...prev, checkboxDisabled: val }))}
                         disabled={true}
                     />
                 </div>
@@ -303,7 +454,7 @@ export function ComponentsTab() {
                             isSelected={val => val === state.selectValue}
                             select={val => {
                                 logger.log("[Select] Selected", { value: val });
-                                updateState("selectValue", val);
+                                setState(prev => ({ ...prev, selectValue: val }));
                             }}
                             serialize={val => val}
                             renderOptionLabel={opt => (
@@ -353,7 +504,7 @@ export function ComponentsTab() {
                             value={state.selectableValue}
                             onChange={val => {
                                 logger.log("[SearchableSelect] Changed", { value: val });
-                                updateState("selectableValue", val);
+                                setState(prev => ({ ...prev, selectableValue: val }));
                             }}
                             renderOptionPrefix={() => (
                                 <span style={{ color: "#a78bfa" }}>🔥</span>
@@ -419,7 +570,7 @@ export function ComponentsTab() {
                                     {...sliderProps}
                                     onValueChange={val => {
                                         logger.log("[Slider] Value changed", { value: val });
-                                        updateState("sliderValue", val);
+                                        setState(prev => ({ ...prev, sliderValue: val }));
                                     }}
                                 />
                                 <Button
@@ -455,12 +606,22 @@ export function ComponentsTab() {
                 })()}
             </Section>
 
-            <Section title="Tag Input" description="Add, remove, and manage tags">
+            <Section
+                title="Tag Input"
+                description="Add, remove, and manage tags"
+                panel={
+                    <FormSwitch
+                        title="Removeable"
+                        value={state.showPicker}
+                        onChange={val => useAction("tags", "toggle")(val)}
+                    />
+                }
+            >
                 <TextInput
                     placeholder="Type tag name..."
                     value={state.inputs.tag}
-                    onChange={val => updateInput("tag", val)}
-                    onKeyDown={addTag}
+                    onChange={val => useAction("inputs", "update")("tag", val)}
+                    onKeyDown={e => useAction("tags", "add")(e)}
                 />
 
                 <div className={cl("tags-container")}>
@@ -469,7 +630,7 @@ export function ComponentsTab() {
                         layout="inline"
                         selectionMode="multiple"
                         items={state.tags}
-                        onRemove={removeTag}
+                        onRemove={keys => useAction("tags", "remove")(keys)}
                     />
                 </div>
             </Section>
@@ -575,7 +736,7 @@ export function ComponentsTab() {
                         { name: "Icon Class", desc: "Custom class styling", value: "option7", radioItemIconClassName: "radioBar__88a69" },
                         { name: "Bar Class", value: "option8", radioBarClassName: "option_be1a1e" }
                     ]}
-                    onChange={handleRadioChange}
+                    onChange={option => useAction("radio", "change")(option)}
                 />
             </Section>
         </div>

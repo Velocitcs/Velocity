@@ -5,28 +5,21 @@
     gap: 16px;
 }
 
-.vc-components-search-box {
-    margin-bottom: 8px;
-    padding: 12px 0;
-}
-
-.vc-components-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 16px;
-}
-
+/* Section/Card Styles */
 .vc-components-card {
     border: 1px solid var(--background-tertiary);
     border-radius: 8px;
     background-color: rgb(32 34 37 / 60%);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     overflow: hidden;
 }
 
-.vc-components-card.vc-components-full-width {
-    grid-column: 1 / -1;
+
+.vc-components-card-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .vc-components-card-header {
@@ -39,7 +32,7 @@
     margin: 0;
     font-size: 15px;
     font-weight: 600;
-    color: var(--text-normal);
+    color: var(--text-default);
 }
 
 .vc-components-card-body {
@@ -49,17 +42,44 @@
     gap: 14px;
 }
 
-.vc-components-picker-container {
-    margin-top: 8px;
-    padding: 12px 0;
+.vc-components-card-right {
+    flex: 0.4;
+    padding: 18px;
+    border-left: 1px solid var(--background-tertiary);
+    background-color: var(--background-secondary-alt);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    font-size: 12px;
+    gap: 6px;
 }
 
+/* Grid Layout */
+.vc-components-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+}
+
+/* Input Stacks */
 .vc-components-inputs-stack {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
+/* Card Stacks */
+.vc-components-cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vc-components-card.vc-components-full-width {
+    grid-column: 1 / -1;
+}
+
+/* Tags */
 .vc-components-tags-container {
     padding: 10px 0;
     display: flex;
@@ -68,15 +88,13 @@
     align-items: center;
 }
 
-.vc-components-error {
-    padding: 16px;
-    background-color: var(--background-secondary);
-    border: 1px solid var(--red-400);
-    border-radius: 8px;
-    color: var(--red-400);
-    text-align: center;
+/* Picker */
+.vc-components-picker-container {
+    margin-top: 8px;
+    padding: 12px 0;
 }
 
+/* Slider */
 .vc-components-slider-wrapper {
     display: flex;
     flex-direction: row;
@@ -86,4 +104,14 @@
 
 .vc-components-slider-wrapper > div:first-child {
     flex: 1;
+}
+
+/* Error */
+.vc-components-error {
+    padding: 16px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--red-400);
+    border-radius: 8px;
+    color: var(--red-400);
+    text-align: center;
 }
