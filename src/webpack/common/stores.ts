@@ -142,6 +142,7 @@ export let NetworkStore: t.NetworkStore;
 export let NoteStore: t.NoteStore;
 export let OverlayRTCConnectionStore: t.OverlayRTCConnectionStore;
 export let PhoneStore: t.PhoneStore;
+export let PoggermodeStore: t.PoggermodeStore;
 export let PrivateChannelSortStore: t.PrivateChannelSortStore;
 export let PromotionsStore: t.PromotionsStore;
 export let QuestStore: t.QuestStore;
@@ -171,6 +172,7 @@ export let VerifiedKeyStore: t.VerifiedKeyStore;
 
 export let VoiceStateStore: t.VoiceStateStore;
 export let WindowStore: t.WindowStore;
+export let WordFrequencyStore: t.WordFrequencyStore;
 export let WowMomentConfirmationStore: t.WowMomentConfirmationStore;
 
 /**
@@ -286,6 +288,7 @@ waitForStore("NoteStore", s => NoteStore = s);
 waitForStore("OverlayRTCConnectionStore", s => OverlayRTCConnectionStore = s);
 waitForStore("PhoneStore", s => PhoneStore = s);
 waitForStore("PermissionStore", s => PermissionStore = s);
+waitForStore("PoggermodeStore", s => PoggermodeStore = s);
 waitForStore("PresenceStore", s => PresenceStore = s);
 waitForStore("PrivateChannelSortStore", s => PrivateChannelSortStore = s);
 waitForStore("PromotionsStore", s => PromotionsStore = s);
@@ -319,4 +322,5 @@ waitForStore("UserOfferStore", s => UserOfferStore = s);
 waitForStore("VerifiedKeyStore", s => VerifiedKeyStore = s);
 waitForStore("VoiceStateStore", s => VoiceStateStore = s);
 waitForStore("WindowStore", s => WindowStore = s);
+waitForStore("WordFrequencyStore", s => WordFrequencyStore = s);
 waitForStore("WowMomentConfirmationStore", s => WowMomentConfirmationStore = s);
