@@ -29,8 +29,8 @@ import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
-import { findByCodeLazy, findComponentByCodeLazy } from "@webpack";
-import { CalendarPicker, Card, ColorPicker, RadioGroup, SearchableSelect, SearchBar, Select, Slider, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
+import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy } from "@webpack";
+import { CalendarPicker, Card, ColorPicker, ManaSelect, RadioGroup, SearchableSelect, SearchBar, Select, Slider, TagGroup, TextInput, Tooltip, useState } from "@webpack/common";
 import { Moment } from "moment";
 import { ComponentType, ReactNode } from "react";
 
@@ -40,6 +40,7 @@ const logger = new Logger("ComponentsTab", "#ffae00ff");
 const cl = classNameFactory("vc-components-");
 const Embed: ComponentType<EmbedComponentProps> = findComponentByCodeLazy(".inlineMediaEmbed");
 const BotTag = findByCodeLazy(".botTagRegular");
+const ManaSelectComponentProps = findByPropsLazy("VL1", "TVs");
 
 interface SectionProps {
     title: string;
@@ -81,6 +82,7 @@ export function ComponentsTab() {
         showPicker: false,
         color: 0xff9434,
         selectedValue: "option1",
+        manaSelectValue: "opt1",
         selectValue: "opt1",
         sliderValue: 50,
         checkboxBasic: false,
@@ -488,61 +490,36 @@ export function ComponentsTab() {
                 </Flex>
             </Section>
 
-            <Section title="Searchable Select" description="Dropdown with search and filtering">
+            <Section title="ManaSelect" description="Modern multi-select dropdown component">
                 <Flex flexDirection="row" style={{ gap: 12, alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>
-                        <SearchableSelect
-                            placeholder="Search and select..."
+                        <ManaSelect
+                            placeholder="Choose options..."
                             options={[
-                                { label: "Apple", value: "apple" },
-                                { label: "Banana", value: "banana" },
-                                { label: "Cherry", value: "cherry" },
-                                { label: "Date", value: "date" },
-                                { label: "Elderberry", value: "elderberry" },
-                                { label: "Fig", value: "fig" }
+                                { label: "Aardvark", value: "aardvark", id: "aardvark", leading: ManaSelectComponentProps.VL1 },
+                                { label: "Cat", value: "cat", id: "cat", leading: ManaSelectComponentProps.VL1, trailing: "20m" },
+                                { label: "Dog", value: "dog", id: "dog", leading: ManaSelectComponentProps.VL1 },
+                                { label: "Kangaroo", value: "kangaroo", id: "kangaroo", leading: { type: "image", src: "https://cdn.discordapp.com/embed/avatars/0.png" } },
+                                { label: "Panda", value: "panda", id: "panda", leading: { type: "avatar", src: "https://cdn.discordapp.com/embed/avatars/0.png" } },
+                                { label: "Snake", value: "snake", id: "snake", leading: ManaSelectComponentProps.VL1, disabled: true, trailing: { type: "badge", badgeType: "new" } }
                             ]}
-                            value={state.selectableValue}
-                            onChange={val => {
-                                logger.log("[SearchableSelect] Changed", { value: val });
-                                setState(prev => ({ ...prev, selectableValue: val }));
+                            value={state.manaSelectValue}
+                            selectionMode="single"
+                            onSelectionChange={val => {
+                                setState(prev => ({ ...prev, manaSelectValue: val }));
                             }}
-                            renderOptionPrefix={() => (
-                                <span style={{ color: "#a78bfa" }}>🔥</span>
-                            )}
-                            renderOptionSuffix={opt => opt ? (
-                                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                                    {opt.value.toUpperCase()}
-                                </span>
-                            ) : null}
-                            clearable={true}
+                            closeOnSelect={true}
+                            maxOptionsVisible={5}
+                            disabled={false}
+                            required={false}
+                            hideTags={false}
+                            wrapTags={true}
+                            className="mana-select-custom"
+                            id="mana-select-demo"
+                            aria-label="Select options"
+                            role="listbox"
                         />
                     </div>
-                    <Button
-                        size={Button.Sizes.MEDIUM}
-                        color={Button.Colors.BRAND}
-                        onClick={() => {
-                            logger.log("[SearchableSelect] Props", {
-                                placeholder: "Search and select...",
-                                options: [
-                                    { label: "Apple", value: "apple" },
-                                    { label: "Banana", value: "banana" },
-                                    { label: "Cherry", value: "cherry" },
-                                    { label: "Date", value: "date" },
-                                    { label: "Elderberry", value: "elderberry" },
-                                    { label: "Fig", value: "fig" }
-                                ],
-                                value: "state.selectableValue",
-                                onChange: "callback",
-                                renderOptionPrefix: "function",
-                                renderOptionSuffix: "function",
-                                multi: false,
-                                clearable: true,
-                                closeOnSelect: true
-                            });
-                        }}
-                    >
-                        Show Props
-                    </Button>
                 </Flex>
             </Section>
             <Section title="Slider" description="Numeric input with draggable slider">
@@ -609,13 +586,6 @@ export function ComponentsTab() {
             <Section
                 title="Tag Input"
                 description="Add, remove, and manage tags"
-                panel={
-                    <FormSwitch
-                        title="Removeable"
-                        value={state.showPicker}
-                        onChange={val => useAction("tags", "toggle")(val)}
-                    />
-                }
             >
                 <TextInput
                     placeholder="Type tag name..."
