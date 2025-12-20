@@ -39,7 +39,7 @@
     gap: 9px;
     padding: 16px;
     border-radius: 15px;
-    color: var(--icon-secondary);
+    color: var(--interactive-icon-default);
     transition: background 0.2s, color 0.2s;
     cursor: pointer;
 
