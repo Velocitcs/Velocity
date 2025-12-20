@@ -18,8 +18,9 @@
 
 import "./FormSwitch.css";
 
+import { useSettings } from "@api/Settings";
 import { classes } from "@utils/misc";
-import type { PropsWithChildren, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Divider } from "./Divider";
 import { Span } from "./Span";
@@ -37,6 +38,27 @@ export interface FormSwitchProps {
 }
 
 export function FormSwitch({ onChange, title, value, description, disabled, className, hideBorder }: FormSwitchProps) {
+    const { velocityStyles } = useSettings(["velocityStyles.*"]);
+
+    if (velocityStyles.switchRedesign) {
+        return (
+            <>
+                <div className="vc-form-switch-wrapper">
+                    <div className={classes("vc-form-switch", className, disabled && "vc-form-switch-disabled")}>
+                        <Switch
+                            checked={value}
+                            onChange={onChange}
+                            disabled={disabled}
+                            title={title}
+                            description={description}
+                        />
+                    </div>
+                    {!hideBorder && <Divider className="vc-form-switch-border" />}
+                </div>
+            </>
+        );
+    }
+
     return (
         <div className="vc-form-switch-wrapper">
             <div className={classes("vc-form-switch", className, disabled && "vc-form-switch-disabled")}>
@@ -45,17 +67,13 @@ export function FormSwitch({ onChange, title, value, description, disabled, clas
                     {description && <Span size="sm" weight="normal">{description}</Span>}
                 </div>
 
-                <Switch checked={value} onChange={onChange} disabled={disabled} />
+                <Switch
+                    checked={value}
+                    onChange={onChange}
+                    disabled={disabled}
+                />
             </div>
             {!hideBorder && <Divider className="vc-form-switch-border" />}
         </div>
     );
 }
-
-// #region Old compatibility
-
-export function FormSwitchCompat({ note, children, ...restProps }: PropsWithChildren<any>) {
-    return <FormSwitch title={children ?? ""} description={note} {...restProps} />;
-}
-
-// #endregion
