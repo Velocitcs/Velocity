@@ -60,14 +60,40 @@ const settings = definePluginSettings({
 
 let lastRepeatTime = 0;
 
-const RepeatIcon: IconComponent = ({ height = 20, width = 20, className, children }) => (
-    <svg width={width} height={height} className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ scale: "1.2" }}>
-        <path fill="currentColor" d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z" />
-        {children && (
-            <path fill="var(--status-danger)" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />
-        )}
-    </svg>
-);
+const RepeatAfterMeIcon: IconComponent = ({ height = 20, width = 20, className, enabled }) => {
+    if (enabled) {
+        return (
+            <svg
+                width={width}
+                height={height}
+                viewBox="0 0 24 24"
+                className={className}
+                style={{ scale: "1.2" }}
+            >
+                <defs>
+                    <mask id="repeat-after-me-mask">
+                        <rect width="24" height="24" fill="white" />
+                        <path stroke="black" strokeWidth="5.99068" d="M0 24 24 0" />
+                    </mask>
+                </defs>
+                <path fill="currentColor" mask="url(#repeat-after-me-mask)" d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z" />
+                <path fill="var(--status-danger)" d="m21.178 1.70703 1.414 1.414L4.12103 21.593l-1.414-1.415L21.178 1.70703Z" />
+            </svg>
+        );
+    }
+
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox="0 0 24 24"
+            className={className}
+            style={{ scale: "1.2" }}
+        >
+            <path fill="currentColor" d="M10 8.26667V4L3 11.4667L10 18.9333V14.56C15 14.56 18.5 16.2667 21 20C20 14.6667 17 9.33333 10 8.26667Z" />
+        </svg>
+    );
+};
 
 const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
     const { isEnabled, showIcon } = settings.use(["isEnabled", "showIcon"]);
@@ -80,7 +106,7 @@ const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
             tooltip={isEnabled ? "Disable RepeatAfterMe" : "Enable RepeatAfterMe"}
             onClick={toggle}
         >
-            <RepeatIcon>{isEnabled}</RepeatIcon>
+            <RepeatAfterMeIcon enabled={isEnabled} />
         </ChatBarButton>
     );
 };
@@ -121,7 +147,7 @@ export default definePlugin({
         options: [
             {
                 name: "value",
-                description: "whether to hide or not that you're typing (default is toggle)",
+                description: "whether to enable or disable the RepeatAfterMe state",
                 required: false,
                 type: ApplicationCommandOptionType.BOOLEAN,
             },
@@ -161,7 +187,7 @@ export default definePlugin({
     },
 
     chatBarButton: {
-        icon: RepeatIcon,
+        icon: RepeatAfterMeIcon,
         render: DMEchoToggle
     }
 });
