@@ -66,6 +66,14 @@ export default definePlugin({
             }
         },
         {
+            // Gives the user staff flags. also gives special staff privileges
+            find: "getCurrentUser(){return O",
+            replacement: {
+                match: /getCurrentUser\(\)\{return O\[h\.default\.getId\(\)\]\}/,
+                replace: "getCurrentUser(){let e=O[h.default.getId()];return null!=e&&(e.flags=e.flags|1),e}"
+            }
+        },
+        {
             find: 'type:"user",revision',
             replacement: {
                 match: /!(\i)(?=&&"CONNECTION_OPEN")/,
