@@ -24,6 +24,7 @@ import esbuild, { build, context } from "esbuild";
 import { constants as FsConstants, readFileSync } from "fs";
 import { access, readdir, readFile } from "fs/promises";
 import { minify as minifyHtml } from "html-minifier-terser";
+import { optimize as optimizeSvg } from 'svgo';
 import { join, relative } from "path";
 import { promisify } from "util";
 
@@ -252,7 +253,7 @@ export const fileUrlPlugin = {
         build.onLoad({ filter, namespace: "file-uri" }, async ({ pluginData: { path, uri } }) => {
             const { searchParams } = new URL(uri);
             const base64 = searchParams.has("base64");
-            const minify = IS_STANDALONE === true && searchParams.has("minify");
+            const minify = searchParams.has("minify");
             const noTrim = searchParams.get("trim") === "false";
 
             const encoding = base64 ? "base64" : "utf-8";
@@ -274,6 +275,12 @@ export const fileUrlPlugin = {
                         removeStyleLinkTypeAttributes: true,
                         useShortDoctype: true
                     });
+                } else if (path.endsWith(".svg")) {
+                    content = optimizeSvg(await readFile(path, "utf-8"), {
+                        datauri: base64 ? "base64" : void 0,
+                        multipass: true,
+                        floatPrecision: 2,
+                    }).data;
                 } else if (/[mc]?[jt]sx?$/.test(path)) {
                     const res = await esbuild.build({
                         entryPoints: [path],
@@ -285,7 +292,7 @@ export const fileUrlPlugin = {
                     throw new Error(`Don't know how to minify file type: ${path}`);
                 }
 
-                if (base64)
+                if (base64 && !content.startsWith("data:"))
                     content = Buffer.from(content).toString("base64");
             }
 
