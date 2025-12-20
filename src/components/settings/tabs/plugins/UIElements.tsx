@@ -54,27 +54,19 @@ const UI_ELEMENT_TYPE = "ui-element";
 
 export function DraggableRow({ id, index, moveRow, children, }: RowProps) {
     const ref = useRef<HTMLDivElement>(null);
-    const handleRef = useRef<HTMLDivElement>(null);
 
     const [, drop] = useDrop({
         accept: UI_ELEMENT_TYPE,
-        hover(item: DragItem, monitor: any) {
-            if (!ref.current) return;
-
+        hover(item: DragItem) {
             const dragIndex = item.index;
             const hoverIndex = index;
+
             if (dragIndex === hoverIndex) return;
 
-            const rect = ref.current.getBoundingClientRect();
-            const middleY = (rect.bottom - rect.top) / 2;
-            const offsetY = monitor.getClientOffset()!.y - rect.top;
+            const dragParent = document.querySelector(`[data-drag-id="${item.id}"]`)?.closest("section");
+            const hoverParent = ref.current?.closest("section");
 
-            if (
-                (dragIndex < hoverIndex && offsetY < middleY) ||
-                (dragIndex > hoverIndex && offsetY > middleY)
-            ) {
-                return;
-            }
+            if (dragParent !== hoverParent) return;
 
             moveRow(dragIndex, hoverIndex);
             item.index = hoverIndex;
@@ -89,25 +81,22 @@ export function DraggableRow({ id, index, moveRow, children, }: RowProps) {
         }),
     });
 
-    drag(handleRef);
-    drop(ref);
+    drag(drop(ref));
 
     return (
-        <div
+        <Card
             ref={ref}
+            data-drag-id={id}
             className={cl("switches-row-wrapper")}
             data-dragging={isDragging}
+            style={{
+                cursor: "grab",
+                borderColor: isDragging ? "var(--status-positive)" : undefined,
+                borderWidth: isDragging ? "2px" : undefined,
+            }}
         >
-            <div
-                ref={handleRef}
-                className={cl("drag-handle")}
-                aria-hidden
-            >
-                ⠿
-            </div>
-
             {children}
-        </div>
+        </Card>
     );
 }
 
@@ -170,7 +159,6 @@ function Section(props: {
             const [moved] = next.splice(from, 1);
             next.splice(to, 0, moved);
 
-            // Persist order into settings (same as before)
             const reordered: SettingsPluginUiElements = {};
             for (const name of next) {
                 reordered[name] = settings[name] ?? {};
