@@ -22,6 +22,7 @@ import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
 import { Text } from "@components/BaseText";
 import { Button } from "@components/Button";
+import { Flex } from "@components/Flex";
 import { DeleteIcon, PlusIcon } from "@components/Icons";
 import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
@@ -29,7 +30,9 @@ import { getIntlMessage, openUserProfile } from "@utils/discord";
 import { ModalContent, ModalFooter, ModalHeader, ModalRoot } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { Avatar, Clickable, Flex, TextInput, Tooltip, useState } from "@webpack/common";
+import { Avatar, Clickable, TextInput, Tooltip, useState } from "@webpack/common";
+
+import { BanHammer } from "./icons";
 
 
 const BanActions = findByPropsLazy("fetchGuildBans", "unbanUser");
@@ -75,7 +78,7 @@ function ReasonsComponent() {
             <Flex
                 className={cl("reason-wrapper")}
                 flexDirection="row"
-                align="center"
+                alignItems="center"
                 style={{ width: "100%" }}
             >
                 <Button
@@ -169,6 +172,7 @@ function BanModalComponent({ transitionState, guild, user, ban, onClose }: any) 
                 <Button
                     size={Button.Sizes.MEDIUM}
                     color={Button.Colors.RED}
+                    icon={BanHammer}
                     onClick={handleUnban}
                     disabled={loading}
                 >
@@ -226,8 +230,8 @@ export default definePlugin({
             find: "bansSearchContainer,children:",
             predicate: () => settings.store.betterModal,
             replacement: {
-                match: /y\(this,"handleShowModal",\(\)=>\{let\{guild:e,user:t,ban:i\}=this\.props;\(0,o\.ZDy\)\(async\(\)=>\{let\{default:l\}=await n\.e\("61697"\)\.then\(n\.bind\(n,355160\)\);return n=>\(0,r\.jsx\)\(l,E\(N\(\{\},n\),\{guild:e,user:t,ban:i\}\)\)\}\)\}\)/,
-                replace: "y(this,\"handleShowModal\",()=>{let{guild:e,user:t,ban:i}=this.props;(0,o.ZDy)(async()=>{return n=>$self.renderBanModal({...n,guild:e,user:t,ban:i})})})"
+                match: /\(0,o\.ZDy\)\(async\(\)=>\{let\{default:l\}=await n\.e\("[^"]+"\)\.then\(n\.bind\(n,\d+\)\);return n=>\(0,r\.jsx\)\(l,/,
+                replace: "(0,o.ZDy)(async()=>{return n=>$self.renderBanModal("
             }
         }
     ],
