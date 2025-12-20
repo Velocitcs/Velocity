@@ -26,10 +26,12 @@ import { Card, Forms, React, TabBar, useState } from "@webpack/common";
 import { CspErrorCard } from "./CspErrorCard";
 import { LocalThemesTab } from "./LocalThemesTab";
 import { OnlineThemesTab } from "./OnlineThemesTab";
+import { VelocityThemesTab } from "./VelocityThemesTab";
 
 const enum ThemeTab {
     LOCAL,
-    ONLINE
+    ONLINE,
+    VELOCITY
 }
 
 function ThemesTab({ isRedesign = false }) {
@@ -44,6 +46,12 @@ function ThemesTab({ isRedesign = false }) {
                 selectedItem={currentTab}
                 onItemSelect={setCurrentTab}
             >
+                <TabBar.Item
+                    className="vc-settings-tab-bar-item"
+                    id={ThemeTab.VELOCITY}
+                >
+                    Velocity Themes
+                </TabBar.Item>
                 <TabBar.Item
                     className="vc-settings-tab-bar-item"
                     id={ThemeTab.LOCAL}
@@ -62,6 +70,7 @@ function ThemesTab({ isRedesign = false }) {
 
             {currentTab === ThemeTab.LOCAL && <LocalThemesTab />}
             {currentTab === ThemeTab.ONLINE && <OnlineThemesTab />}
+            {currentTab === ThemeTab.VELOCITY && <VelocityThemesTab />}
         </SettingsTab>
     );
 }

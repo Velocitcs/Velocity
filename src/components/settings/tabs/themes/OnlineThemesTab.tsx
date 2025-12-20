@@ -42,7 +42,7 @@ export function OnlineThemesTab() {
 
     return (
         <>
-            <FormNotice messageType="warn" className={Margins.bottom16}>
+            <FormNotice textVariant="text-lg/normal" messageType="warn" className={Margins.bottom16}>
                 This section is for advanced users. <br></br> If you are having difficulties using it, use the local Themes tab instead.
             </FormNotice>
             <Card className="vc-settings-card">
@@ -52,8 +52,7 @@ export function OnlineThemesTab() {
                 <Paragraph>Make sure to use direct links to files (raw or github.io)!</Paragraph>
             </Card>
 
-            <section>
-                <Forms.FormTitle tag="h5">Online Themes</Forms.FormTitle>
+            <Forms.FormSection tag="h5" title="Online Themes">
                 <TextArea
                     value={themeText}
                     onChange={setThemeText}
@@ -63,7 +62,7 @@ export function OnlineThemesTab() {
                     onBlur={onBlur}
                     rows={10}
                 />
-            </section>
+            </Forms.FormSection>
         </>
     );
 }

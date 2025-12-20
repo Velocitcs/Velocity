@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { useSettings } from "@api/Settings";
 import { Text } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { UserThemeHeader } from "@main/themes";
 import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize } from "@utils/modal";
-import { Alerts, Forms, Select, showToast, TextInput, Toasts, useEffect, useRef, useState } from "@webpack/common";
+import { Alerts, Forms, ManaSelect, Select, showToast, TextInput, Toasts, useEffect, useRef, useState } from "@webpack/common";
 import * as monaco from "monaco-editor";
 
 import { ThemeReturnState } from "./LocalThemesTab";
@@ -33,6 +34,7 @@ interface ThemeModalProps {
 }
 
 export function ThemeModal({ mode, modalProps, returnState }: ThemeModalProps) {
+    const { velocityStyles } = useSettings(["velocityStyles.*"]);
     const [fileName, setFileName] = useState("");
     const [selectedTheme, setSelectedTheme] = useState("");
     const [themes, setThemes] = useState<UserThemeHeader[]>([]);
@@ -116,12 +118,24 @@ export function ThemeModal({ mode, modalProps, returnState }: ThemeModalProps) {
                 {mode === "edit" ? (
                     <div style={{ marginBottom: "16px" }}>
                         <Forms.FormTitle tag="h5">Select Theme</Forms.FormTitle>
-                        <Select
-                            options={themes.map(theme => ({ label: theme.fileName, value: theme.fileName }))}
-                            isSelected={v => v === selectedTheme}
-                            select={setSelectedTheme}
-                            serialize={v => v}
-                        />
+                        {velocityStyles.selectRedesign ? (
+                            <ManaSelect
+                                placeholder="Select a theme"
+                                options={themes.map(theme => ({ label: theme.fileName, value: theme.fileName, id: theme.fileName }))}
+                                value={selectedTheme}
+                                closeOnSelect={true}
+                                selectionMode="single"
+                                onSelectionChange={selected => setSelectedTheme(selected?.value ?? selected)}
+                                hideTags={true}
+                            />
+                        ) : (
+                            <Select
+                                options={themes.map(theme => ({ label: theme.fileName, value: theme.fileName }))}
+                                isSelected={v => v === selectedTheme}
+                                select={setSelectedTheme}
+                                serialize={v => v}
+                            />
+                        )}
                     </div>
                 ) : (
                     <div style={{ marginBottom: "16px" }}>

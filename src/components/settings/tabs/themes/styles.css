@@ -1,16 +1,16 @@
-.vc-settings-theme-grid {
+.vc-settings-themes-grid {
     display: grid;
     gap: 16px;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
-.vc-settings-csp-list {
+.vc-settings-themes-csp-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.vc-settings-csp-row {
+.vc-settings-themes-csp-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -25,4 +25,8 @@
     }
 
     --custom-button-button-md-height: 26px;
+}
+
+.vc-settings-themes-secondaryText {
+    color: var(--text-muted);
 }

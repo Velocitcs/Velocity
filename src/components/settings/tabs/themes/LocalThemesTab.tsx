@@ -38,7 +38,7 @@ import type { ComponentType, CSSProperties, Ref, SyntheticEvent } from "react";
 import { ThemeModal } from "./themeModal";
 
 
-const cl = classNameFactory("vc-settings-theme-");
+const cl = classNameFactory("vc-settings-themes-");
 
 export enum ThemeReturnState {
     SUCCESS,
@@ -146,8 +146,7 @@ export function LocalThemesTab() {
                 <Paragraph>Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.</Paragraph>
             </Card>
 
-            <section>
-                <Forms.FormTitle tag="h5">Local Themes</Forms.FormTitle>
+            <Forms.FormSection tag="h5" title="Local Themes">
                 <QuickActionCard>
                     <>
                         <QuickAction
@@ -281,7 +280,7 @@ export function LocalThemesTab() {
                         </div>
                     </>
                 )}
-            </section>
+            </Forms.FormSection>
         </>
     );
 }
