@@ -55,7 +55,7 @@ const settings = definePluginSettings({
     },
 });
 
-const Button = findComponentByCodeLazy(".NONE,disabled:", ".PANEL_BUTTON");
+const Button = findComponentByCodeLazy(".greenTooltip,", ".greenTooltipContent");
 const panelClasses = findByPropsLazy("micButtonParent", "buttonChevron");
 
 const CrashIcon = ({ isEnabled }) => (
