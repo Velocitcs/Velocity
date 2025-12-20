@@ -52,7 +52,6 @@ export function NumberSetting({ option, pluginSettings, definedSettings, id, onC
         <SettingsSection name={id} description={option.description} error={error}>
             <TextInput
                 type="number"
-                pattern="-?[0-9]+"
                 placeholder={option.placeholder ?? "Enter a number"}
                 value={state}
                 onChange={handleChange}
