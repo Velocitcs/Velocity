@@ -77,6 +77,11 @@ export interface Settings {
         chatBarButtons: SettingsPluginUiElements;
     },
 
+    velocityStyles: {
+        switchRedesign: boolean;
+        selectRedesign: boolean;
+    },
+
     notifications: {
         timeout: number;
         position: "top-right" | "bottom-right";
@@ -112,6 +117,12 @@ const DefaultSettings: Settings = {
     uiElements: {
         chatBarButtons: {},
         messagePopoverButtons: {}
+    },
+
+
+    velocityStyles: {
+        switchRedesign: false,
+        selectRedesign: false
     },
 
     notifications: {
