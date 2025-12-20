@@ -18,7 +18,6 @@
 
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { FormNotice } from "@webpack/common";
 
 export default definePlugin({
     name: "NoNativeLogger",
@@ -40,14 +39,5 @@ export default definePlugin({
                 replace: "function u(e,t,n){ return }"
             }
         }
-    ],
-    settingsAboutComponent: () => (
-        <>
-            <FormNotice
-                messageType="info"
-            >
-                You can also add filters in the DevTools to hide the logs
-            </FormNotice>
-        </>
-    )
+    ]
 });
