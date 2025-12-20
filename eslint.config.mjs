@@ -148,7 +148,6 @@ export default tseslint.config(
             "simple-import-sort/imports": "error",
             "simple-import-sort/exports": "error",
             "unused-imports/no-unused-imports": "error",
-            "path-alias/no-relative": "error"
         }
     }
 );
