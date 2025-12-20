@@ -1,0 +1,11 @@
+.vc-rm-card {
+    padding: 0.5em;
+    margin-top: 10px;
+}
+
+.vc-rm-tags-container {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
