@@ -120,7 +120,7 @@ export default definePlugin({
             find: "SEARCH_NO_RESULTS]:{section:",
             replacement: [
                 {
-                    match: /\[eP\.s6\.(\w+)\]:\{(section:|searchableTitles:|label:|ariaLabel:)/g,
+                    match: /\[eR\.s6\.(\w+)\]:\{(section:|searchableTitles:|label:|ariaLabel:)/g,
                     replace: (match, key, prop) => {
 
                         const iconMap = {
@@ -157,7 +157,7 @@ export default definePlugin({
                         };
 
                         const icon = iconMap[key];
-                        return icon ? `[eP.s6.${key}]:{icon:$self.getIcon('${icon}'),${prop}` : match;
+                        return icon ? `[eR.s6.${key}]:{icon:$self.getIcon('${icon}'),${prop}` : match;
                     }
                 },
                 {
