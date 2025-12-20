@@ -17,14 +17,17 @@
 */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { Text } from "@components/BaseText";
+import { Button } from "@components/Button";
 import { CodeBlock } from "@components/CodeBlock";
+import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Flex } from "@components/Flex";
 import { CodeIcon, LogIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Devs } from "@utils/constants";
 import { copyWithToast, getCurrentGuild, getIntlMessage } from "@utils/discord";
-import { ManaModalDivider, ManaModalFooter, ManaModalHeader, ManaModalRoot } from "@utils/manaModal";
-import { ModalContent, openModal } from "@utils/modal";
+import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { Message, User } from "@velocity-types";
 import { ChannelStore, CMIconClasses, Forms, GuildRoleStore, Menu, PopoverClasses, React } from "@webpack/common";
@@ -55,65 +58,44 @@ function cleanUser(user: User) {
     return clone;
 }
 
-export function openViewRawModal(json: string, type: string, content?: string) {
-    openModal(props => (
+function openViewRawModal(json: string, type: string, msgContent?: string) {
+    const key = openModal(props => (
         <ErrorBoundary>
-            <ManaModalRoot {...props} size="lg" paddingSize="sm">
-                <ManaModalHeader title="View Raw" />
-                <ManaModalDivider />
+            <ModalRoot {...props} size={ModalSize.LARGE}>
+                <ModalHeader>
+                    <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>View Raw</Text>
+                    <ModalCloseButton onClick={() => closeModal(key)} />
+                </ModalHeader>
                 <ModalContent>
-                    {!!content && (
-                        <>
-                            <CodeBlock
-                                content={content}
-                                lang="txt"
-                                className={Margins.bottom20}
-                            />
-                        </>
-                    )}
-                    <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
-                    <CodeBlock
-                        content={json}
-                        lang="json"
-                        className={Margins.bottom20}
-                    />
-                </ModalContent>
+                    <div style={{ padding: "16px 0" }}>
+                        {!!msgContent && (
+                            <>
+                                <Forms.FormTitle tag="h5">Content</Forms.FormTitle>
+                                <CodeBlock className="vc-codeblock" content={msgContent} lang="" />
+                                <Divider className={Margins.bottom20} />
+                            </>
+                        )}
 
-                <ManaModalDivider />
-                <ManaModalFooter
-                    actions={[
-                        {
-                            text: `Copy ${type} JSON`,
-                            variant: "primary",
-                            icon: () => <CodeIcon width="24" height="24" />,
-                            onClick: () => copyWithToast(json, `${type} data copied to clipboard!`)
-                        },
-                        ...(content
-                            ? [
-                                {
-                                    text: "Copy Raw Content",
-                                    variant: "secondary",
-                                    icon: () => <CodeIcon width="24" height="24" />,
-                                    onClick: () =>
-                                        copyWithToast(content, "Content copied to clipboard!")
-                                }
-                            ]
-                            : [])
-                    ]}
-                />
-            </ManaModalRoot>
-        </ErrorBoundary>
+                        <Forms.FormTitle tag="h5">{type} Data</Forms.FormTitle>
+                        <CodeBlock className="vc-codeblock" content={json} lang="json" />
+                    </div>
+                </ModalContent >
+                <ModalFooter>
+                    <Flex>
+                        <Button color={Button.Colors.PRIMARY} icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(json, `${type} data copied to clipboard!`)}
+                        >
+                            Copy {type} JSON
+                        </Button>
+                        {!!msgContent && (
+                            <Button color={Button.Colors.BRAND} icon={() => <CodeIcon width="24" height="24" />} onClick={() => copyWithToast(msgContent, "Content copied to clipboard!")}>
+                                Copy Raw Content
+                            </Button>
+                        )}
+                    </Flex>
+                </ModalFooter>
+            </ModalRoot >
+        </ErrorBoundary >
     ));
-}
-
-function openViewRawModalMessage(msg: Message) {
-    msg = cleanMessage(msg);
-    return openViewRawModal(JSON.stringify(msg, null, 4), "Message", msg.content);
-}
-
-export function openViewRawModalUser(user: User) {
-    user = cleanUser(user);
-    return openViewRawModal(JSON.stringify(user, null, 4), "User");
 }
 
 const messageContextCallback: NavContextMenuPatchCallback = (children, props) => {
@@ -123,7 +105,7 @@ const messageContextCallback: NavContextMenuPatchCallback = (children, props) =>
         <Menu.MenuItem
             id="vc-view-message-raw"
             label="View Raw"
-            action={() => openViewRawModalMessage(props.message)}
+            action={() => openViewRawModal(JSON.stringify(props.message, null, 4), "Message", props.message.content)}
             icon={() => <LogIcon height="24" width="24" viewBox="0 0 24 24" className={CMIconClasses.icon} />}
         />
     );
@@ -148,7 +130,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel"): NavCo
                 label="View Raw"
                 action={() => {
                     if (name === "User") {
-                        openViewRawModalUser(value);
+                        openViewRawModal(JSON.stringify(cleanUser(value), null, 4), "User");
                     } else {
                         openViewRawModal(JSON.stringify(value, null, 4), name);
                     }
@@ -200,7 +182,7 @@ export default definePlugin({
                 icon: () => <CodeIcon viewBox="0 0 24 24" height="24" width="24" className={PopoverClasses.icon} />,
                 message: msg,
                 channel: ChannelStore.getChannel(msg.channel_id),
-                onClick: () => openViewRawModalMessage(msg),
+                onClick: () => openViewRawModal(JSON.stringify(cleanMessage(msg), null, 4), "Message", msg.content),
                 onContextMenu: (e: any) => {
                     e.preventDefault();
                     e.stopPropagation();
