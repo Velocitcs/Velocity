@@ -17,11 +17,13 @@
 */
 
 import { PluginOptionSelect } from "@utils/types";
-import { React, SearchableSelect, Select, useState } from "@webpack/common";
+import { ManaSelect, React, SearchableSelect, Select, useState } from "@webpack/common";
+import { useSettings } from "@api/Settings";
 
 import { resolveError, SettingProps, SettingsSection } from "./Common";
 
 export function SelectSetting({ option, pluginSettings, definedSettings, onChange, id }: SettingProps<PluginOptionSelect>) {
+    const { velocityStyles } = useSettings(["velocityStyles.*"]);
     const [options, setOptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -105,6 +107,29 @@ export function SelectSetting({ option, pluginSettings, definedSettings, onChang
         }
         return opt.label;
     };
+
+    if (velocityStyles.selectRedesign) {
+        const optionsWithId = options.map(o => ({
+            ...o,
+            id: o.value
+        }));
+
+        return (
+            <SettingsSection name={id} description={option.description} error={error}>
+                <ManaSelect
+                    placeholder={option.placeholder ?? "Select an option"}
+                    options={optionsWithId}
+                    value={state}
+                    maxOptionsVisible={5}
+                    closeOnSelect={true}
+                    selectionMode="single"
+                    onSelectionChange={selected => handleChange(selected)}
+                    hideTags={true}
+                    {...option.componentProps}
+                />
+            </SettingsSection>
+        );
+    }
 
     return (
         <SettingsSection name={id} description={option.description} error={error}>
