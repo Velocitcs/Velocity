@@ -26,9 +26,12 @@ import { waitForComponent } from "./internal";
 export const Forms = {
     FormTitle: waitForComponent<t.FormTitle>("FormTitle", filters.componentByCode('["defaultMargin".concat', '="h5"')),
     FormDivider: waitForComponent<t.FormDivider>("FormDivider", filters.componentByCode(".divider,", ",style:", '"div"', /\.divider,.*\),style:/i)),
+    FormSection: waitForComponent<t.FormSection>("FormSection", filters.componentByCode("data-migration-pending", "titleId:", "errorId:", "isFocused:")),
     FormText: Paragraph,
 };
 
+export const BaseSwitch = waitForComponent<t.BaseSwitch>("BaseSwitch", filters.componentByCode("hasIcon", "interactiveLabel", "auxiliaryContentPosition"));
+export const ManaSelect = waitForComponent<t.ManaSelect>("Select", filters.componentByCode('closeOnSelect:null!=v?v:"single"'));
 export const Card = waitForComponent<t.Card>("Card", filters.componentByCode(".editable),", ".outline:"));
 export const Checkbox = waitForComponent<t.Checkbox>("Checkbox", filters.componentByCode(".checkboxWrapperDisabled:"));
 
@@ -44,7 +47,7 @@ const Tooltips = mapMangledModuleLazy(".tooltipTop,bottom:", {
 export const Tooltip = LazyComponent(() => Tooltips.Tooltip);
 export const TooltipContainer = LazyComponent(() => Tooltips.TooltipContainer);
 export const FeatureCard = waitForComponent<t.FeatureCard>("FeatureCard", filters.componentByCode("iconClassName:n,header:i,description:c", "className:a()(l.container,s.box)"));
-export const TextInput = waitForComponent<t.TextInput>("TextInput", filters.componentByCode("#{intl::MAXIMUM_LENGTH_ERROR}", '"input"'));
+export const TextInput = waitForComponent<t.TextInput>("TextInput", filters.componentByCode('"data-mana-component":"', "_.hasTrailing]:", '"text-input"'));
 export const SearchBar = waitForComponent<t.SearchBar>("SearchBar", filters.componentByCode("query:", "size:", "autoFocus"));
 export const TextArea = waitForComponent<t.TextArea>("TextArea", filters.componentByCode("this.getPaddingRight()},id:"));
 export const Select = waitForComponent<t.Select>("Select", filters.componentByCode('"Select"', ".newOptionLabel"));
@@ -99,7 +102,6 @@ waitFor(m => {
 
 export const MaskedLink = waitForComponent<t.MaskedLink>("MaskedLink", filters.componentByCode("MASKED_LINK)"));
 export const Timestamp = waitForComponent<t.Timestamp>("Timestamp", filters.componentByCode("#{intl::MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL}"));
-export const Flex = waitForComponent<t.Flex>("Flex", ["Justify", "Align", "Wrap"]);
 export const OAuth2AuthorizeModal = waitForComponent("OAuth2AuthorizeModal", filters.componentByCode(".authorize,children:", ".contentBackground"));
 
 export const Animations = mapMangledModuleLazy(".assign({colorNames:", {
