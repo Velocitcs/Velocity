@@ -71,7 +71,11 @@ export function AddonCard({ disabled, isNew, badge, name, infoButton, footer, au
                                 {name}
                             </div>
                         </div>
-                        {isNew && <AddonBadge text="NEW" backgroundColor="#ED4245" />}
+
+                        {
+                            /* since christmas is here why not change the color of the default red addonbadge to blue,
+                            the red #ED4245 color will come as soon as christmas is over*/
+                            isNew && <AddonBadge text="NEW" backgroundColor="#0057faff" />}
                         {badge}
                     </Text>
 
