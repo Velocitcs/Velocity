@@ -189,7 +189,7 @@ function Section(props: {
                     const Icon = buttonMap.get(name)?.icon ?? PlaceholderIcon;
 
                     return (
-                        <DraggableRow key={name} id={name} index={index} moveRow={moveRow}>
+                        <DraggableRow key={`${title}-${name}`} id={`${title}-${name}`} index={index} moveRow={moveRow}>
                             <Paragraph size="md" weight="semibold" className={cl("switches-row")}>
                                 <Icon height={20} width={20} />
                                 {name}
