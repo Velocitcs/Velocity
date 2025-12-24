@@ -20,11 +20,16 @@ import { definePluginSettings } from "@api/Settings";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { WindowStore } from "@webpack/common";
+import { WindowStore, IdleStore } from "@webpack/common";
 
 import managedStyle from "./styles.css?managed";
 
 const settings = definePluginSettings({
+    reduceCPU: {
+        description: "Reduces the amount CPU usage",
+        type: OptionType.BOOLEAN,
+        default: true
+    },
     maxSize: {
         description: "Maximum snowflake size",
         type: OptionType.SLIDER,
@@ -32,13 +37,13 @@ const settings = definePluginSettings({
         markers: [10, 20, 30, 40, 50]
     },
     speed: {
-        description: "Snowfall speed (higher = faster fall)",
+        description: "Snowfall speed",
         type: OptionType.SLIDER,
         default: 50,
         markers: [50, 100, 200, 300, 400, 500]
     },
     flakesPerSecond: {
-        description: "Snowflakes per second (higher = denser snowfall)",
+        description: "Snowflakes per second",
         type: OptionType.SLIDER,
         default: 5,
         markers: [1, 5, 10, 20, 40, 60],
@@ -66,7 +71,7 @@ class SnowfallManager {
     }
 
     private loop = () => {
-        if (!WindowStore.isFocused()) {
+        if (settings.store.reduceCPU && (!WindowStore.isFocused() || IdleStore.isIdle())) {
             this.animationId = requestAnimationFrame(this.loop);
             return;
         }
