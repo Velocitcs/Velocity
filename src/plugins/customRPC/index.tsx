@@ -216,17 +216,17 @@ export default definePlugin({
     description: "Add a fully customisable Rich Presence (Game status) to your Discord profile",
     authors: [Devs.captain, Devs.AutumnVN, Devs.nin0dev],
     dependencies: ["UserSettingsAPI"],
+    requiresRestart: false,
     start: setRpc,
     stop: () => setRpc(true),
     settings,
 
     patches: [
         {
-            find: ".party?(0",
-            all: true,
+            find: ".buttons.length)>=1",
             replacement: {
-                match: /\i\.id===\i\.id\?null:/,
-                replace: ""
+                match: /.getId\(\)===\i.id/,
+                replace: "$& && false"
             }
         }
     ],
