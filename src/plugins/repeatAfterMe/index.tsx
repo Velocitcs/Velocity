@@ -26,12 +26,6 @@ import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { ChannelStore, Menu, React, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
-    showIcon: {
-        type: OptionType.BOOLEAN,
-        default: false,
-        description: "Show an icon for toggling the plugin",
-        restartNeeded: true,
-    },
     contextMenu: {
         type: OptionType.BOOLEAN,
         description: "Add option to toggle the functionality in the chat input context menu",
@@ -96,15 +90,14 @@ const RepeatAfterMeIcon: IconComponent = ({ height = 20, width = 20, className, 
 };
 
 const DMEchoToggle: ChatBarButtonFactory = ({ isMainChat }) => {
-    const { isEnabled, showIcon } = settings.use(["isEnabled", "showIcon"]);
-    const toggle = () => settings.store.isEnabled = !settings.store.isEnabled;
+    const { isEnabled } = settings.use(["isEnabled"]);
 
-    if (!isMainChat || !showIcon) return null;
+    if (!isMainChat) return null;
 
     return (
         <ChatBarButton
             tooltip={isEnabled ? "Disable RepeatAfterMe" : "Enable RepeatAfterMe"}
-            onClick={toggle}
+            onClick={() => settings.store.isEnabled = !settings.store.isEnabled}
         >
             <RepeatAfterMeIcon enabled={isEnabled} />
         </ChatBarButton>
@@ -149,15 +142,15 @@ export default definePlugin({
                 name: "value",
                 description: "whether to enable or disable the RepeatAfterMe state",
                 required: false,
-                type: ApplicationCommandOptionType.BOOLEAN,
-            },
+                type: ApplicationCommandOptionType.BOOLEAN
+            }
         ],
         execute: async (args, ctx) => {
             settings.store.isEnabled = !!findOption(args, "value", !settings.store.isEnabled);
             sendBotMessage(ctx.channel.id, {
-                content: settings.store.isEnabled ? "RepeatAfterMe enabled!" : "RepeatAfterMe disabled!",
+                content: settings.store.isEnabled ? "RepeatAfterMe enabled!" : "RepeatAfterMe disabled!"
             });
-        },
+        }
     }],
 
     flux: {
