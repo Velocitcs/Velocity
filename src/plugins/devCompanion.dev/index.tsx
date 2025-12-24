@@ -22,7 +22,7 @@ import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { canonicalizeMatch, canonicalizeReplace } from "@utils/patches";
 import definePlugin, { OptionType, ReporterTestable } from "@utils/types";
-import { filters, findAll, search } from "@webpack";
+import { filters, findAll, search, extractAndLoadChunksLazy } from "@webpack";
 
 const PORT = 8485;
 const NAV_ID = "dev-companion-reconnect";
@@ -234,6 +234,15 @@ function initWs(isManual = false) {
                             const mods = findAll(filters.byProps(...parsedArgs));
                             results = mods.map(m => m[parsedArgs[0]]).filter(Boolean);
                             break;
+                        case "ExtractAndLoadChunks":
+                            const codeArray = Array.isArray(parsedArgs[0]) ? parsedArgs[0] : parsedArgs;
+
+                            extractAndLoadChunksLazy(codeArray)().then(() => {
+                                reply();
+                            }).catch(err => {
+                                reply(err.message);
+                            });
+                            return;
                         default:
                             return reply("Unknown Find Type " + type);
                     }
