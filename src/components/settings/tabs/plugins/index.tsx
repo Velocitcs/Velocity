@@ -33,7 +33,7 @@ import { ChangeList } from "@utils/ChangeList";
 import { Logger } from "@utils/Logger";
 import { classes, isPluginDev } from "@utils/misc";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
-import { Alerts, Card, FormNotice, lodash, Parser, React, SearchBar, Select, Tooltip, useMemo, UserStore, useState } from "@webpack/common";
+import { Alerts, Card, FormNotice, lodash, ManaSelect, Parser, React, SearchBar, Select, Tooltip, useMemo, UserStore, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import Plugins, { ExcludedPlugins } from "~plugins";
@@ -41,6 +41,7 @@ import Plugins, { ExcludedPlugins } from "~plugins";
 import { openContributorModal } from "./ContributorModal";
 import { PluginCard } from "./PluginCard";
 import { UIElementsButton } from "./UIElements";
+import { handleThemeComponent } from "@components/handleThemeComponent";
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
@@ -207,6 +208,13 @@ function PluginSettings({ isRedesign = false }) {
         }
     };
 
+    const filterOptions = (redesign: boolean) => [
+        { label: "Show All", value: SearchStatus.ALL, id: "all", ...(redesign ? {} : { default: true }) },
+        { label: "Show Enabled", value: SearchStatus.ENABLED, id: "enabled" },
+        { label: "Show Disabled", value: SearchStatus.DISABLED, id: "disabled" },
+        { label: "Show New", value: SearchStatus.NEW, id: "new" }
+    ];
+
     const [newPlugins] = useAwaiter(() => DataStore.get("Velocity_existingPlugins").then((cachedPlugins: Record<string, number> | undefined) => {
         const now = Date.now() / 1000;
         const existingTimestamps: Record<string, number> = {};
@@ -285,18 +293,27 @@ function PluginSettings({ isRedesign = false }) {
                 </ErrorBoundary>
                 <div>
                     <ErrorBoundary noop>
-                        <Select
-                            options={[
-                                { label: "Show All", value: SearchStatus.ALL, default: true },
-                                { label: "Show Enabled", value: SearchStatus.ENABLED },
-                                { label: "Show Disabled", value: SearchStatus.DISABLED },
-                                { label: "Show New", value: SearchStatus.NEW }
-                            ]}
-                            serialize={String}
-                            select={onStatusChange}
-                            isSelected={v => v === searchValue.status}
-                            closeOnSelect={true}
-                        />
+                        {handleThemeComponent({
+                            setting: "selectRedesign",
+                            render: (
+                                <ManaSelect
+                                    options={filterOptions(true)}
+                                    hideTags={true}
+                                    selectionMode="single"
+                                    value={searchValue.status}
+                                    onSelectionChange={selected => onStatusChange(selected)}
+                                    closeOnSelect={true}
+                                />
+                            )
+                        }) || (
+                                <Select
+                                    options={filterOptions(false)}
+                                    serialize={String}
+                                    select={onStatusChange}
+                                    isSelected={v => v === searchValue.status}
+                                    closeOnSelect={true}
+                                />
+                            )}
                     </ErrorBoundary>
                 </div>
             </div>
