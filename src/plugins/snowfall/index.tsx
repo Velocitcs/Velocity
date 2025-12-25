@@ -20,7 +20,7 @@ import { definePluginSettings } from "@api/Settings";
 import { AddonBadge, AddonBadgeTypes } from "@components/settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { WindowStore, IdleStore } from "@webpack/common";
+import { IdleStore, WindowStore } from "@webpack/common";
 
 import managedStyle from "./styles.css?managed";
 
