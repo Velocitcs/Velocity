@@ -23,14 +23,14 @@ import { findByCodeLazy } from "@webpack";
 import { QuestStore } from "@webpack/common";
 
 import type { Quest, TaskType } from "./types";
-import { cleanup, isValidQuest, state, TASK_HANDLERS } from "./utils";
+import { cleanup, getProgress, isValidQuest, state, TASK_HANDLERS } from "./utils";
 
 const enrollQuest = findByCodeLazy("QUESTS_ENROLL_BEGIN");
 const claimReward = findByCodeLazy("QUESTS_CLAIM_REWARD_BEGIN");
 
 const failedQuests = new Set<string>();
 
-async function tryAcceptAndRun() {
+async function enrollUnenrolledQuests() {
     const { quests } = QuestStore;
     if (!quests?.size) return;
 
@@ -44,7 +44,7 @@ async function tryAcceptAndRun() {
     );
 
     if (unenrolledQuests.length === 0) {
-        tryRun();
+        runNextQuest();
         return;
     }
 
@@ -55,10 +55,10 @@ async function tryAcceptAndRun() {
     }
 
     await sleep(1000);
-    tryRun();
+    runNextQuest();
 }
 
-function tryRun() {
+function runNextQuest() {
     const { quests } = QuestStore;
     if (!quests?.size) return;
 
@@ -72,20 +72,26 @@ function tryRun() {
 
     const { target } = cfg.tasks[task];
     const raw = quest.userStatus?.progress?.[task];
-    const progress = typeof raw === "number" ? raw : raw?.value ?? 0;
+    const progress = getProgress(raw);
 
-    TASK_HANDLERS[task](quest, target, progress);
-
+    state.activeQuestIntervals.set(quest.id, {
+        progressTimeout: null as any,
+        rerenderTimeout: null as any,
+        progress,
+        type: task,
+        enabled: true
+    });
+    TASK_HANDLERS[task](quest, target, progress, state.activeQuestIntervals);
 }
 
-async function checkAndContinue() {
+async function claimCompletedQuests() {
     cleanup();
     await sleep(2000);
 
     const { quests } = QuestStore;
     for (const quest of quests.values()) {
         if (quest.userStatus?.completedAt && !quest.userStatus?.claimedAt) {
-            const platform = quest.config.rewardsConfig.platforms[0];
+            const platform = quest.config.rewardsConfig?.platforms?.[0];
             if (platform) {
                 await claimReward(quest.id, platform, "QUESTS_BAR");
                 await sleep(500);
@@ -93,7 +99,7 @@ async function checkAndContinue() {
         }
     }
 
-    tryAcceptAndRun();
+    enrollUnenrolledQuests();
 }
 
 export default definePlugin({
@@ -135,27 +141,39 @@ export default definePlugin({
 
     start() {
         failedQuests.clear();
-        tryAcceptAndRun();
+        state.shouldStop = false;
+        enrollUnenrolledQuests();
     },
 
     stop() {
         cleanup();
         failedQuests.clear();
+        state.activeQuestIntervals.forEach(interval => {
+            if (interval.progressTimeout) clearInterval(interval.progressTimeout);
+            if (interval.rerenderTimeout) clearTimeout(interval.rerenderTimeout);
+        });
+        state.activeQuestIntervals.clear();
     },
 
     flux: {
         QUESTS_SEND_HEARTBEAT_SUCCESS(e: any) {
-            state.onBeat?.(e);
-            const quest = [...QuestStore.quests.values()].find((q: Quest) => q.id === state.currentQuestId);
-            if (quest?.userStatus?.completedAt) checkAndContinue();
+            const questId = e.userStatus?.questId;
+            if (!questId || !state.activeQuestIntervals.has(questId)) return;
+
+            const interval = state.activeQuestIntervals.get(questId);
+            if (!interval?.enabled) return;
+
+            state.onBeat?.(e, questId);
+            const quest = [...QuestStore.quests.values()].find((q: Quest) => q.id === questId);
+            if (quest?.userStatus?.completedAt) claimCompletedQuests();
         },
         async QUESTS_ENROLL_SUCCESS() {
             cleanup();
             await sleep(100);
-            tryRun();
+            runNextQuest();
         },
         QUESTS_FETCH_CURRENT_QUESTS_SUCCESS() {
-            tryAcceptAndRun();
+            enrollUnenrolledQuests();
         }
     }
 });

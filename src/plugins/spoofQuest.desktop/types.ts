@@ -48,7 +48,7 @@ export interface Quest {
     };
 }
 
-export type TaskType = | "WATCH_VIDEO" | "WATCH_VIDEO_ON_MOBILE" | "PLAY_ON_DESKTOP" | "STREAM_ON_DESKTOP" | "PLAY_ACTIVITY";
+export type TaskType = | "WATCH_VIDEO" | "WATCH_VIDEO_ON_MOBILE" | "PLAY_ON_DESKTOP" | "STREAM_ON_DESKTOP" | "PLAY_ACTIVITY" | "PLAY_ON_XBOX" | "PLAY_ON_PLAYSTATION" | "ACHIEVEMENT_IN_GAME" | "ACHIEVEMENT_IN_ACTIVITY";
 
 export interface HeartbeatData {
     questId: string;
