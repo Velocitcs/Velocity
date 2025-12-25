@@ -18,11 +18,13 @@
 
 import "./Switch.css";
 
+import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
 import { classes } from "@utils/misc";
+import { findComponentByCodeLazy } from "@webpack";
 import { BaseSwitch } from "@webpack/common";
 import { ReactNode } from "react";
-import { handleThemeComponent } from "./handleThemeComponent";
+const WebpackSwitch = findComponentByCodeLazy("data-toggleable-component", "animated.div");
 
 const switchCls = classNameFactory("vc-switch-");
 
@@ -78,7 +80,12 @@ const SwitchComponent = ({ checked, onChange, disabled }: SwitchProps) => (
 );
 
 export function Switch({ checked, onChange, disabled, title, description }: SwitchProps) {
+    const { velocityStyles } = useSettings(["velocityStyles.*"]);
     const baseSwitch = <BaseSwitch label={title} description={description} hasIcon={true} checked={checked} onChange={onChange} disabled={disabled} />;
 
-    return handleThemeComponent({ render: baseSwitch, setting: "switchRedesign" }) ?? <SwitchComponent checked={checked} onChange={onChange} disabled={disabled} />;
+    if (velocityStyles.switchRedesign === "legacy") {
+        return <WebpackSwitch checked={checked} onChange={onChange} disabled={disabled} />;
+    }
+
+    return velocityStyles.switchRedesign === "redesigned" ? baseSwitch : <SwitchComponent checked={checked} onChange={onChange} disabled={disabled} />;
 }

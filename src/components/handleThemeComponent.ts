@@ -21,13 +21,13 @@ import { ReactNode } from "react";
 
 interface HandleThemeComponentProps {
     render: ReactNode;
-    setting: string;
+    setting: keyof typeof import("@api/Settings").Settings["velocityStyles"];
 }
 
 export function handleThemeComponent({ render, setting }: HandleThemeComponentProps): ReactNode {
     const { velocityStyles } = useSettings(["velocityStyles.*"]);
 
-    const settingValue = setting.split(".").reduce((obj: any, key: string) => obj?.[key], velocityStyles);
+    const settingValue = velocityStyles[setting];
 
     return settingValue ? render : null;
 }
