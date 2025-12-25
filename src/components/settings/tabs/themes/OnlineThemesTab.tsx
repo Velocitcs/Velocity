@@ -43,7 +43,7 @@ export function OnlineThemesTab() {
     return (
         <>
             <FormNotice textVariant="text-lg/normal" messageType="warn" className={Margins.bottom16}>
-                This section is for advanced users. <br></br> If you are having difficulties using it, use the local Themes tab instead.
+                <Forms.FormText>This section is for advanced users. <br></br> If you are having difficulties using it, use the local Themes tab instead.</Forms.FormText>
             </FormNotice>
             <Card className="vc-settings-card">
                 <Forms.FormTitle tag="h5">Paste links to css files here</Forms.FormTitle>

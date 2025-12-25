@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { useSettings } from "@api/Settings";
 import { PluginOptionSelect } from "@utils/types";
 import { ManaSelect, React, SearchableSelect, Select, useState } from "@webpack/common";
-import { useSettings } from "@api/Settings";
 
 import { resolveError, SettingProps, SettingsSection } from "./Common";
 
@@ -121,10 +121,8 @@ export function SelectSetting({ option, pluginSettings, definedSettings, onChang
                     options={optionsWithId}
                     value={state}
                     maxOptionsVisible={5}
-                    closeOnSelect={true}
-                    selectionMode="single"
-                    onSelectionChange={selected => handleChange(selected)}
-                    hideTags={true}
+                    serialize={v => String(v)}
+                    onChange={selected => handleChange(selected)}
                     {...option.componentProps}
                 />
             </SettingsSection>

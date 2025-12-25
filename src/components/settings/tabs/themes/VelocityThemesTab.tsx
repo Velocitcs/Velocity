@@ -22,19 +22,28 @@ import { Text } from "@components/BaseText";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
+import { handleThemeComponent } from "@components/handleThemeComponent";
 import { Margins } from "@components/margins";
 import { classes } from "@utils/misc";
-import { Card, FormNotice, Forms } from "@webpack/common";
+import { Card, Forms, ManaSelect, Select } from "@webpack/common";
 
 const cl = classNameFactory("vc-settings-themes-");
 
 export function VelocityThemesTab() {
     const { velocityStyles } = useSettings(["velocityStyles.*"]);
 
-    const switches: Array<{ title: string; description: string; setting: keyof typeof velocityStyles; }> = [
-        { title: "Redesigned Switch", description: "A theme for the redesigned switch", setting: "switchRedesign" },
-        { title: "Redesigned Select", description: "A theme for the new mana select", setting: "selectRedesign" }
-    ];
+    const selectProps = {
+        options: [
+            { label: "Built-in", value: false, id: "false" },
+            { label: "Redesigned", value: "redesigned", id: "redesigned" },
+            { label: "Legacy", value: "legacy", id: "legacy" }
+        ],
+        value: velocityStyles.switchRedesign,
+        onChange: (value: any) => { velocityStyles.switchRedesign = value; },
+        select: (value: any) => { velocityStyles.switchRedesign = value; },
+        isSelected: (value: any) => value === velocityStyles.switchRedesign,
+        serialize: String
+    };
 
     return (
         <>
@@ -47,19 +56,22 @@ export function VelocityThemesTab() {
             <Forms.FormDivider className={Margins.bottom16} />
 
             <Forms.FormSection title="Velocity Themes" tag="h5">
-                {switches.map(sw => (
-                    <Card key={sw.setting} className="vc-settings-card">
-                        <FormSwitch
-                            title={sw.title}
-                            description={sw.description}
-                            value={velocityStyles[sw.setting] ?? false}
-                            hideBorder={true}
-                            onChange={value => {
-                                velocityStyles[sw.setting] = value;
-                            }}
-                        />
-                    </Card>
-                ))}
+                <Card className="vc-settings-card">
+                    <Forms.FormText>Switch Redesign</Forms.FormText>
+                    {handleThemeComponent({ render: <ManaSelect {...selectProps} />, setting: "selectRedesign" }) ?? <Select {...selectProps} />}
+                </Card>
+
+                <Card className="vc-settings-card">
+                    <FormSwitch
+                        title="Redesigned Select"
+                        description="A theme for the new mana select"
+                        value={velocityStyles.selectRedesign ?? false}
+                        hideBorder={true}
+                        onChange={value => {
+                            velocityStyles.selectRedesign = value;
+                        }}
+                    />
+                </Card>
                 <Divider />
                 <Flex flexDirection="column" justifyContent="center" alignItems="center" gap="0.25em">
                     <Text variant="text-lg/semibold">

@@ -27,221 +27,194 @@ import { Margins } from "@components/margins";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { debounce } from "@shared/debounce";
 import { copyWithToast } from "@utils/discord";
-import { filters, search } from "@webpack";
-import { Forms, React, Select, TextInput, useEffect, useState } from "@webpack/common";
+import { Logger } from "@utils/Logger";
+import { filters, search, wreq } from "@webpack";
+import { Forms, ManaSelect, TextInput, useEffect, useState } from "@webpack/common";
+
+enum SearchType {
+    CODE,
+    PROPS,
+    COMPONENT_BY_CODE,
+    MODULE_ID
+}
+
+type FindErrorType = "MULTIPLE_MODULES" | "NOT_FOUND" | "NO_INPUT";
+
+
+interface SearchState {
+    filters: string[];
+    searchType: number;
+}
+
+interface SearchResult {
+    id: string;
+    func: Function;
+}
+
+interface FindResult {
+    error?: { text: string; type: FindErrorType; };
+    module?: [string, Function];
+}
 
 const searchTypes = [
-    { label: "findByCode", value: "code" },
-    { label: "findByProps", value: "props" },
-    { label: "findComponentByCode", value: "componentByCode" },
-    { label: "findModuleId", value: "moduleId" }
+    { label: "findByCode", value: SearchType.CODE, id: "code", default: true },
+    { label: "findByProps", value: SearchType.PROPS, id: "props" },
+    { label: "findComponentByCode", value: SearchType.COMPONENT_BY_CODE, id: "componentByCode" },
+    { label: "findModuleId", value: SearchType.MODULE_ID, id: "moduleId" }
 ];
 
-const findModule = debounce(function ({
-    queries,
-    searchType,
-    setModule,
-    setError
-}: {
-    queries: string[];
-    searchType: string;
-    setModule: (value: [string, Function] | null) => void;
-    setError: (value: string | undefined) => void;
-}) {
-    try {
-        if (queries.length === 0) {
-            setError("You need at least one filter");
-            setModule(null);
-            return;
-        }
+const STORE_KEY = "SearchHelper";
 
-        if (queries.some(q => !q.trim())) {
-            setError("All filters must be filled");
-            setModule(null);
-            return;
-        }
+function buildFilterFns(searchType: SearchType, cleanFilters: string[]): ((mod: any) => boolean)[] {
+    const filterFns: ((mod: any) => boolean)[] = [];
 
-        const cleanQueries = queries.filter(q => q.trim());
-        let moduleId: string | null = null;
-        const filterFns: ((mod: any) => boolean)[] = [];
-
-        if (searchType === "code") {
-            cleanQueries.forEach(q => filterFns.push(filters.byCode(q)));
-        } else if (searchType === "props") {
-            cleanQueries.forEach(q => {
+    switch (searchType) {
+        case SearchType.CODE:
+            cleanFilters.forEach(q => filterFns.push(filters.byCode(q)));
+            break;
+        case SearchType.PROPS:
+            cleanFilters.forEach(q => {
                 const props = q.split(",").map(p => p.trim()).filter(Boolean);
-                filterFns.push(filters.byProps(...props));
+                if (props.length) filterFns.push(filters.byProps(...props));
             });
-        } else if (searchType === "componentByCode") {
-            cleanQueries.forEach(q => filterFns.push(filters.componentByCode(q)));
-        } else if (searchType === "moduleId") {
-            moduleId = cleanQueries[0];
-        }
-
-        const candidates: Record<string, Function> = search(/.*/);
-        const matches: [string, Function][] = [];
-
-        if (moduleId) {
-            if (candidates[moduleId]) {
-                setModule([moduleId, candidates[moduleId]]);
-                setError(undefined);
-            } else {
-                setError("Module ID not found");
-                setModule(null);
-            }
-            return;
-        }
-
-        for (const id in candidates) {
-            const func = candidates[id];
-            try {
-                const passesAll = filterFns.every(fn => fn(func));
-                if (passesAll) matches.push([id, func]);
-            } catch {
-                /* ignore bad modules */
-            }
-        }
-
-        if (matches.length === 0) {
-            setError("No modules found");
-            setModule(null);
-        } else if (matches.length > 1) {
-            setError(`${matches.length} modules were found, Please be more specific.`);
-            setModule(null);
-        } else {
-            setError(undefined);
-            setModule(matches[0]);
-        }
-    } catch (e) {
-        setError((e as Error).message);
-        setModule(null);
-        console.error("[SearchHelper] Error while searching:", e);
+            break;
+        case SearchType.COMPONENT_BY_CODE:
+            cleanFilters.forEach(q => filterFns.push(filters.componentByCode(q)));
+            break;
     }
-});
+
+    return filterFns;
+}
+
+function findMatches(searchType: SearchType, cleanFilters: string[]): SearchResult[] {
+    if (searchType === SearchType.MODULE_ID) {
+        const moduleId = cleanFilters[0];
+        if (!moduleId) return [];
+        const func = wreq.m[moduleId];
+        return func != null ? [{ id: moduleId, func }] : [];
+    }
+
+    const filterFns = buildFilterFns(searchType, cleanFilters);
+    if (!filterFns.length) return [];
+
+    const candidates = search(/.*/);
+    const matches: SearchResult[] = [];
+
+    for (const id in candidates) {
+        try {
+            if (filterFns.every(fn => fn(candidates[id]))) {
+                matches.push({ id, func: candidates[id] });
+            }
+        } catch { }
+    }
+
+    return matches;
+}
+
+function doSearch(
+    filtersInput: string[],
+    searchType: SearchType,
+    setResult: (r: FindResult) => void
+): void {
+    const cleanFilters = filtersInput.filter(q => q.trim());
+
+    if (!cleanFilters.length) {
+        setResult({});
+        return;
+    }
+
+    const matches = findMatches(searchType, cleanFilters);
+
+    if (matches.length === 0) {
+        setResult({
+            error: { text: searchType === SearchType.MODULE_ID ? "Module ID not found" : "No modules found", type: "NOT_FOUND" }
+        });
+    } else if (matches.length > 1) {
+        setResult({
+            error: { text: `${matches.length} modules found, be more specific`, type: "MULTIPLE_MODULES" }
+        });
+    } else {
+        setResult({ module: [matches[0].id, matches[0].func] });
+    }
+}
 
 function SearchHelper() {
-    const [queries, setQueries] = useState<string[]>([]);
-    const [searchType, setSearchType] = useState("code");
-    const [error, setError] = useState<string>();
-    const [module, setModule] = useState<[string, Function] | null>(null);
-    const [loaded, setLoaded] = useState(false);
+    const [filters, setFilters] = useState<string[]>([""]);
+    const [searchType, setSearchType] = useState<SearchType>(SearchType.CODE);
+    const [result, setResult] = useState<FindResult>({});
 
-    // Load filters before rendering
     useEffect(() => {
-        (async () => {
-            const saved = (await get("SearchHelper")) ?? { filters: [""] };
-            setQueries(saved.filters ?? [""]);
-            setLoaded(true);
-        })();
+        get(STORE_KEY).then((saved: SearchState | undefined) => {
+            if (saved?.filters) {
+                setFilters(saved.filters);
+                setSearchType(saved.searchType as SearchType);
+                doSearch(saved.filters, saved.searchType as SearchType, setResult);
+            }
+        });
     }, []);
 
-    // Save filters automatically
     useEffect(() => {
-        if (loaded) set("SearchHelper", { filters: queries });
-    }, [queries, loaded]);
+        set(STORE_KEY, { filters, searchType });
+    }, [filters, searchType]);
 
-    function onQueryChange(index: number, value: string) {
-        const newQueries = [...queries];
-        newQueries[index] = value;
-        setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, setModule, setError });
-    }
+    const handleSearch = debounce((newFilters: string[], newSearchType: SearchType) => {
+        doSearch(newFilters, newSearchType, setResult);
+    });
 
-    function addFilter() {
-        const newQueries = [...queries, ""];
-        setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, setModule, setError });
-    }
+    const handleFilters = (index: number, value: string | null) => {
+        let newFilters: string[];
 
-    function removeFilter(index: number) {
-        const newQueries = queries.filter((_, i) => i !== index);
-        setQueries(newQueries);
-        findModule({ queries: newQueries, searchType, setModule, setError });
-    }
-
-    function onSearchTypeChange(v: string) {
-        setSearchType(v);
-        findModule({ queries, searchType: v, setModule, setError });
-    }
-
-    function printModules() {
-        const candidates: Record<string, Function> = search(/.*/);
-        const results: [string, Function][] = [];
-
-        try {
-            const cleanQueries = queries.filter(q => q.trim());
-            const filterFns: ((mod: any) => boolean)[] = [];
-
-            if (searchType === "code") {
-                cleanQueries.forEach(q => filterFns.push(filters.byCode(q)));
-            } else if (searchType === "props") {
-                cleanQueries.forEach(q => {
-                    const props = q.split(",").map(p => p.trim()).filter(Boolean);
-                    filterFns.push(filters.byProps(...props));
-                });
-            } else if (searchType === "componentByCode") {
-                cleanQueries.forEach(q => filterFns.push(filters.componentByCode(q)));
-            }
-
-            for (const id in candidates) {
-                const func = candidates[id];
-                try {
-                    const passesAll = filterFns.every(fn => fn(func));
-                    if (passesAll) results.push([id, func]);
-                } catch { }
-            }
-
-            if (results.length === 0) {
-                console.warn("No modules found to print");
-            } else {
-                console.log(`Found ${results.length} module(s):`, results.map(m => m[1]));
-            }
-        } catch (e) {
-            console.error("Error printing modules:", e);
+        if (value === null) {
+            newFilters = filters.filter((_, i) => i !== index);
+        } else {
+            newFilters = [...filters];
+            newFilters[index] = value;
         }
-    }
 
-    if (!loaded) {
-        return (
-            <SettingsTab title="Search Helper"></SettingsTab>
-        );
-    }
+        setFilters(newFilters);
+        handleSearch(newFilters, searchType);
+    };
+
+    const printModules = () => {
+        const cleanFilters = filters.filter(q => q.trim());
+        if (!cleanFilters.length) return;
+
+        const matches = findMatches(searchType, cleanFilters);
+        if (matches.length === 0) return;
+
+        new Logger("SearchHelper").log(`Found ${matches.length} module(s):`, matches.map(m => m.func));
+    };
 
     return (
         <SettingsTab title="Search Helper">
             <HeadingTertiary className={Margins.top8}>Search by</HeadingTertiary>
-            <Select
+            <ManaSelect
                 options={searchTypes}
-                isSelected={v => v === searchType}
-                select={onSearchTypeChange}
+                value={searchType}
+                onChange={(v: SearchType) => {
+                    setSearchType(v);
+                    doSearch(filters, v, setResult);
+                }}
                 serialize={v => v}
-                clearable={searchType !== "code"}
-                clear={() => setSearchType("code")}
             />
 
             <Divider style={{ margin: "20px 0" }} />
 
             <HeadingTertiary className={Margins.top8}>Filters</HeadingTertiary>
-            <Forms.FormText className={Margins.bottom8}>
-                Put your filters to search as
-            </Forms.FormText>
 
-            {queries.map((query, index) => (
+            {filters.map((query, index) => (
                 <Flex key={index} style={{ gap: 8, marginBottom: 10 }}>
                     <TextInput
                         type="text"
                         value={query}
-                        onChange={v => onQueryChange(index, v)}
+                        onChange={v => handleFilters(index, v)}
                         placeholder="Filter"
                     />
                     {index > 0 && (
                         <Button
                             size={Button.Sizes.MIN}
-                            onClick={() => removeFilter(index)}
-                            style={{
-                                background: "none",
-                                color: "var(--status-danger)"
-                            }}
+                            onClick={() => handleFilters(index, null)}
+                            style={{ background: "none", color: "var(--status-danger)" }}
                         >
                             <DeleteIcon width="24" height="24" viewBox="0 0 24 24" />
                         </Button>
@@ -251,55 +224,54 @@ function SearchHelper() {
 
             <Flex style={{ gap: 8, marginBottom: 10 }} className={Margins.top8}>
                 <Button
-                    onClick={addFilter}
+                    onClick={() => setFilters([...filters, ""])}
                     icon={() => <PlusIcon width="20" height="20" viewBox="0 0 24 24" />}
-                    size="small"
-                    color="brand"
+                    size={Button.Sizes.SMALL}
+                    color={Button.Colors.BRAND}
                 >
                     Add Filter
                 </Button>
 
-                {queries.some(q => q.trim()) && (
+                {filters.some(q => q.trim()) && (result.module || result.error?.type === "MULTIPLE_MODULES") && (
                     <Button
-                        size="small"
-                        color="GREEN"
+                        size={Button.Sizes.SMALL}
+                        color={Button.Colors.GREEN}
                         icon={() => <LogIcon width="20" height="20" viewBox="0 0 24 24" />}
                         onClick={printModules}
                     >
-                        Print
+                        {result.module ? "Print" : "Log anyway"}
                     </Button>
                 )}
             </Flex>
 
-            {(error || module) && (
+            {(result.error || result.module) && (
                 <>
-                    {(error ? (
+                    {result.error ? (
                         <ErrorIcon width="18" height="18" viewBox="0 0 24 24" style={{ color: "var(--status-danger)", verticalAlign: "middle", marginRight: 6 }} />
                     ) : (
-                        <InfoIcon width="18" height="18" viewBox="0 0 24 24" style={{ color: "var(--info-help-foreground)", verticalAlign: "middle", marginRight: 6 }} />
-                    ))}
-
+                        <InfoIcon width="18" height="18" viewBox="0 0 24 24" style={{ color: "var(--icon-feedback-info)", verticalAlign: "middle", marginRight: 6 }} />
+                    )}
                     <Forms.FormText
                         style={{
-                            color: error ? "var(--status-danger)" : "var(--text-feedback-info)",
+                            color: result.error ? "var(--status-danger)" : "var(--text-feedback-info)",
                             display: "inline"
                         }}
                     >
-                        {error || "Find: OK"}
+                        {result.error?.text || "Find: OK"}
                     </Forms.FormText>
                 </>
             )}
 
-            {module && (
+            {result.module && (
                 <>
                     <Divider className={Margins.top16} />
-                    <HeadingTertiary className={Margins.top16}>Module {module[0]}</HeadingTertiary>
-                    <CodeBlock lang="js" content={module[1].toString()} />
+                    <HeadingTertiary className={Margins.top16}>Module {result.module[0]}</HeadingTertiary>
+                    <CodeBlock lang="js" content={result.module[1].toString()} />
                     <Flex className={Margins.top8}>
-                        <Button onClick={() => copyWithToast(module[1].toString())}>
+                        <Button onClick={() => copyWithToast(result.module![1].toString())}>
                             Copy Module Code
                         </Button>
-                        <Button onClick={() => copyWithToast(module[0])}>
+                        <Button onClick={() => copyWithToast(result.module![0])}>
                             Copy Module ID
                         </Button>
                     </Flex>

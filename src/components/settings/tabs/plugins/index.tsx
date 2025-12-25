@@ -25,6 +25,7 @@ import { classNameFactory } from "@api/Styles";
 import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { handleThemeComponent } from "@components/handleThemeComponent";
 import { Heading, HeadingTertiary } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
@@ -41,7 +42,6 @@ import Plugins, { ExcludedPlugins } from "~plugins";
 import { openContributorModal } from "./ContributorModal";
 import { PluginCard } from "./PluginCard";
 import { UIElementsButton } from "./UIElements";
-import { handleThemeComponent } from "@components/handleThemeComponent";
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
@@ -299,9 +299,10 @@ function PluginSettings({ isRedesign = false }) {
                                 <ManaSelect
                                     options={filterOptions(true)}
                                     hideTags={true}
+                                    serialize={v => String(v)}
                                     selectionMode="single"
                                     value={searchValue.status}
-                                    onSelectionChange={selected => onStatusChange(selected)}
+                                    onChange={selected => onStatusChange(selected)}
                                     closeOnSelect={true}
                                 />
                             )

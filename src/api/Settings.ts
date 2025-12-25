@@ -78,7 +78,7 @@ export interface Settings {
     },
 
     velocityStyles: {
-        switchRedesign: boolean;
+        switchRedesign: false | "redesigned" | "legacy";
         selectRedesign: boolean;
     },
 

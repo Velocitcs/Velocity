@@ -123,10 +123,8 @@ export function ThemeModal({ mode, modalProps, returnState }: ThemeModalProps) {
                                 placeholder="Select a theme"
                                 options={themes.map(theme => ({ label: theme.fileName, value: theme.fileName, id: theme.fileName }))}
                                 value={selectedTheme}
-                                closeOnSelect={true}
-                                selectionMode="single"
-                                onSelectionChange={selected => setSelectedTheme(selected?.value ?? selected)}
-                                hideTags={true}
+                                serialize={String}
+                                onChange={selected => setSelectedTheme(selected?.value ?? selected)}
                             />
                         ) : (
                             <Select
