@@ -211,14 +211,14 @@ function VelocitySettings({ isRedesign = false }) {
             <Divider />
 
             <section className={Margins.top16}>
-                <Forms.FormTitle tag="h5">Settings</Forms.FormTitle>
-                <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
-                    Hint: You can change the position of this settings section in the{" "}
-                    <a onClick={() => openPluginModal(Velocity.Plugins.plugins.Settings)}>
-                        settings of the Settings plugin
-                    </a>!
-                </Forms.FormText>
-
+                <Forms.FormSection title="Settings" tag="h5">
+                    <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
+                        Hint: You can change the position of this settings section in the{" "}
+                        <a onClick={() => openPluginModal(Velocity.Plugins.plugins.Settings)}>
+                            settings of the Settings plugin
+                        </a>!
+                    </Forms.FormText>
+                </Forms.FormSection>
                 <Switches />
             </section>
 
