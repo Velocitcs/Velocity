@@ -31,7 +31,6 @@ export * from "./fonts";
 export * from "./FormSwitch";
 export * from "./Grid";
 export * from "./Heading";
-export * from "./Heart";
 export * from "./Icons";
 export * from "./InlineCode";
 export * from "./Link";
